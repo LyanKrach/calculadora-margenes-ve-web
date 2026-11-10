@@ -26,9 +26,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Inject real Firebase config from secret
+        env:
+          FIREBASE_SECRET: ${{ secrets.FIREBASE_CONFIG_JS }}
         run: |
-          if [ -n "${{ secrets.FIREBASE_CONFIG_JS }}" ]; then
-            echo "${{ secrets.FIREBASE_CONFIG_JS }}" > firebase-config.js
+          if [ -n "$FIREBASE_SECRET" ]; then
+            printf '%s\n' "$FIREBASE_SECRET" > firebase-config.js
             echo "Firebase config inyectada exitosamente para produccion"
           else
             echo "Advertencia: Secreto FIREBASE_CONFIG_JS no encontrado, usando plantilla"
