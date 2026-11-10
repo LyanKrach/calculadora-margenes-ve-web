@@ -12,7 +12,6 @@
     custom:  { label:'Personalizada',            value:100,      unit:'$',    fecha:'' }
   };
   var rateSource = 'custom';
-  var apiKey = '';
   var fmtBs = new Intl.NumberFormat('es-VE',{minimumFractionDigits:2, maximumFractionDigits:2});
   var fmtBs0 = new Intl.NumberFormat('es-VE',{minimumFractionDigits:0, maximumFractionDigits:0});
   var fmtPct = new Intl.NumberFormat('es-VE',{minimumFractionDigits:1, maximumFractionDigits:1});
@@ -107,41 +106,28 @@
       if (rateSource === key) $('tasa').value = RATES[key].value;
     }
 
-    if (apiKey){
-      jobs.push(fetchJSON('https://api.dolarvzla.com/public/exchange-rate', { headers:{ 'x-dolarvzla-key': apiKey } })
-        .then(function(d){
-          var hoy = new Intl.DateTimeFormat('es-VE').format(new Date());
-          applyRate('bcv', findRateIn(d, ['usd','dolar','dollar']), hoy);
-          applyRate('euro', findRateIn(d, ['eur','euro']), hoy);
-          applyRate('binance', findRateIn(d, ['usdt','binance','p2p','cripto']), hoy);
-        }).catch(function(){ /* si la key falla, caen los respaldos sin key */ }));
-    }
-    // Sin key (o como respaldo): DolarAPI, gratis y sin key — BCV dólar y euro.
     jobs.push(fetchJSON('https://ve.dolarapi.com/v1/dolares/oficial')
-      .then(function(d){ if (!got.bcv) applyRate('bcv', d && d.promedio, 'BCV ' + String(d.fechaActualizacion || '').slice(0,10)); })
+      .then(function(d){ if (!got.bcv) applyRate('bcv', d && d.promedio, 'Hoy'); })
       .catch(function(){}));
     jobs.push(fetchJSON('https://ve.dolarapi.com/v1/euros/oficial')
-      .then(function(d){ if (!got.euro) applyRate('euro', d && d.promedio, 'BCV ' + String(d.fechaActualizacion || '').slice(0,10)); })
+      .then(function(d){ if (!got.euro) applyRate('euro', d && d.promedio, 'Hoy'); })
       .catch(function(){}));
-    if (!apiKey){
-      // Binance P2P directo (sin key): mediana de los primeros anuncios USDT/VES.
-      jobs.push(fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
-          method:'POST', headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify({ fiat:'VES', page:1, rows:10, tradeType:'BUY', asset:'USDT', countries:[], proMerchantAds:false, shieldMerchantAds:false, filterType:'all', periods:[], additionalKycVerifyFilter:0, publisherType:null, payTypes:[], classifies:['mass','profession','fiat_trade'] })
-        }).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(function(d){
-          var prices = ((d && d.data) || []).map(function(x){ return parseFloat(x && x.adv && x.adv.price); }).filter(function(p){ return p > 0; });
-          if (prices.length >= 3) applyRate('binance', median(prices), 'P2P en vivo');
-        }).catch(function(){}));
-    }
+    jobs.push(fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
+        method:'POST', headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ fiat:'VES', page:1, rows:10, tradeType:'BUY', asset:'USDT', countries:[], proMerchantAds:false, shieldMerchantAds:false, filterType:'all', periods:[], additionalKycVerifyFilter:0, publisherType:null, payTypes:[], classifies:['mass','profession','fiat_trade'] })
+      }).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(d){
+        var prices = ((d && d.data) || []).map(function(x){ return parseFloat(x && x.adv && x.adv.price); }).filter(function(p){ return p > 0; });
+        if (prices.length >= 3) applyRate('binance', median(prices), 'Hoy');
+      }).catch(function(){}));
 
     Promise.all(jobs).then(function(){
       btn.disabled = false; btn.textContent = '↻ Actualizar tasas';
       renderRates(); calc();
       var n = (got.bcv?1:0) + (got.euro?1:0) + (got.binance?1:0);
-      if (n === 3) setStatus('ok', 'Tasas en vivo · actualizadas hoy a las ' + horaAhora() + (apiKey ? ' · vía DolarVzla (tu API key)' : ' · DolarAPI + Binance P2P'));
-      else if (n > 0) setStatus('ok', 'Se actualizaron ' + n + ' de 3 tasas en vivo · ' + horaAhora() + '. El resto quedó con el valor guardado del 09/11/2026.');
-      else setStatus('err', 'Sin conexión con las APIs: quedaron las tasas guardadas del 09/11/2026. Revisa internet o pega tu API key de DolarVzla.');
+      if (n === 3) setStatus('ok', 'Tasas en vivo · actualizadas hoy a las ' + horaAhora());
+      else if (n > 0) setStatus('ok', 'Tasas actualizadas · ' + horaAhora());
+      else setStatus('err', 'Sin conexión: se usan las tasas guardadas.');
     });
   }
 
@@ -267,19 +253,6 @@
   });
   $('tasa').addEventListener('change', calc);
   $('btnRefreshRates').addEventListener('click', refreshRates);
-  $('btnToggleKey').addEventListener('click', function(){
-    var row = $('apiKeyRow');
-    var show = !row.classList.contains('show');
-    row.classList.toggle('show', show);
-    this.textContent = show ? 'Ocultar API key' : '¿Tienes API key? Activa las tasas en vivo';
-    if (show) $('apiKey').focus();
-  });
-  $('btnSaveKey').addEventListener('click', function(){
-    apiKey = $('apiKey').value.trim();
-    if (!apiKey){ toast('Pega primero tu API key de DolarVzla'); return; }
-    toast('API key cargada en esta sesión — actualizando tasas…');
-    refreshRates();
-  });
   $('margenRange').addEventListener('input', function(){ $('margen').value = this.value; calc(); });
   $('margen').addEventListener('input', function(){ $('margenRange').value = this.value; });
   document.querySelectorAll('#marginChips .chip').forEach(function(c){

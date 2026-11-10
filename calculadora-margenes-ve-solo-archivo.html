@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
+[hidden] { display: none !important; }
 :root{
     --bg:#F4F1E9;
     --bg2:#EDE8DC;
@@ -105,10 +106,6 @@
   .rate-refresh{margin-left:auto;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit}
   .rate-refresh:hover{border-color:var(--green2)}
   .rate-refresh:disabled{opacity:.5;cursor:wait}
-  .apikey-row{display:none;margin-top:12px}
-  .apikey-row.show{display:block}
-  .rate-note{font-size:12px;color:var(--muted);margin-top:10px;background:var(--bg2);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;line-height:1.5}
-  .rate-note b{color:var(--ink)}
   /* margin slider */
   .margin-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
   .margin-big{font-family:"JetBrains Mono",monospace;font-size:34px;font-weight:800;line-height:1;color:var(--green2)}
@@ -231,7 +228,8 @@
   .btn-mini:hover{border-color:var(--green2)}
   .btn-mini.danger{color:var(--red);border-color:#FECACA}
   .btn-mini.danger:hover{border-color:var(--red)}
-  .modal-backdrop{position:fixed;inset:0;background:rgba(10,20,14,.55);display:grid;place-items:center;z-index:30;padding:16px}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(10,20,14,.55);display:grid;place-items:center;z-index:100;padding:16px}
+  .modal-backdrop[hidden]{display:none!important}
   .modal{width:100%;max-width:420px;padding:22px;max-height:92vh;overflow-y:auto}
   .modal-head{display:flex;justify-content:space-between;align-items:center}
   .modal-head h2{margin:0;font-size:21px;letter-spacing:-.02em}
@@ -281,56 +279,45 @@
       <div class="field"><span class="prefix">$</span><input type="number" id="costoUsd" value="10" min="0" step="0.01" inputmode="decimal"></div>
 
       <div class="divider"></div>
-      <h2 style="font-size:16px">Tasa automÃ¡tica</h2>
-      <p class="sub" style="margin-bottom:12px">Toca una tarjeta y esa tasa entra sola en el cÃ¡lculo. Sin API key: BCV y euro se traen de DolarAPI. Con tu key gratis de DolarVzla: las 3 tasas + Binance USDT en vivo.</p>
+      <h2 style="font-size:16px">Tasa automática</h2>
+      <p class="sub" style="margin-bottom:12px">Toca una tarjeta para usar esa tasa directamente en el cálculo.</p>
 
       <div class="rates" role="group" aria-label="Fuente de la tasa">
         <button type="button" class="rate-card" data-rate="bcv">
           <span class="rc-check" aria-hidden="true">âœ“</span>
           <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg> BCV Â· DÃ³lar</span>
           <span class="rc-val" id="rateVal-bcv">Bs 897,54 <small>/ $</small></span>
-          <span class="rc-src">Banco Central Â· oficial</span>
+          <span class="rc-src">Oficial</span>
         </button>
         <button type="button" class="rate-card" data-rate="binance">
           <span class="rc-check" aria-hidden="true">âœ“</span>
           <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6.5 15.2 9.7 12 12.9 8.8 9.7Z M6.5 12 3.3 15.2 6.5 18.4 9.7 15.2Z M17.5 12 20.7 15.2 17.5 18.4 14.3 15.2Z M12 14.3 15.2 17.5 12 20.7 8.8 17.5Z M12 1.8 15.2 5 12 8.2 8.8 5Z"/></svg> Binance Â· USDT</span>
           <span class="rc-val" id="rateVal-binance">Bs 1.045,00 <small>/ USDT</small></span>
-          <span class="rc-src">P2P USDT/VES Â· mediana de anuncios</span>
+          <span class="rc-src">Paralelo / USDT</span>
         </button>
         <button type="button" class="rate-card" data-rate="euro">
           <span class="rc-check" aria-hidden="true">âœ“</span>
           <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg> BCV Â· Euro</span>
           <span class="rc-val" id="rateVal-euro">Bs 1.001,19 <small>/ â‚¬</small></span>
-          <span class="rc-src">Banco Central Â· oficial</span>
+          <span class="rc-src">Oficial</span>
         </button>
         <button type="button" class="rate-card active" data-rate="custom">
           <span class="rc-check" aria-hidden="true">âœ“</span>
           <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Personalizada</span>
           <span class="rc-val" id="rateVal-custom">Bs 100,00 <small>/ $</small></span>
-          <span class="rc-src">La que escribas abajo, a mano</span>
+          <span class="rc-src">Manual</span>
         </button>
       </div>
 
       <div class="rate-status">
         <span class="dot" id="rateDot" aria-hidden="true"></span>
-        <span id="rateStatus">Tasas guardadas del 09/11/2026, 2:25 p. m. â€” buscando las de ahoraâ€¦</span>
+        <span id="rateStatus">Tasas del día — actualizando…</span>
         <button type="button" class="rate-refresh" id="btnRefreshRates">â†» Actualizar tasas</button>
       </div>
-
-      <div class="apikey-row" id="apiKeyRow">
-        <label for="apiKey" style="margin-top:0">API key de DolarVzla <span>opcional Â· gratis en dolarvzla.com</span></label>
-        <div class="input-row">
-          <div class="field"><input type="text" id="apiKey" placeholder="Pega aquÃ­ tu x-dolarvzla-key" autocomplete="off" spellcheck="false"></div>
-          <button type="button" class="secondary" id="btnSaveKey" style="white-space:nowrap">Usar key</button>
-        </div>
-        <p class="hint">Con key, un solo llamado trae BCV dÃ³lar, euro BCV y Binance USDT en vivo. La key se queda solo en esta pestaÃ±a: no se guarda en ningÃºn servidor ni en el telÃ©fono.</p>
-      </div>
-      <button type="button" class="chip" id="btnToggleKey" style="margin-top:10px">Â¿Tienes API key? Activa las tasas en vivo</button>
 
       <label for="tasa">Tasa que entra en el cÃ¡lculo <span id="tasaFuenteLabel">Personalizada Â· escrita a mano</span></label>
       <div class="field"><input type="number" id="tasa" value="100" min="0" step="0.01" inputmode="decimal"><span class="suffix">Bs / $</span></div>
       <p class="hint">Usa la tasa real con la que repones: BCV, la de tu proveedor o la que pagas al cambiar. Si repones mÃ¡s caro de lo que cobras, pierdes aunque el margen se vea bien. Si tocas este nÃºmero a mano, la fuente pasa a â€œPersonalizadaâ€.</p>
-      <div class="rate-note"><b>Â¿La quieres como app en el telÃ©fono?</b> Esta misma calculadora es la base: Ã¡brela en Chrome en Android y toca â€œInstalar app / Agregar a pantalla principalâ€ para usarla como APK mientras se prepara la publicaciÃ³n en Play Store. Las tasas automÃ¡ticas funcionan igual, sin instalar nada raro.</div>
 
       <div class="divider"></div>
 
@@ -533,15 +520,15 @@
     <button type="button" class="primary google-btn" id="btnGoogle">Continuar con Google</button>
     <div class="divider"></div>
     <div id="authFormBox">
-      <label for="authNombre" id="lblNombre" hidden>Tu nombre</label>
-      <div class="field" id="wrapNombre" hidden><input type="text" id="authNombre" autocomplete="name" placeholder="Ej. Layan"></div>
+      <label for="authNombre" id="lblNombre" hidden>Nombre o negocio <span>opcional</span></label>
+      <div class="field" id="wrapNombre" hidden><input type="text" id="authNombre" autocomplete="organization" placeholder="Ej. Mi Tienda / Layan"></div>
       <label for="authEmail">Correo</label>
       <div class="field"><input type="email" id="authEmail" autocomplete="email" placeholder="tu@correo.com"></div>
       <label for="authPass">ContraseÃ±a</label>
       <div class="field"><input type="password" id="authPass" autocomplete="current-password" placeholder="MÃ­nimo 6 caracteres"></div>
       <p class="hint" id="authHint"></p>
       <button type="button" class="primary" id="btnAuthSubmit" style="width:100%;margin-top:12px">Entrar</button>
-      <p class="hint" style="text-align:center;margin-top:12px"><a href="#" id="linkReset">OlvidÃ© mi contraseÃ±a</a></p>
+      <p class="hint" id="linkResetWrap" style="text-align:center;margin-top:12px"><a href="#" id="linkReset">Olvidé mi contraseña</a></p>
       <p class="alert" id="authError" style="margin:12px 0 0"></p>
     </div>
     <div id="authResetBox" hidden>
@@ -588,7 +575,6 @@ window.FIREBASE_CONFIG = {
     custom:  { label:'Personalizada',            value:100,      unit:'$',    fecha:'' }
   };
   var rateSource = 'custom';
-  var apiKey = '';
   var fmtBs = new Intl.NumberFormat('es-VE',{minimumFractionDigits:2, maximumFractionDigits:2});
   var fmtBs0 = new Intl.NumberFormat('es-VE',{minimumFractionDigits:0, maximumFractionDigits:0});
   var fmtPct = new Intl.NumberFormat('es-VE',{minimumFractionDigits:1, maximumFractionDigits:1});
@@ -683,41 +669,28 @@ window.FIREBASE_CONFIG = {
       if (rateSource === key) $('tasa').value = RATES[key].value;
     }
 
-    if (apiKey){
-      jobs.push(fetchJSON('https://api.dolarvzla.com/public/exchange-rate', { headers:{ 'x-dolarvzla-key': apiKey } })
-        .then(function(d){
-          var hoy = new Intl.DateTimeFormat('es-VE').format(new Date());
-          applyRate('bcv', findRateIn(d, ['usd','dolar','dollar']), hoy);
-          applyRate('euro', findRateIn(d, ['eur','euro']), hoy);
-          applyRate('binance', findRateIn(d, ['usdt','binance','p2p','cripto']), hoy);
-        }).catch(function(){ /* si la key falla, caen los respaldos sin key */ }));
-    }
-    // Sin key (o como respaldo): DolarAPI, gratis y sin key â€” BCV dÃ³lar y euro.
     jobs.push(fetchJSON('https://ve.dolarapi.com/v1/dolares/oficial')
-      .then(function(d){ if (!got.bcv) applyRate('bcv', d && d.promedio, 'BCV ' + String(d.fechaActualizacion || '').slice(0,10)); })
+      .then(function(d){ if (!got.bcv) applyRate('bcv', d && d.promedio, 'Hoy'); })
       .catch(function(){}));
     jobs.push(fetchJSON('https://ve.dolarapi.com/v1/euros/oficial')
-      .then(function(d){ if (!got.euro) applyRate('euro', d && d.promedio, 'BCV ' + String(d.fechaActualizacion || '').slice(0,10)); })
+      .then(function(d){ if (!got.euro) applyRate('euro', d && d.promedio, 'Hoy'); })
       .catch(function(){}));
-    if (!apiKey){
-      // Binance P2P directo (sin key): mediana de los primeros anuncios USDT/VES.
-      jobs.push(fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
-          method:'POST', headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify({ fiat:'VES', page:1, rows:10, tradeType:'BUY', asset:'USDT', countries:[], proMerchantAds:false, shieldMerchantAds:false, filterType:'all', periods:[], additionalKycVerifyFilter:0, publisherType:null, payTypes:[], classifies:['mass','profession','fiat_trade'] })
-        }).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(function(d){
-          var prices = ((d && d.data) || []).map(function(x){ return parseFloat(x && x.adv && x.adv.price); }).filter(function(p){ return p > 0; });
-          if (prices.length >= 3) applyRate('binance', median(prices), 'P2P en vivo');
-        }).catch(function(){}));
-    }
+    jobs.push(fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
+        method:'POST', headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ fiat:'VES', page:1, rows:10, tradeType:'BUY', asset:'USDT', countries:[], proMerchantAds:false, shieldMerchantAds:false, filterType:'all', periods:[], additionalKycVerifyFilter:0, publisherType:null, payTypes:[], classifies:['mass','profession','fiat_trade'] })
+      }).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(d){
+        var prices = ((d && d.data) || []).map(function(x){ return parseFloat(x && x.adv && x.adv.price); }).filter(function(p){ return p > 0; });
+        if (prices.length >= 3) applyRate('binance', median(prices), 'Hoy');
+      }).catch(function(){}));
 
     Promise.all(jobs).then(function(){
-      btn.disabled = false; btn.textContent = 'â†» Actualizar tasas';
+      btn.disabled = false; btn.textContent = '↻ Actualizar tasas';
       renderRates(); calc();
       var n = (got.bcv?1:0) + (got.euro?1:0) + (got.binance?1:0);
-      if (n === 3) setStatus('ok', 'Tasas en vivo Â· actualizadas hoy a las ' + horaAhora() + (apiKey ? ' Â· vÃ­a DolarVzla (tu API key)' : ' Â· DolarAPI + Binance P2P'));
-      else if (n > 0) setStatus('ok', 'Se actualizaron ' + n + ' de 3 tasas en vivo Â· ' + horaAhora() + '. El resto quedÃ³ con el valor guardado del 09/11/2026.');
-      else setStatus('err', 'Sin conexiÃ³n con las APIs: quedaron las tasas guardadas del 09/11/2026. Revisa internet o pega tu API key de DolarVzla.');
+      if (n === 3) setStatus('ok', 'Tasas en vivo · actualizadas hoy a las ' + horaAhora());
+      else if (n > 0) setStatus('ok', 'Tasas actualizadas · ' + horaAhora());
+      else setStatus('err', 'Sin conexión: se usan las tasas guardadas.');
     });
   }
 
@@ -843,19 +816,6 @@ window.FIREBASE_CONFIG = {
   });
   $('tasa').addEventListener('change', calc);
   $('btnRefreshRates').addEventListener('click', refreshRates);
-  $('btnToggleKey').addEventListener('click', function(){
-    var row = $('apiKeyRow');
-    var show = !row.classList.contains('show');
-    row.classList.toggle('show', show);
-    this.textContent = show ? 'Ocultar API key' : 'Â¿Tienes API key? Activa las tasas en vivo';
-    if (show) $('apiKey').focus();
-  });
-  $('btnSaveKey').addEventListener('click', function(){
-    apiKey = $('apiKey').value.trim();
-    if (!apiKey){ toast('Pega primero tu API key de DolarVzla'); return; }
-    toast('API key cargada en esta sesiÃ³n â€” actualizando tasasâ€¦');
-    refreshRates();
-  });
   $('margenRange').addEventListener('input', function(){ $('margen').value = this.value; calc(); });
   $('margen').addEventListener('input', function(){ $('margenRange').value = this.value; });
   document.querySelectorAll('#marginChips .chip').forEach(function(c){
@@ -1107,25 +1067,44 @@ window.FIREBASE_CONFIG = {
 
   function openAuth() {
     var m = $('authModal');
-    if (m) m.hidden = false;
+    if (m) {
+      m.hidden = false;
+      m.style.display = 'grid';
+    }
   }
   function closeAuth() {
     var m = $('authModal');
-    if (m) m.hidden = true;
+    if (m) {
+      m.hidden = true;
+      m.style.display = 'none';
+    }
     clearAuthError();
   }
   function setAuthMode(mode) {
     authMode = mode;
     var isReg = mode === 'register';
     var t = $('authTitle'); if (t) t.textContent = isReg ? 'Crear cuenta' : 'Entrar';
-    var s = $('btnAuthSubmit'); if (s) s.textContent = isReg ? 'Crear mi cuenta' : 'Entrar';
-    var ln = $('lblNombre'); if (ln) ln.hidden = !isReg;
-    var wn = $('wrapNombre'); if (wn) wn.hidden = !isReg;
+    var s = $('btnAuthSubmit'); if (s) s.textContent = isReg ? 'Registrarme' : 'Entrar';
+    var ln = $('lblNombre');
+    if (ln) {
+      ln.hidden = !isReg;
+      ln.style.display = isReg ? 'flex' : 'none';
+    }
+    var wn = $('wrapNombre');
+    if (wn) {
+      wn.hidden = !isReg;
+      wn.style.display = isReg ? 'flex' : 'none';
+    }
+    var lr = $('linkResetWrap');
+    if (lr) {
+      lr.hidden = isReg;
+      lr.style.display = isReg ? 'none' : 'block';
+    }
     var tl = $('tabLogin'); if (tl) tl.classList.toggle('active', !isReg);
     var tr = $('tabRegister'); if (tr) tr.classList.toggle('active', isReg);
     var pass = $('authPass'); if (pass) pass.setAttribute('autocomplete', isReg ? 'new-password' : 'current-password');
     var hint = $('authHint');
-    if (hint) hint.textContent = isReg ? 'Tu cuenta guarda tu historial de cÃ¡lculos y tus productos en este telÃ©fono y en cualquier otro donde entres.' : '';
+    if (hint) hint.textContent = isReg ? 'Tu cuenta guarda tu historial y tus productos en la nube.' : '';
     clearAuthError();
   }
   function showReset(show) {
@@ -1493,9 +1472,22 @@ window.FIREBASE_CONFIG = {
       catch (e) { toast('No se pudo cerrar la sesiÃ³n'); }
     });
     var btnCerrar = $('btnCerrarModal');
-    if (btnCerrar) btnCerrar.addEventListener('click', closeAuth);
+    if (btnCerrar) {
+      btnCerrar.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeAuth();
+      });
+    }
     var modal = $('authModal');
-    if (modal) modal.addEventListener('click', function (e) { if (e.target === modal) closeAuth(); });
+    if (modal) {
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeAuth();
+      });
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeAuth();
+    });
     var tabLogin = $('tabLogin');
     if (tabLogin) tabLogin.addEventListener('click', function () { setAuthMode('login'); });
     var tabRegister = $('tabRegister');

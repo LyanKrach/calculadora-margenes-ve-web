@@ -214,25 +214,44 @@
 
   function openAuth() {
     var m = $('authModal');
-    if (m) m.hidden = false;
+    if (m) {
+      m.hidden = false;
+      m.style.display = 'grid';
+    }
   }
   function closeAuth() {
     var m = $('authModal');
-    if (m) m.hidden = true;
+    if (m) {
+      m.hidden = true;
+      m.style.display = 'none';
+    }
     clearAuthError();
   }
   function setAuthMode(mode) {
     authMode = mode;
     var isReg = mode === 'register';
     var t = $('authTitle'); if (t) t.textContent = isReg ? 'Crear cuenta' : 'Entrar';
-    var s = $('btnAuthSubmit'); if (s) s.textContent = isReg ? 'Crear mi cuenta' : 'Entrar';
-    var ln = $('lblNombre'); if (ln) ln.hidden = !isReg;
-    var wn = $('wrapNombre'); if (wn) wn.hidden = !isReg;
+    var s = $('btnAuthSubmit'); if (s) s.textContent = isReg ? 'Registrarme' : 'Entrar';
+    var ln = $('lblNombre');
+    if (ln) {
+      ln.hidden = !isReg;
+      ln.style.display = isReg ? 'flex' : 'none';
+    }
+    var wn = $('wrapNombre');
+    if (wn) {
+      wn.hidden = !isReg;
+      wn.style.display = isReg ? 'flex' : 'none';
+    }
+    var lr = $('linkResetWrap');
+    if (lr) {
+      lr.hidden = isReg;
+      lr.style.display = isReg ? 'none' : 'block';
+    }
     var tl = $('tabLogin'); if (tl) tl.classList.toggle('active', !isReg);
     var tr = $('tabRegister'); if (tr) tr.classList.toggle('active', isReg);
     var pass = $('authPass'); if (pass) pass.setAttribute('autocomplete', isReg ? 'new-password' : 'current-password');
     var hint = $('authHint');
-    if (hint) hint.textContent = isReg ? 'Tu cuenta guarda tu historial de cálculos y tus productos en este teléfono y en cualquier otro donde entres.' : '';
+    if (hint) hint.textContent = isReg ? 'Tu cuenta guarda tu historial y tus productos en la nube.' : '';
     clearAuthError();
   }
   function showReset(show) {
@@ -600,9 +619,22 @@
       catch (e) { toast('No se pudo cerrar la sesión'); }
     });
     var btnCerrar = $('btnCerrarModal');
-    if (btnCerrar) btnCerrar.addEventListener('click', closeAuth);
+    if (btnCerrar) {
+      btnCerrar.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeAuth();
+      });
+    }
     var modal = $('authModal');
-    if (modal) modal.addEventListener('click', function (e) { if (e.target === modal) closeAuth(); });
+    if (modal) {
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeAuth();
+      });
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeAuth();
+    });
     var tabLogin = $('tabLogin');
     if (tabLogin) tabLogin.addEventListener('click', function () { setAuthMode('login'); });
     var tabRegister = $('tabRegister');
@@ -657,5 +689,7 @@
   }
 
   wire();
+  setAuthMode('login');
+  closeAuth();
   initFirebase();
 })();

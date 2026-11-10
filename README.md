@@ -51,7 +51,7 @@ Precio en Bs = (Costo en Bs + Gasto fijo) ÷ (1 − comisiones − margen)
 ## Tasas
 
 - **BCV dólar y Euro BCV:** se actualizan solas vía DolarApi (gratis, sin key).
-- **Binance USDT (P2P):** se actualiza sola en la app nativa; en el navegador el fetch directo a Binance P2P está bloqueado por CORS, así que la web usa el valor guardado salvo que pegues una API key gratuita de DolarVzla (se guarda solo en tu navegador, nunca en un servidor).
+- **Binance USDT (P2P):** en la web mantiene su valor de referencia guardado por restricciones de CORS del navegador.
 - Sin conexión quedan las tasas guardadas con su fecha.
 
 ## Archivos
