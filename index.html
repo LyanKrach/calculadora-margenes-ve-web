@@ -67,7 +67,7 @@
         <p class="sub" style="margin-bottom:12px">Toca una tarjeta para usar esa tasa directamente en el cálculo.</p>
 
         <div class="rates" role="group" aria-label="Fuente de la tasa">
-          <button type="button" class="rate-card" data-rate="bcv">
+          <button type="button" class="rate-card active" data-rate="bcv">
             <span class="rc-check" aria-hidden="true">✓</span>
             <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg> BCV · Dólar</span>
             <span class="rc-val" id="rateVal-bcv">Bs 899,27 <small>/ $</small></span>
@@ -76,7 +76,7 @@
           <button type="button" class="rate-card" data-rate="binance">
             <span class="rc-check" aria-hidden="true">✓</span>
             <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6.5 15.2 9.7 12 12.9 8.8 9.7Z M6.5 12 3.3 15.2 6.5 18.4 9.7 15.2Z M17.5 12 20.7 15.2 17.5 18.4 14.3 15.2Z M12 14.3 15.2 17.5 12 20.7 8.8 17.5Z M12 1.8 15.2 5 12 8.2 8.8 5Z"/></svg> Binance · USDT</span>
-            <span class="rc-val" id="rateVal-binance">Bs 1.082,50 <small>/ USDT</small></span>
+            <span class="rc-val" id="rateVal-binance">Bs 1.077,97 <small>/ USDT</small></span>
             <span class="rc-src">Paralelo / USDT</span>
           </button>
           <button type="button" class="rate-card" data-rate="euro">
@@ -85,10 +85,10 @@
             <span class="rc-val" id="rateVal-euro">Bs 1.006,61 <small>/ €</small></span>
             <span class="rc-src">Oficial EUR</span>
           </button>
-          <button type="button" class="rate-card active" data-rate="custom">
+          <button type="button" class="rate-card" data-rate="custom">
             <span class="rc-check" aria-hidden="true">✓</span>
             <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Personalizada</span>
-            <span class="rc-val" id="rateVal-custom">Bs 100,00 <small>/ $</small></span>
+            <span class="rc-val" id="rateVal-custom">Bs 899,27 <small>/ $</small></span>
             <span class="rc-src">Manual</span>
           </button>
         </div>
@@ -99,8 +99,8 @@
           <button type="button" class="rate-refresh" id="btnRefreshRates">↻ Actualizar tasas</button>
         </div>
 
-        <label for="tasa">Tasa que entra en el cálculo <span id="tasaFuenteLabel">Personalizada · escrita a mano</span></label>
-        <div class="field"><input type="number" id="tasa" value="100" min="0" step="0.01" inputmode="decimal"><span class="suffix">Bs / $</span></div>
+        <label for="tasa">Tasa que entra en el cálculo <span id="tasaFuenteLabel">BCV · Dólar oficial · Hoy</span></label>
+        <div class="field"><input type="number" id="tasa" value="899.27" min="0" step="0.01" inputmode="decimal"><span class="suffix">Bs / $</span></div>
         <p class="hint">Usa la tasa real con la que repones: BCV, la de tu proveedor o la que pagas al cambiar. Si repones más caro de lo que cobras, pierdes aunque el margen se vea bien. Si tocas este número a mano, la fuente pasa a “Personalizada”.</p>
 
         <div class="divider"></div>
@@ -124,7 +124,7 @@
 
         <div class="divider"></div>
 
-        <label style="margin-top:0">Comisiones que te cobran</label>
+        <label style="margin-top:0">Comisiones que te cobran <span id="comTotalLabel" style="font-weight:700;color:var(--green2);float:right">7,0%</span></label>
         <div class="form-grid">
           <div><label for="comProveedor" style="font-size:11px">Proveedor</label><div class="field"><input type="number" id="comProveedor" value="2" min="0" max="90" step="0.1" inputmode="decimal"><span class="suffix">%</span></div></div>
           <div><label for="comPasarela" style="font-size:11px">Pago móvil / pasarela</label><div class="field"><input type="number" id="comPasarela" value="5" min="0" max="90" step="0.1" inputmode="decimal"><span class="suffix">%</span></div></div>

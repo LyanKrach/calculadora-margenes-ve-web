@@ -2,26 +2,34 @@
   var $ = function(id){ return document.getElementById(id); };
   var ids = ['producto','costoUsd','margen','margenRange','comProveedor','comPasarela','comOtra','gastoFijo','redondeo','precioActual'];
 
+  function setTxt(id, val){ var el = $(id); if (el) el.textContent = val; }
+  function setHtml(id, val){ var el = $(id); if (el) el.innerHTML = val; }
+  function setVal(id, val){ var el = $(id); if (el) el.value = val; }
+
   /* ===== TASAS AUTOMÁTICAS =====
-     Respaldo guardado: tasas reales consultadas el 09/11/2026, 2:25 p. m. (hora de Caracas).
-     BCV dólar y euro BCV: DolarAPI (fuente oficial BCV). Binance USDT: P2P USDT/VES. */
+     Respaldo guardado: tasas reales consultadas hoy en Caracas.
+     BCV dólar y euro BCV: DolarAPI (fuente oficial BCV). Binance USDT: DolarAPI paralelo. */
   var RATES = {
     bcv:     { label:'BCV · Dólar oficial',      value:899.27,   unit:'$',    fecha:'Hoy' },
-    binance: { label:'Binance · USDT (P2P)',     value:1082.50,  unit:'USDT', fecha:'Hoy' },
+    binance: { label:'Binance · USDT (P2P)',     value:1077.97,  unit:'USDT', fecha:'Hoy' },
     euro:    { label:'BCV · Euro oficial',       value:1006.61,  unit:'€',    fecha:'Hoy' },
-    custom:  { label:'Personalizada',            value:100,      unit:'$',    fecha:'' }
+    custom:  { label:'Personalizada',            value:899.27,   unit:'$',    fecha:'' }
   };
-  var rateSource = 'custom';
+  var rateSource = 'bcv';
   var fmtBs = new Intl.NumberFormat('es-VE',{minimumFractionDigits:2, maximumFractionDigits:2});
   var fmtBs0 = new Intl.NumberFormat('es-VE',{minimumFractionDigits:0, maximumFractionDigits:0});
   var fmtPct = new Intl.NumberFormat('es-VE',{minimumFractionDigits:1, maximumFractionDigits:1});
 
   function num(id, def){
-    var v = parseFloat(String($(id).value).replace(',','.'));
+    var el = $(id);
+    if (!el) return def || 0;
+    var v = parseFloat(String(el.value).replace(',','.'));
     return isNaN(v) || v < 0 ? (def||0) : v;
   }
   function toast(msg){
-    var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    var t = $('toast');
+    if (!t) return;
+    t.textContent = msg; t.classList.add('show');
     setTimeout(function(){ t.classList.remove('show'); }, 2200);
   }
   function copiar(texto, msg){
@@ -68,13 +76,18 @@
   }
   function setStatus(state, msg){
     var d = $('rateDot');
-    d.className = 'dot' + (state === 'ok' ? ' ok' : state === 'err' ? ' err' : '');
-    $('rateStatus').textContent = msg;
+    if (d) d.className = 'dot' + (state === 'ok' ? ' ok' : state === 'err' ? ' err' : '');
+    var s = $('rateStatus');
+    if (s) s.textContent = msg;
   }
   function selectRate(key, fromUser){
     rateSource = key;
-    if (key === 'custom'){ RATES.custom.value = num('tasa') || RATES.custom.value; }
-    else { $('tasa').value = RATES[key].value; }
+    var elTasa = $('tasa');
+    if (key === 'custom'){
+      RATES.custom.value = num('tasa') || RATES.custom.value;
+    } else {
+      if (elTasa) elTasa.value = RATES[key].value;
+    }
     renderRates();
     calc();
     if (fromUser && key !== 'custom') toast('Tasa activa: ' + RATES[key].label + ' — Bs ' + fmtBs.format(RATES[key].value));
@@ -83,30 +96,13 @@
     try { return new Intl.DateTimeFormat('es-VE',{hour:'numeric',minute:'2-digit'}).format(new Date()); }
     catch(e){ return ''; }
   }
-  function findRateIn(obj, patterns, depth){
-    if (!obj || typeof obj !== 'object' || depth > 5) return null;
-    for (var k in obj){
-      if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
-      var v = obj[k], lk = String(k).toLowerCase();
-      if (typeof v === 'number' && v > 10 && v < 1000000){
-        for (var i = 0; i < patterns.length; i++){ if (lk.indexOf(patterns[i]) !== -1) return v; }
-      }
-    }
-    for (var k2 in obj){
-      if (!Object.prototype.hasOwnProperty.call(obj, k2)) continue;
-      var r = findRateIn(obj[k2], patterns, depth + 1);
-      if (r !== null) return r;
-    }
-    return null;
-  }
   function fetchJSON(url, opts){
     return fetch(url, opts || {}).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
   }
-  function median(arr){ var s = arr.slice().sort(function(a,b){ return a-b; }); return s[Math.floor(s.length/2)]; }
 
   function refreshRates(){
     var btn = $('btnRefreshRates');
-    btn.disabled = true; btn.textContent = 'Actualizando…';
+    if (btn) { btn.disabled = true; btn.textContent = 'Actualizando…'; }
     setStatus('', 'Buscando tasas en vivo…');
     var got = { bcv:false, euro:false, binance:false };
     var jobs = [];
@@ -116,71 +112,71 @@
       RATES[key].value = Math.round(value * 100) / 100;
       if (fechaTxt) RATES[key].fecha = fechaTxt;
       got[key] = true;
-      if (rateSource === key) $('tasa').value = RATES[key].value;
+      if (rateSource === key) {
+        var elTasa = $('tasa');
+        if (elTasa) elTasa.value = RATES[key].value;
+      }
     }
 
     jobs.push(fetchJSON('https://ve.dolarapi.com/v1/dolares/oficial')
-      .then(function(d){ if (!got.bcv) applyRate('bcv', d && d.promedio, 'Hoy'); })
+      .then(function(d){ if (!got.bcv && d && d.promedio) applyRate('bcv', d.promedio, 'Hoy'); })
       .catch(function(){}));
+
     jobs.push(fetchJSON('https://ve.dolarapi.com/v1/euros/oficial')
-      .then(function(d){ if (!got.euro) applyRate('euro', d && d.promedio, 'Hoy'); })
+      .then(function(d){ if (!got.euro) applyRate('euro', d.promedio, 'Hoy'); })
       .catch(function(){}));
-    jobs.push(
-      fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
-        method:'POST', headers:{ 'Content-Type':'application/json' },
-        body: JSON.stringify({ fiat:'VES', page:1, rows:10, tradeType:'BUY', asset:'USDT', countries:[], proMerchantAds:false, shieldMerchantAds:false, filterType:'all', periods:[], additionalKycVerifyFilter:0, publisherType:null, payTypes:[], classifies:['mass','profession','fiat_trade'] })
-      }).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function(d){
-        var prices = ((d && d.data) || []).map(function(x){ return parseFloat(x && x.adv && x.adv.price); }).filter(function(p){ return p > 0; });
-        if (prices.length >= 3) applyRate('binance', median(prices), 'Hoy');
-      }).catch(function(){
-        // Respaldo sin bloqueo de CORS en navegador: DolarAPI paralelo
-        return fetchJSON('https://ve.dolarapi.com/v1/dolares/paralelo').then(function(d){
-          if (!got.binance && d && d.promedio) applyRate('binance', d.promedio, 'Hoy');
-        }).catch(function(){});
-      })
-    );
+
+    jobs.push(fetchJSON('https://ve.dolarapi.com/v1/dolares/paralelo')
+      .then(function(d){ if (!got.binance && d && d.promedio) applyRate('binance', d.promedio, 'Hoy'); })
+      .catch(function(){}));
 
     Promise.all(jobs).then(function(){
-      btn.disabled = false; btn.textContent = '↻ Actualizar tasas';
-      renderRates(); calc();
+      if (btn) { btn.disabled = false; btn.textContent = '↻ Actualizar tasas'; }
+      renderRates();
+      try { calc(); } catch(e){ console.error('calc error:', e); }
       var n = (got.bcv?1:0) + (got.euro?1:0) + (got.binance?1:0);
       if (n === 3) setStatus('ok', 'Tasas en vivo · actualizadas hoy a las ' + horaAhora());
       else if (n > 0) setStatus('ok', 'Tasas actualizadas · ' + horaAhora());
       else setStatus('err', 'Sin conexión: se usan las tasas guardadas.');
+    }).catch(function(err){
+      if (btn) { btn.disabled = false; btn.textContent = '↻ Actualizar tasas'; }
+      setStatus('err', 'Sin conexión: se usan las tasas guardadas.');
     });
   }
 
   function calc(){
-    var producto = $('producto').value.trim() || 'Producto';
+    var elProducto = $('producto');
+    var producto = (elProducto && elProducto.value.trim()) || 'Producto';
     var costoUsd = num('costoUsd');
     var tasa = num('tasa');
     var margen = num('margen');
     var comP = num('comProveedor'), comPa = num('comPasarela'), comO = num('comOtra');
     var comTotal = comP + comPa + comO;
     var gasto = num('gastoFijo');
-    var step = parseFloat($('redondeo').value) || 1;
+    var elRedondeo = $('redondeo');
+    var step = elRedondeo ? (parseFloat(elRedondeo.value) || 1) : 1;
 
     // Sync slider + chips
-    $('margenRange').value = Math.min(60, Math.max(0, margen));
-    $('margenBig').textContent = fmtPct.format(margen).replace(',0','');
+    var elMargenRange = $('margenRange');
+    if (elMargenRange) elMargenRange.value = Math.min(60, Math.max(0, margen));
+    setTxt('margenBig', fmtPct.format(margen).replace(',0',''));
     document.querySelectorAll('#marginChips .chip').forEach(function(c){
       c.classList.toggle('active', parseFloat(c.getAttribute('data-margen')) === margen);
     });
-    $('comTotalLabel').textContent = fmtPct.format(comTotal) + '%';
-    $('resProducto').textContent = producto;
+    setTxt('comTotalLabel', fmtPct.format(comTotal) + '%');
+    setTxt('resProducto', producto);
 
     var costoBs = costoUsd * tasa;
     var denom = 1 - comTotal/100 - margen/100;
     var alertBox = $('alertBox');
 
     if (denom <= 0 || tasa <= 0){
-      alertBox.classList.add('show');
+      if (alertBox) alertBox.classList.add('show');
       last = null;
       window.__margenesLast = null; // gancho para auth.js (historial)
       return;
     }
-    alertBox.classList.remove('show');
+    if (alertBox) alertBox.classList.remove('show');
 
     var precioExacto = (costoBs + gasto) / denom;
     var precioFinal = roundUp(precioExacto, step);
@@ -190,106 +186,138 @@
     var gananciaUsd = tasa > 0 ? gananciaBs / tasa : 0;
     var margenReal = precioFinal > 0 ? (gananciaBs / precioFinal) * 100 : 0;
 
-    $('precioFinal').textContent = fmtBs0.format(precioFinal);
-    $('precioExacto').textContent = 'Bs ' + fmtBs.format(precioExacto);
-    $('precioUsd').textContent = '$' + fmtBs.format(precioUsd);
-    $('roundedNote').textContent = step <= 1 ? 'Precio exacto, sin redondeo aplicado' : '↑ Precio exacto Bs ' + fmtBs.format(precioExacto) + ' → redondeado hacia arriba a Bs ' + fmtBs0.format(precioFinal);
-    $('gananciaBs').textContent = 'Bs ' + fmtBs.format(gananciaBs);
-    $('gananciaUsd').textContent = '$' + fmtBs.format(gananciaUsd) + ' por venta · margen real ' + fmtPct.format(margenReal) + '%';
-    $('comisionesBs').textContent = 'Bs ' + fmtBs.format(comisionesBs);
-    $('comisionesPct').textContent = fmtPct.format(comTotal) + '% del precio';
-    $('costoBsLabel').textContent = 'Bs ' + fmtBs.format(costoBs + gasto);
-    $('costoUsdLabel').textContent = '$' + fmtBs.format(costoUsd) + ' al proveedor' + (gasto>0 ? ' + gasto fijo' : '');
+    setTxt('precioFinal', fmtBs0.format(precioFinal));
+    setTxt('precioExacto', 'Bs ' + fmtBs.format(precioExacto));
+    setTxt('precioUsd', '$' + fmtBs.format(precioUsd));
+    setTxt('roundedNote', step <= 1 ? 'Precio exacto, sin redondeo aplicado' : '↑ Precio exacto Bs ' + fmtBs.format(precioExacto) + ' → redondeado hacia arriba a Bs ' + fmtBs0.format(precioFinal));
+    setTxt('gananciaBs', 'Bs ' + fmtBs.format(gananciaBs));
+    setTxt('gananciaUsd', '$' + fmtBs.format(gananciaUsd) + ' por venta · margen real ' + fmtPct.format(margenReal) + '%');
+    setTxt('comisionesBs', 'Bs ' + fmtBs.format(comisionesBs));
+    setTxt('comisionesPct', fmtPct.format(comTotal) + '% del precio');
+    setTxt('costoBsLabel', 'Bs ' + fmtBs.format(costoBs + gasto));
+    setTxt('costoUsdLabel', '$' + fmtBs.format(costoUsd) + ' al proveedor' + (gasto>0 ? ' + gasto fijo' : ''));
 
     var pCosto = precioFinal>0 ? ((costoBs+gasto)/precioFinal)*100 : 0;
     var pCom = comTotal;
     var pGan = precioFinal>0 ? (gananciaBs/precioFinal)*100 : 0;
-    $('barCosto').style.width = Math.max(0,pCosto) + '%';
-    $('barCom').style.width = Math.max(0,pCom) + '%';
-    $('barGan').style.width = Math.max(0,pGan) + '%';
-    $('legCosto').textContent = fmtPct.format(pCosto) + '%';
-    $('legCom').textContent = fmtPct.format(pCom) + '%';
-    $('legGan').textContent = fmtPct.format(pGan) + '%';
+
+    var barC = $('barCosto'), barCm = $('barCom'), barG = $('barGan');
+    if (barC) barC.style.width = Math.max(0,pCosto) + '%';
+    if (barCm) barCm.style.width = Math.max(0,pCom) + '%';
+    if (barG) barG.style.width = Math.max(0,pGan) + '%';
+
+    setTxt('legCosto', fmtPct.format(pCosto) + '%');
+    setTxt('legCom', fmtPct.format(pCom) + '%');
+    setTxt('legGan', fmtPct.format(pGan) + '%');
 
     // Steps
-    $('step1f').textContent = '$' + fmtBs.format(costoUsd) + ' × ' + fmtBs.format(tasa) + ' Bs/$';
-    $('step1r').textContent = 'Bs ' + fmtBs.format(costoBs);
-    $('step2f').textContent = fmtPct.format(comP) + '% + ' + fmtPct.format(comPa) + '% + ' + fmtPct.format(comO) + '%';
-    $('step2r').textContent = fmtPct.format(comTotal) + '% en comisiones';
-    $('step3r').textContent = '1 − ' + (comTotal/100).toFixed(2).replace('.',',') + ' − ' + (margen/100).toFixed(2).replace('.',',') + ' = ' + denom.toFixed(2).replace('.',',');
-    $('step4f').textContent = '(Bs ' + fmtBs.format(costoBs + gasto) + ') ÷ ' + denom.toFixed(2).replace('.',',');
-    $('step4r').textContent = 'Bs ' + fmtBs.format(precioExacto);
-    $('step5r').textContent = 'Ganancia: Bs ' + fmtBs.format(gananciaBs) + ' (' + fmtPct.format(margenReal) + '%)';
+    setTxt('step1f', '$' + fmtBs.format(costoUsd) + ' × ' + fmtBs.format(tasa) + ' Bs/$');
+    setTxt('step1r', 'Bs ' + fmtBs.format(costoBs));
+    setTxt('step2f', fmtPct.format(comP) + '% + ' + fmtPct.format(comPa) + '% + ' + fmtPct.format(comO) + '%');
+    setTxt('step2r', fmtPct.format(comTotal) + '% en comisiones');
+    setTxt('step3r', '1 − ' + (comTotal/100).toFixed(2).replace('.',',') + ' − ' + (margen/100).toFixed(2).replace('.',',') + ' = ' + denom.toFixed(2).replace('.',','));
+    setTxt('step4f', '(Bs ' + fmtBs.format(costoBs + gasto) + ') ÷ ' + denom.toFixed(2).replace('.',','));
+    setTxt('step4r', 'Bs ' + fmtBs.format(precioExacto));
+    setTxt('step5r', 'Ganancia: Bs ' + fmtBs.format(gananciaBs) + ' (' + fmtPct.format(margenReal) + '%)');
 
     // Table
-    var margins = [10,15,20,25,30,35,40];
-    var html = '';
-    margins.forEach(function(m){
-      var d = 1 - comTotal/100 - m/100;
-      if (d <= 0){ return; }
-      var p = roundUp((costoBs + gasto) / d, step);
-      var g = p - costoBs - gasto - p*(comTotal/100);
-      var cls = (m === margen) ? ' class="current"' : '';
-      html += '<tr'+cls+'><td>' + m + '%</td><td>Bs ' + fmtBs0.format(p) + '</td><td>$' + fmtBs.format(tasa>0 ? p/tasa : 0) + '</td><td>Bs ' + fmtBs.format(g) + '</td></tr>';
-    });
-    $('tablaBody').innerHTML = html;
+    var elTabla = $('tablaBody');
+    if (elTabla){
+      var margins = [10,15,20,25,30,35,40];
+      var html = '';
+      margins.forEach(function(m){
+        var d = 1 - comTotal/100 - m/100;
+        if (d <= 0){ return; }
+        var p = roundUp((costoBs + gasto) / d, step);
+        var g = p - costoBs - gasto - p*(comTotal/100);
+        var cls = (m === margen) ? ' class="current"' : '';
+        html += '<tr'+cls+'><td>' + m + '%</td><td>Bs ' + fmtBs0.format(p) + '</td><td>$' + fmtBs.format(tasa>0 ? p/tasa : 0) + '</td><td>Bs ' + fmtBs.format(g) + '</td></tr>';
+      });
+      elTabla.innerHTML = html;
+    }
 
     // Reverse
     var precioActual = num('precioActual');
     var vBox = $('verdictBox');
-    if (precioActual > 0){
-      var comBsA = precioActual * (comTotal/100);
-      var ganA = precioActual - costoBs - gasto - comBsA;
-      var margenA = (ganA / precioActual) * 100;
-      $('verdictBig').textContent = 'Margen real: ' + fmtPct.format(margenA) + '%';
-      vBox.className = 'verdict ' + (ganA < 0 ? 'bad' : (margenA < 10 ? 'warn' : 'good'));
-      if (ganA < 0){
-        $('verdictText').textContent = 'Estás PERDIENDO Bs ' + fmtBs.format(Math.abs(ganA)) + ' en cada venta ( $' + fmtBs.format(tasa>0 ? Math.abs(ganA)/tasa : 0) + ' ). Sube el precio al menos a Bs ' + fmtBs0.format(precioFinal) + ' para ganar el ' + fmtPct.format(margen) + '% que quieres.';
-      } else if (margenA < 10){
-        $('verdictText').textContent = 'Ganas Bs ' + fmtBs.format(ganA) + ' por venta, pero el margen es muy bajo: cualquier subida de tasa o comisión te pone en pérdida. El precio sano para ti es Bs ' + fmtBs0.format(precioFinal) + '.';
+    if (vBox){
+      if (precioActual > 0){
+        var comBsA = precioActual * (comTotal/100);
+        var ganA = precioActual - costoBs - gasto - comBsA;
+        var margenA = (ganA / precioActual) * 100;
+        setTxt('verdictBig', 'Margen real: ' + fmtPct.format(margenA) + '%');
+        vBox.className = 'verdict ' + (ganA < 0 ? 'bad' : (margenA < 10 ? 'warn' : 'good'));
+        if (ganA < 0){
+          setTxt('verdictText', 'Estás PERDIENDO Bs ' + fmtBs.format(Math.abs(ganA)) + ' en cada venta ( $' + fmtBs.format(tasa>0 ? Math.abs(ganA)/tasa : 0) + ' ). Sube el precio al menos a Bs ' + fmtBs0.format(precioFinal) + ' para ganar el ' + fmtPct.format(margen) + '% que quieres.');
+        } else if (margenA < 10){
+          setTxt('verdictText', 'Ganas Bs ' + fmtBs.format(ganA) + ' por venta, pero el margen es muy bajo: cualquier subida de tasa o comisión te pone en pérdida. El precio sano para ti es Bs ' + fmtBs0.format(precioFinal) + '.');
+        } else {
+          setTxt('verdictText', 'Ganas Bs ' + fmtBs.format(ganA) + ' por venta ( $' + fmtBs.format(tasa>0 ? ganA/tasa : 0) + ' ). Margen sano. Compáralo con tu meta del ' + fmtPct.format(margen) + '%: el precio para esa meta es Bs ' + fmtBs0.format(precioFinal) + '.');
+        }
       } else {
-        $('verdictText').textContent = 'Ganas Bs ' + fmtBs.format(ganA) + ' por venta ( $' + fmtBs.format(tasa>0 ? ganA/tasa : 0) + ' ). Margen sano. Compáralo con tu meta del ' + fmtPct.format(margen) + '%: el precio para esa meta es Bs ' + fmtBs0.format(precioFinal) + '.';
+        vBox.className = 'verdict warn';
+        setTxt('verdictBig', 'Margen real: —');
+        setTxt('verdictText', 'Escribe un precio para ver tu margen real.');
       }
-    } else {
-      vBox.className = 'verdict warn';
-      $('verdictBig').textContent = 'Margen real: —';
-      $('verdictText').textContent = 'Escribe un precio para ver tu margen real.';
     }
 
     last = { producto:producto, costoUsd:costoUsd, tasa:tasa, margen:margen, comTotal:comTotal, comP:comP, comPa:comPa, comO:comO, gasto:gasto, costoBs:costoBs, precioExacto:precioExacto, precioFinal:precioFinal, precioUsd:precioUsd, comisionesBs:comisionesBs, gananciaBs:gananciaBs, gananciaUsd:gananciaUsd, margenReal:margenReal, denom:denom };
     window.__margenesLast = last; // gancho para auth.js (historial)
   }
 
-  ids.forEach(function(id){ $(id).addEventListener('input', calc); $(id).addEventListener('change', calc); });
+  ids.forEach(function(id){
+    var el = $(id);
+    if (el) {
+      el.addEventListener('input', calc);
+      el.addEventListener('change', calc);
+    }
+  });
 
   // Tasa: tarjetas de fuente + edición manual
   document.querySelectorAll('.rate-card').forEach(function(c){
     c.addEventListener('click', function(){ selectRate(c.getAttribute('data-rate'), true); });
   });
-  $('tasa').addEventListener('input', function(){
-    RATES.custom.value = num('tasa');
-    if (rateSource !== 'custom'){ rateSource = 'custom'; }
-    renderRates(); calc();
-  });
-  $('tasa').addEventListener('change', calc);
-  $('btnRefreshRates').addEventListener('click', refreshRates);
-  $('margenRange').addEventListener('input', function(){ $('margen').value = this.value; calc(); });
-  $('margen').addEventListener('input', function(){ $('margenRange').value = this.value; });
+
+  var elTasa = $('tasa');
+  if (elTasa) {
+    elTasa.addEventListener('input', function(){
+      RATES.custom.value = num('tasa');
+      if (rateSource !== 'custom'){ rateSource = 'custom'; }
+      renderRates(); calc();
+    });
+    elTasa.addEventListener('change', calc);
+  }
+
+  var btnRef = $('btnRefreshRates');
+  if (btnRef) btnRef.addEventListener('click', refreshRates);
+
+  var elRange = $('margenRange');
+  var elMargen = $('margen');
+  if (elRange) elRange.addEventListener('input', function(){ if (elMargen) elMargen.value = this.value; calc(); });
+  if (elMargen) elMargen.addEventListener('input', function(){ if (elRange) elRange.value = this.value; });
+
   document.querySelectorAll('#marginChips .chip').forEach(function(c){
-    c.addEventListener('click', function(){ $('margen').value = c.getAttribute('data-margen'); calc(); });
+    c.addEventListener('click', function(){
+      if (elMargen) elMargen.value = c.getAttribute('data-margen');
+      calc();
+    });
   });
 
-  $('btnCopiarPrecio').addEventListener('click', function(){
+  var bcp = $('btnCopiarPrecio');
+  if (bcp) bcp.addEventListener('click', function(){
     if(!last) return;
     copiar('Bs ' + fmtBs0.format(last.precioFinal) + ' ($' + fmtBs.format(last.precioUsd) + ')', 'Precio copiado: Bs ' + fmtBs0.format(last.precioFinal));
     if (window.__margenesOnCopyPrice) window.__margenesOnCopyPrice(); // guardado automático en el historial
   });
-  $('btnCopiarMensaje').addEventListener('click', function(){
+
+  var bcm = $('btnCopiarMensaje');
+  if (bcm) bcm.addEventListener('click', function(){
     if(!last) return;
     var txt = last.producto + '\nPrecio: Bs ' + fmtBs0.format(last.precioFinal) + ' ($' + fmtBs.format(last.precioUsd) + ')\nTasa: Bs ' + fmtBs.format(last.tasa) + ' por $1\nPago Móvil disponible. Entrega inmediata.';
     copiar(txt, 'Mensaje para el cliente copiado');
   });
-  $('btnCopiarDesglose').addEventListener('click', function(){
+
+  var bcd = $('btnCopiarDesglose');
+  if (bcd) bcd.addEventListener('click', function(){
     if(!last) return;
     var txt = 'DESGLOSE — ' + last.producto + '\n'
       + '1) Costo en Bs: $' + fmtBs.format(last.costoUsd) + ' × ' + fmtBs.format(last.tasa) + ' = Bs ' + fmtBs.format(last.costoBs) + '\n'
