@@ -28,14 +28,14 @@
   }
 
   /* ===== TASAS AUTOMÁTICAS =====
-     Fuente principal BCV: BCV Today (bcv.today) - JSON público en vivo con vigencia oficial del BCV.
-     Respaldo BCV: DolarAPI oficial (USD y EUR).
+     Fuente principal BCV: DolarVZLA CDN (rates.dolarvzla.com/bcv/current.json) - JSON público sin clave con CORS *, actualiza apenas publica el BCV.
+     Respaldos BCV: BCV Today (bcv.today) -> DolarAPI oficial (USD y EUR).
      Paralelo / USDT: DolarAPI paralelo. */
   var RATES = {
-    bcv:     { label:'BCV · Dólar oficial',      value:899.27,   unit:'$',    fecha:'Vigente: Hoy (10 nov)' },
+    bcv:     { label:'BCV · Dólar oficial',      value:901.62,   unit:'$',    fecha:'Vigente: Mañana (11 nov)' },
     binance: { label:'Binance · USDT (P2P)',     value:1077.97,  unit:'USDT', fecha:'Hoy' },
-    euro:    { label:'BCV · Euro oficial',       value:1006.61,  unit:'€',    fecha:'Vigente: Hoy (10 nov)' },
-    custom:  { label:'Personalizada',            value:899.27,   unit:'$',    fecha:'' }
+    euro:    { label:'BCV · Euro oficial',       value:1007.96,  unit:'€',    fecha:'Vigente: Mañana (11 nov)' },
+    custom:  { label:'Personalizada',            value:901.62,   unit:'$',    fecha:'' }
   };
   var rateSource = 'bcv';
   var fmtBs = new Intl.NumberFormat('es-VE',{minimumFractionDigits:2, maximumFractionDigits:2});
@@ -152,27 +152,23 @@
       }
     }
 
-    // 1) BCV (Dólar y Euro) — Principal: BCV Today (rápido, vigencia oficial, sin clave)
-    //    Respaldo: DolarAPI oficial (USD y EUR)
-    var bcvJob = fetchJSON('https://bcv.today/api/v1/rate.json')
-      .then(function(d){
-        if (d){
-          var effDate = d.effective_date || d.date;
-          var vigTxt = formatEffDate(effDate);
-          if (d.USD) applyRate('bcv', d.USD, vigTxt);
-          if (d.EUR) applyRate('euro', d.EUR, vigTxt);
-        }
-      })
-      .catch(function(){
-        // Respaldo DolarAPI
-        return Promise.all([
+    // 1) BCV (Dólar y Euro) — Principal: DolarVZLA CDN JSON (rápido, sin clave, CORS *, vigencia oficial apenas publica BCV)
+    //    Respaldo 1: BCV Today · Respaldo 2: DolarAPI oficial (USD y EUR)
+    function fetchDolarApiFallback() {
+      var tasks = [];
+      if (!got.bcv) {
+        tasks.push(
           fetchJSON('https://ve.dolarapi.com/v1/dolares/oficial')
             .then(function(d){
               if (!got.bcv && d && d.promedio){
                 var eff = (d.fechaActualizacion || '').split('T')[0];
                 applyRate('bcv', d.promedio, formatEffDate(eff));
               }
-            }).catch(function(){}),
+            }).catch(function(){})
+        );
+      }
+      if (!got.euro) {
+        tasks.push(
           fetchJSON('https://ve.dolarapi.com/v1/euros/oficial')
             .then(function(d){
               if (!got.euro && d && d.promedio){
@@ -180,8 +176,36 @@
                 applyRate('euro', d.promedio, formatEffDate(eff));
               }
             }).catch(function(){})
-        ]);
-      });
+        );
+      }
+      return tasks.length ? Promise.all(tasks) : Promise.resolve();
+    }
+
+    function fetchBcvTodayFallback() {
+      return fetchJSON('https://bcv.today/api/v1/rate.json')
+        .then(function(d){
+          if (d){
+            var effDate = d.effective_date || d.date;
+            var vigTxt = formatEffDate(effDate);
+            if (!got.bcv && d.USD) applyRate('bcv', d.USD, vigTxt);
+            if (!got.euro && d.EUR) applyRate('euro', d.EUR, vigTxt);
+          }
+          if (!got.bcv || !got.euro) return fetchDolarApiFallback();
+        })
+        .catch(fetchDolarApiFallback);
+    }
+
+    var bcvJob = fetchJSON('https://rates.dolarvzla.com/bcv/current.json')
+      .then(function(d){
+        var cur = d && d.current;
+        if (cur){
+          var vigTxt = formatEffDate(cur.date);
+          if (cur.usd) applyRate('bcv', cur.usd, vigTxt);
+          if (cur.eur) applyRate('euro', cur.eur, vigTxt);
+        }
+        if (!got.bcv || !got.euro) return fetchBcvTodayFallback();
+      })
+      .catch(fetchBcvTodayFallback);
     jobs.push(bcvJob);
 
     // 2) Binance USDT — Paralelo vía DolarAPI
