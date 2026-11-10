@@ -6,13 +6,35 @@
   function setHtml(id, val){ var el = $(id); if (el) el.innerHTML = val; }
   function setVal(id, val){ var el = $(id); if (el) el.value = val; }
 
+  function formatEffDate(isoDate){
+    if (!isoDate) return '';
+    try {
+      var clean = String(isoDate).split('T')[0];
+      var parts = clean.split('-');
+      if (parts.length !== 3) return 'Vigente: ' + isoDate;
+      var y = parseInt(parts[0], 10), m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+      var target = new Date(y, m - 1, d);
+      var now = new Date();
+      var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      var diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
+      var meses = ['','ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      var mesTxt = meses[m] || m;
+      if (diffDays === 0) return 'Vigente: Hoy (' + d + ' ' + mesTxt + ')';
+      if (diffDays === 1) return 'Vigente: Mañana (' + d + ' ' + mesTxt + ')';
+      return 'Vigente: ' + d + ' ' + mesTxt;
+    } catch(e){
+      return 'Vigente: ' + isoDate;
+    }
+  }
+
   /* ===== TASAS AUTOMÁTICAS =====
-     Respaldo guardado: tasas reales consultadas hoy en Caracas.
-     BCV dólar y euro BCV: DolarAPI (fuente oficial BCV). Binance USDT: DolarAPI paralelo. */
+     Fuente principal BCV: BCV Today (bcv.today) - JSON público en vivo con vigencia oficial del BCV.
+     Respaldo BCV: DolarAPI oficial (USD y EUR).
+     Paralelo / USDT: DolarAPI paralelo. */
   var RATES = {
-    bcv:     { label:'BCV · Dólar oficial',      value:899.27,   unit:'$',    fecha:'Hoy' },
+    bcv:     { label:'BCV · Dólar oficial',      value:899.27,   unit:'$',    fecha:'Vigente: Hoy (10 nov)' },
     binance: { label:'Binance · USDT (P2P)',     value:1077.97,  unit:'USDT', fecha:'Hoy' },
-    euro:    { label:'BCV · Euro oficial',       value:1006.61,  unit:'€',    fecha:'Hoy' },
+    euro:    { label:'BCV · Euro oficial',       value:1006.61,  unit:'€',    fecha:'Vigente: Hoy (10 nov)' },
     custom:  { label:'Personalizada',            value:899.27,   unit:'$',    fecha:'' }
   };
   var rateSource = 'bcv';
@@ -54,6 +76,11 @@
     ['bcv','binance','euro','custom'].forEach(function(k){
       var el = $('rateVal-' + k);
       if (el) el.innerHTML = fmtRate(RATES[k].value) + ' <small>/ ' + RATES[k].unit + '</small>';
+      var elSrc = $('rateSrc-' + k);
+      if (elSrc) {
+        if (k === 'bcv') elSrc.textContent = RATES.bcv.fecha || 'Oficial';
+        else if (k === 'euro') elSrc.textContent = RATES.euro.fecha || 'Oficial EUR';
+      }
     });
     document.querySelectorAll('.rate-card').forEach(function(c){
       c.classList.toggle('active', c.getAttribute('data-rate') === rateSource);
@@ -118,17 +145,46 @@
       }
     }
 
-    jobs.push(fetchJSON('https://ve.dolarapi.com/v1/dolares/oficial')
-      .then(function(d){ if (!got.bcv && d && d.promedio) applyRate('bcv', d.promedio, 'Hoy'); })
-      .catch(function(){}));
+    // 1) BCV (Dólar y Euro) — Principal: BCV Today (rápido, vigencia oficial, sin clave)
+    //    Respaldo: DolarAPI oficial (USD y EUR)
+    var bcvJob = fetchJSON('https://bcv.today/api/v1/rate.json')
+      .then(function(d){
+        if (d){
+          var effDate = d.effective_date || d.date;
+          var vigTxt = formatEffDate(effDate);
+          if (d.USD) applyRate('bcv', d.USD, vigTxt);
+          if (d.EUR) applyRate('euro', d.EUR, vigTxt);
+        }
+      })
+      .catch(function(){
+        // Respaldo DolarAPI
+        return Promise.all([
+          fetchJSON('https://ve.dolarapi.com/v1/dolares/oficial')
+            .then(function(d){
+              if (!got.bcv && d && d.promedio){
+                var eff = (d.fechaActualizacion || '').split('T')[0];
+                applyRate('bcv', d.promedio, formatEffDate(eff));
+              }
+            }).catch(function(){}),
+          fetchJSON('https://ve.dolarapi.com/v1/euros/oficial')
+            .then(function(d){
+              if (!got.euro && d && d.promedio){
+                var eff = (d.fechaActualizacion || '').split('T')[0];
+                applyRate('euro', d.promedio, formatEffDate(eff));
+              }
+            }).catch(function(){})
+        ]);
+      });
+    jobs.push(bcvJob);
 
-    jobs.push(fetchJSON('https://ve.dolarapi.com/v1/euros/oficial')
-      .then(function(d){ if (!got.euro) applyRate('euro', d.promedio, 'Hoy'); })
-      .catch(function(){}));
-
-    jobs.push(fetchJSON('https://ve.dolarapi.com/v1/dolares/paralelo')
-      .then(function(d){ if (!got.binance && d && d.promedio) applyRate('binance', d.promedio, 'Hoy'); })
-      .catch(function(){}));
+    // 2) Binance USDT — Paralelo vía DolarAPI
+    jobs.push(
+      fetchJSON('https://ve.dolarapi.com/v1/dolares/paralelo')
+        .then(function(d){
+          if (d && d.promedio) applyRate('binance', d.promedio, 'Hoy');
+        })
+        .catch(function(){})
+    );
 
     Promise.all(jobs).then(function(){
       if (btn) { btn.disabled = false; btn.textContent = '↻ Actualizar tasas'; }
