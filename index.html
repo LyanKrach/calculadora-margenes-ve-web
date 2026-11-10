@@ -34,8 +34,8 @@
     </div>
     <aside class="hero-card" aria-label="Fórmula principal">
       <b>La fórmula que te protege</b>
-      <div class="formula">Precio = (Costo Bs + Gasto fijo) ÷ (1 − Comisiones − Margen)</div>
-      <p>El margen se calcula <strong>sobre el precio de venta</strong> para no perder capital al reponer.</p>
+      <div class="formula" id="heroFormula">Precio = (Costo Bs × (1 + Margen) + Gasto fijo) ÷ (1 − Comisiones)</div>
+      <p id="heroFormulaSub">El margen se calcula como <strong>porcentaje directo del costo</strong> (Markup).</p>
     </aside>
   </header>
 
@@ -55,6 +55,22 @@
       <section class="card panel" aria-label="Datos de la venta">
         <h2>1 · Tus números</h2>
         <p class="sub">Todo se recalcula al instante. Ajusta la tasa cada vez que cambie.</p>
+
+        <!-- MODO DE MARGEN -->
+        <div class="margin-mode-wrap">
+          <label style="margin:0 0 8px">Modo de margen</label>
+          <div class="mode-toggle" role="group" aria-label="Modo de cálculo de margen">
+            <button type="button" class="mode-btn active" id="btnModeCost" data-mode="onCost">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+              <span>Sobre costo (Markup)</span>
+            </button>
+            <button type="button" class="mode-btn" id="btnModeSale" data-mode="onSale">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10H12V2z"/></svg>
+              <span>Sobre venta (Margen)</span>
+            </button>
+          </div>
+          <p class="mode-formula-hint" id="modeFormulaHint">Markup directo: Precio = Costo × (1 + Margen) ÷ (1 − Comisiones)</p>
+        </div>
 
         <label for="producto">Producto <span>opcional, para copiar el mensaje</span></label>
         <div class="field"><input type="text" id="producto" value="Recarga / producto digital" autocomplete="off"></div>
@@ -112,7 +128,7 @@
         <input type="range" id="margenRange" min="0" max="60" step="1" value="20" aria-label="Margen deseado">
         <div class="ticks"><span>0%</span><span>15%</span><span>30%</span><span>45%</span><span>60%</span></div>
         <div class="input-row" style="margin-top:8px">
-          <div class="field"><input type="number" id="margen" value="20" min="0" max="95" step="0.5" inputmode="decimal"><span class="suffix">% sobre la venta</span></div>
+          <div class="field"><input type="number" id="margen" value="20" min="0" max="95" step="0.5" inputmode="decimal"><span class="suffix" id="margenSuffix">% sobre el costo</span></div>
         </div>
         <div class="chips" id="marginChips">
           <button class="chip" data-margen="10" type="button">10% · rotación</button>
@@ -146,43 +162,49 @@
         <p class="hint">Redondear <strong>hacia arriba</strong> protege tu margen. Nunca redondees hacia abajo para “quedar bonito”.</p>
       </section>
 
-      <!-- RESULT -->
-      <section class="card result" aria-label="Resultado">
-        <div class="result-top">
-          <div class="label">Precio de venta a cobrar — <span id="resProducto">Recarga / producto digital</span></div>
-          <div class="price"><small>Bs</small> <span id="precioFinal">1.370</span></div>
-          <div class="price-usd">Equivale a <strong id="precioUsd">$13,70</strong> a la tasa que pusiste · Precio exacto sin redondear: <span id="precioExacto">Bs 1.369,86</span></div>
-          <div><span class="rounded-note" id="roundedNote">↑ Redondeado hacia arriba para no perder por el redondeo</span></div>
-        </div>
-
-        <div class="stats">
-          <div class="stat"><span>Tu ganancia neta</span><strong class="green" id="gananciaBs">Bs 274,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="gananciaUsd">$2,74 por venta</span></div>
-          <div class="stat"><span>Se va en comisiones</span><strong id="comisionesBs">Bs 95,90</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="comisionesPct">7,0% del precio</span></div>
-          <div class="stat"><span>Tu costo total</span><strong id="costoBsLabel">Bs 1.000,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="costoUsdLabel">$10,00 al proveedor</span></div>
-        </div>
-
-        <div class="bar-wrap">
-          <div class="bar" role="img" aria-label="Composición del precio de venta">
-            <div class="bar-costo" id="barCosto" style="width:73%"></div>
-            <div class="bar-com" id="barCom" style="width:7%"></div>
-            <div class="bar-gan" id="barGan" style="width:20%"></div>
+      <!-- RESULT COLUMN (PC) -->
+      <div class="layout-result-col">
+        <!-- RESULT CARD -->
+        <section class="card result" aria-label="Resultado">
+          <div class="result-top">
+            <div class="label">Precio de venta a cobrar — <span id="resProducto">Recarga / producto digital</span></div>
+            <div class="price"><small>Bs</small> <span id="precioFinal">1.370</span></div>
+            <div class="price-usd">Equivale a <strong id="precioUsd">$13,70</strong> a la tasa que pusiste · Precio exacto sin redondear: <span id="precioExacto">Bs 1.369,86</span></div>
+            <div><span class="rounded-note" id="roundedNote">↑ Redondeado hacia arriba para no perder por el redondeo</span></div>
           </div>
-          <div class="legend">
-            <span><i style="background:#334155"></i>Costo <b id="legCosto">73,0%</b></span>
-            <span><i style="background:var(--amber)"></i>Comisiones <b id="legCom">7,0%</b></span>
-            <span><i style="background:var(--green2)"></i>Tu ganancia <b id="legGan">20,0%</b></span>
+
+          <div class="stats">
+            <div class="stat"><span>Tu ganancia neta</span><strong class="green" id="gananciaBs">Bs 274,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="gananciaUsd">$2,74 por venta</span></div>
+            <div class="stat"><span>Se va en comisiones</span><strong id="comisionesBs">Bs 95,90</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="comisionesPct">7,0% del precio</span></div>
+            <div class="stat"><span>Tu costo total</span><strong id="costoBsLabel">Bs 1.000,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="costoUsdLabel">$10,00 al proveedor</span></div>
           </div>
-        </div>
 
-        <div class="alert" id="alertBox">⚠ Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o más. Baja el margen o revisa las comisiones.</div>
+          <div class="bar-wrap">
+            <div class="bar" role="img" aria-label="Composición del precio de venta">
+              <div class="bar-costo" id="barCosto" style="width:73%"></div>
+              <div class="bar-com" id="barCom" style="width:7%"></div>
+              <div class="bar-gan" id="barGan" style="width:20%"></div>
+            </div>
+            <div class="legend">
+              <span><i style="background:#334155"></i>Costo <b id="legCosto">73,0%</b></span>
+              <span><i style="background:var(--amber)"></i>Comisiones <b id="legCom">7,0%</b></span>
+              <span><i style="background:var(--green2)"></i>Tu ganancia <b id="legGan">20,0%</b></span>
+            </div>
+          </div>
 
-        <div class="actions">
-          <button class="primary" id="btnCopiarPrecio" type="button">Copiar precio</button>
-          <button class="secondary" id="btnGuardarCalculo" type="button">Guardar cálculo</button>
-          <button class="secondary" id="btnCopiarMensaje" type="button">Copiar mensaje para el cliente</button>
-          <button class="secondary" id="btnCopiarDesglose" type="button">Copiar desglose completo</button>
-        </div>
-      </section>
+          <div class="alert" id="alertBox">⚠ Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o más. Baja el margen o revisa las comisiones.</div>
+
+          <div class="actions">
+            <button class="primary" id="btnCopiarPrecio" type="button">Copiar precio</button>
+            <button class="secondary" id="btnGuardarCalculo" type="button">Guardar cálculo</button>
+            <button class="secondary" id="btnCopiarMensaje" type="button">Copiar mensaje para el cliente</button>
+            <button class="secondary" id="btnCopiarDesglose" type="button">Copiar desglose completo</button>
+          </div>
+        </section>
+
+        <!-- GUÍA Y MARGEN REAL UNIFICADO EN PC (debajo de precio de venta) -->
+        <div id="desktopGuideSlot" class="desktop-guide-slot"></div>
+      </div>
     </main>
 
     <!-- STEPS -->
@@ -288,31 +310,33 @@
     </div>
   </div>
 
-  <!-- TAB VIEW 5: GUÍA Y MARGEN REAL -->
+  <!-- TAB VIEW 5: GUÍA Y MARGEN REAL (Móvil) -->
   <div class="dash-view" id="tabView-guia">
-    <div style="max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
-      <!-- REVERSE CALCULATOR -->
-      <section class="card panel" aria-label="Calculadora inversa">
-        <h2>Revisa lo que cobras hoy: ¿Ganas o pierdes?</h2>
-        <p class="sub">Escribe el precio que cobras actualmente con tus costos y comisiones para calcular tu margen neto real.</p>
-        <label for="precioActual">Precio que cobras hoy</label>
-        <div class="field"><span class="prefix">Bs</span><input type="number" id="precioActual" value="1300" min="0" step="1" inputmode="decimal"></div>
-        <div class="verdict warn" id="verdictBox">
-          <span class="big" id="verdictBig">Margen real: —</span>
-          <span id="verdictText">Escribe un precio para ver tu margen real.</span>
-        </div>
-        <p class="hint" style="margin-top:12px"><strong>Fórmula inversa:</strong> Margen real = (Precio − Costo Bs − Gasto fijo − Comisiones en Bs) ÷ Precio.</p>
-      </section>
+    <div style="max-width:880px;margin:0 auto" id="mobileGuideSlot">
+      <div id="guideContent" class="guide-content-wrap">
+        <!-- REVERSE CALCULATOR -->
+        <section class="card panel" aria-label="Calculadora inversa">
+          <h2>Revisa lo que cobras hoy: ¿Ganas o pierdes?</h2>
+          <p class="sub">Escribe el precio que cobras actualmente con tus costos y comisiones para calcular tu margen neto real.</p>
+          <label for="precioActual">Precio que cobras hoy</label>
+          <div class="field"><span class="prefix">Bs</span><input type="number" id="precioActual" value="1300" min="0" step="1" inputmode="decimal"></div>
+          <div class="verdict warn" id="verdictBox">
+            <span class="big" id="verdictBig">Margen real: —</span>
+            <span id="verdictText">Escribe un precio para ver tu margen real.</span>
+          </div>
+          <p class="hint" style="margin-top:12px"><strong>Fórmula inversa:</strong> Margen real = (Precio − Costo Bs − Gasto fijo − Comisiones en Bs) ÷ Precio.</p>
+        </section>
 
-      <!-- TIPS -->
-      <section class="card panel" aria-label="Errores frecuentes">
-        <div class="section-head"><h2>Los 3 errores que te hacen perder</h2><p class="sub">Los errores más comunes al vender en bolívares en Venezuela:</p></div>
-        <div class="tips">
-          <article class="tip"><span class="tag">Error 01</span><h3>Sumar el margen al costo</h3><p>“Costo + 20%” no da 20% de margen: al descontar comisiones del precio final terminas ganando mucho menos. El margen correcto se calcula sobre la venta dividiendo.</p></article>
-          <article class="tip"><span class="tag">Error 02</span><h3>Cobrar a una tasa y reponer a otra</h3><p>Si cobras con tasa BCV pero repones con tasa paralelo/USDT, la brecha cambiaria se come toda tu ganancia.</p></article>
-          <article class="tip"><span class="tag">Error 03</span><h3>Olvidar una comisión “chiquita”</h3><p>2% de proveedor, 1% de pasarela, el redondeo… sumados reducen drásticamente tu ganancia si no los incluyes en la fórmula.</p></article>
-        </div>
-      </section>
+        <!-- TIPS -->
+        <section class="card panel" aria-label="Errores frecuentes" style="margin-top:18px">
+          <div class="section-head"><h2>Los 3 errores que te hacen perder</h2><p class="sub">Los errores más comunes al vender en bolívares en Venezuela:</p></div>
+          <div class="tips">
+            <article class="tip"><span class="tag">Error 01</span><h3>Sumar el margen al costo</h3><p>“Costo + 20%” no da 20% de margen: al descontar comisiones del precio final terminas ganando mucho menos. El margen correcto se calcula sobre la venta dividiendo.</p></article>
+            <article class="tip"><span class="tag">Error 02</span><h3>Cobrar a una tasa y reponer a otra</h3><p>Si cobras con tasa BCV pero repones con tasa paralelo/USDT, la brecha cambiaria se come toda tu ganancia.</p></article>
+            <article class="tip"><span class="tag">Error 03</span><h3>Olvidar una comisión “chiquita”</h3><p>2% de proveedor, 1% de pasarela, el redondeo… sumados reducen drásticamente tu ganancia si no los incluyes en la fórmula.</p></article>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 

@@ -170,6 +170,24 @@ h1 em {
   align-items: start
 }
 
+.layout-result-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.desktop-guide-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.guide-content-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 .card {
   background: var(--card);
   border: 1px solid var(--line);
@@ -464,11 +482,106 @@ select {
   color: var(--green2)
 }
 
+/* MODO DE MARGEN (Sobre costo vs Sobre venta) */
+.margin-mode-wrap {
+  margin: 12px 0 16px;
+}
+
+.mode-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--bg2, #0d1712);
+  border: 1px solid var(--line);
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+}
+
+.mode-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.mode-btn:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mode-btn.active {
+  background: var(--card);
+  color: var(--green2);
+  border-color: rgba(0, 229, 153, 0.28);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.mode-formula-hint {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin: 6px 2px 0;
+  line-height: 1.35;
+}
+
+/* SLIDER DE MARGEN DESLIZABLE */
 input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
-  accent-color: var(--green2);
-  height: 28px;
-  cursor: pointer
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--green2) 0%, var(--green2) 33.33%, #26382f 33.33%, #26382f 100%);
+  outline: none;
+  cursor: grab;
+  margin: 14px 0 8px;
+  touch-action: pan-y;
+}
+
+input[type="range"]:active {
+  cursor: grabbing;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--green2);
+  border: 2.5px solid #08120e;
+  box-shadow: 0 0 10px rgba(0, 229, 153, 0.45);
+  cursor: grab;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+input[type="range"]:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.18);
+  box-shadow: 0 0 14px rgba(0, 229, 153, 0.75);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--green2);
+  border: 2.5px solid #08120e;
+  box-shadow: 0 0 10px rgba(0, 229, 153, 0.45);
+  cursor: grab;
+}
+
+input[type="range"]:active::-moz-range-thumb {
+  cursor: grabbing;
+  transform: scale(1.18);
 }
 
 .ticks {
@@ -982,7 +1095,17 @@ footer {
   transform: translate(-50%, 0)
 }
 
+@media (min-width:961px) {
+  .dash-nav [data-tab="guia"] {
+    display: none !important;
+  }
+}
+
 @media (max-width:960px) {
+  .dash-nav [data-tab="guia"] {
+    display: inline-flex !important;
+  }
+
   .hero {
     grid-template-columns: 1fr
   }

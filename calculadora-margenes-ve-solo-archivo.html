@@ -182,6 +182,24 @@ h1 em {
   align-items: start
 }
 
+.layout-result-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.desktop-guide-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.guide-content-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 .card {
   background: var(--card);
   border: 1px solid var(--line);
@@ -476,11 +494,106 @@ select {
   color: var(--green2)
 }
 
+/* MODO DE MARGEN (Sobre costo vs Sobre venta) */
+.margin-mode-wrap {
+  margin: 12px 0 16px;
+}
+
+.mode-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--bg2, #0d1712);
+  border: 1px solid var(--line);
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+}
+
+.mode-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.mode-btn:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mode-btn.active {
+  background: var(--card);
+  color: var(--green2);
+  border-color: rgba(0, 229, 153, 0.28);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.mode-formula-hint {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin: 6px 2px 0;
+  line-height: 1.35;
+}
+
+/* SLIDER DE MARGEN DESLIZABLE */
 input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
-  accent-color: var(--green2);
-  height: 28px;
-  cursor: pointer
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--green2) 0%, var(--green2) 33.33%, #26382f 33.33%, #26382f 100%);
+  outline: none;
+  cursor: grab;
+  margin: 14px 0 8px;
+  touch-action: pan-y;
+}
+
+input[type="range"]:active {
+  cursor: grabbing;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--green2);
+  border: 2.5px solid #08120e;
+  box-shadow: 0 0 10px rgba(0, 229, 153, 0.45);
+  cursor: grab;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+input[type="range"]:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.18);
+  box-shadow: 0 0 14px rgba(0, 229, 153, 0.75);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--green2);
+  border: 2.5px solid #08120e;
+  box-shadow: 0 0 10px rgba(0, 229, 153, 0.45);
+  cursor: grab;
+}
+
+input[type="range"]:active::-moz-range-thumb {
+  cursor: grabbing;
+  transform: scale(1.18);
 }
 
 .ticks {
@@ -994,7 +1107,17 @@ footer {
   transform: translate(-50%, 0)
 }
 
+@media (min-width:961px) {
+  .dash-nav [data-tab="guia"] {
+    display: none !important;
+  }
+}
+
 @media (max-width:960px) {
+  .dash-nav [data-tab="guia"] {
+    display: inline-flex !important;
+  }
+
   .hero {
     grid-template-columns: 1fr
   }
@@ -1396,8 +1519,8 @@ input[type="password"] {
     </div>
     <aside class="hero-card" aria-label="Fórmula principal">
       <b>La fórmula que te protege</b>
-      <div class="formula">Precio = (Costo Bs + Gasto fijo) ÷ (1 − Comisiones − Margen)</div>
-      <p>El margen se calcula <strong>sobre el precio de venta</strong> para no perder capital al reponer.</p>
+      <div class="formula" id="heroFormula">Precio = (Costo Bs × (1 + Margen) + Gasto fijo) ÷ (1 − Comisiones)</div>
+      <p id="heroFormulaSub">El margen se calcula como <strong>porcentaje directo del costo</strong> (Markup).</p>
     </aside>
   </header>
 
@@ -1417,6 +1540,22 @@ input[type="password"] {
       <section class="card panel" aria-label="Datos de la venta">
         <h2>1 · Tus números</h2>
         <p class="sub">Todo se recalcula al instante. Ajusta la tasa cada vez que cambie.</p>
+
+        <!-- MODO DE MARGEN -->
+        <div class="margin-mode-wrap">
+          <label style="margin:0 0 8px">Modo de margen</label>
+          <div class="mode-toggle" role="group" aria-label="Modo de cálculo de margen">
+            <button type="button" class="mode-btn active" id="btnModeCost" data-mode="onCost">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+              <span>Sobre costo (Markup)</span>
+            </button>
+            <button type="button" class="mode-btn" id="btnModeSale" data-mode="onSale">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10H12V2z"/></svg>
+              <span>Sobre venta (Margen)</span>
+            </button>
+          </div>
+          <p class="mode-formula-hint" id="modeFormulaHint">Markup directo: Precio = Costo × (1 + Margen) ÷ (1 − Comisiones)</p>
+        </div>
 
         <label for="producto">Producto <span>opcional, para copiar el mensaje</span></label>
         <div class="field"><input type="text" id="producto" value="Recarga / producto digital" autocomplete="off"></div>
@@ -1474,7 +1613,7 @@ input[type="password"] {
         <input type="range" id="margenRange" min="0" max="60" step="1" value="20" aria-label="Margen deseado">
         <div class="ticks"><span>0%</span><span>15%</span><span>30%</span><span>45%</span><span>60%</span></div>
         <div class="input-row" style="margin-top:8px">
-          <div class="field"><input type="number" id="margen" value="20" min="0" max="95" step="0.5" inputmode="decimal"><span class="suffix">% sobre la venta</span></div>
+          <div class="field"><input type="number" id="margen" value="20" min="0" max="95" step="0.5" inputmode="decimal"><span class="suffix" id="margenSuffix">% sobre el costo</span></div>
         </div>
         <div class="chips" id="marginChips">
           <button class="chip" data-margen="10" type="button">10% · rotación</button>
@@ -1508,43 +1647,49 @@ input[type="password"] {
         <p class="hint">Redondear <strong>hacia arriba</strong> protege tu margen. Nunca redondees hacia abajo para “quedar bonito”.</p>
       </section>
 
-      <!-- RESULT -->
-      <section class="card result" aria-label="Resultado">
-        <div class="result-top">
-          <div class="label">Precio de venta a cobrar — <span id="resProducto">Recarga / producto digital</span></div>
-          <div class="price"><small>Bs</small> <span id="precioFinal">1.370</span></div>
-          <div class="price-usd">Equivale a <strong id="precioUsd">$13,70</strong> a la tasa que pusiste · Precio exacto sin redondear: <span id="precioExacto">Bs 1.369,86</span></div>
-          <div><span class="rounded-note" id="roundedNote">↑ Redondeado hacia arriba para no perder por el redondeo</span></div>
-        </div>
-
-        <div class="stats">
-          <div class="stat"><span>Tu ganancia neta</span><strong class="green" id="gananciaBs">Bs 274,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="gananciaUsd">$2,74 por venta</span></div>
-          <div class="stat"><span>Se va en comisiones</span><strong id="comisionesBs">Bs 95,90</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="comisionesPct">7,0% del precio</span></div>
-          <div class="stat"><span>Tu costo total</span><strong id="costoBsLabel">Bs 1.000,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="costoUsdLabel">$10,00 al proveedor</span></div>
-        </div>
-
-        <div class="bar-wrap">
-          <div class="bar" role="img" aria-label="Composición del precio de venta">
-            <div class="bar-costo" id="barCosto" style="width:73%"></div>
-            <div class="bar-com" id="barCom" style="width:7%"></div>
-            <div class="bar-gan" id="barGan" style="width:20%"></div>
+      <!-- RESULT COLUMN (PC) -->
+      <div class="layout-result-col">
+        <!-- RESULT CARD -->
+        <section class="card result" aria-label="Resultado">
+          <div class="result-top">
+            <div class="label">Precio de venta a cobrar — <span id="resProducto">Recarga / producto digital</span></div>
+            <div class="price"><small>Bs</small> <span id="precioFinal">1.370</span></div>
+            <div class="price-usd">Equivale a <strong id="precioUsd">$13,70</strong> a la tasa que pusiste · Precio exacto sin redondear: <span id="precioExacto">Bs 1.369,86</span></div>
+            <div><span class="rounded-note" id="roundedNote">↑ Redondeado hacia arriba para no perder por el redondeo</span></div>
           </div>
-          <div class="legend">
-            <span><i style="background:#334155"></i>Costo <b id="legCosto">73,0%</b></span>
-            <span><i style="background:var(--amber)"></i>Comisiones <b id="legCom">7,0%</b></span>
-            <span><i style="background:var(--green2)"></i>Tu ganancia <b id="legGan">20,0%</b></span>
+
+          <div class="stats">
+            <div class="stat"><span>Tu ganancia neta</span><strong class="green" id="gananciaBs">Bs 274,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="gananciaUsd">$2,74 por venta</span></div>
+            <div class="stat"><span>Se va en comisiones</span><strong id="comisionesBs">Bs 95,90</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="comisionesPct">7,0% del precio</span></div>
+            <div class="stat"><span>Tu costo total</span><strong id="costoBsLabel">Bs 1.000,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="costoUsdLabel">$10,00 al proveedor</span></div>
           </div>
-        </div>
 
-        <div class="alert" id="alertBox">⚠ Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o más. Baja el margen o revisa las comisiones.</div>
+          <div class="bar-wrap">
+            <div class="bar" role="img" aria-label="Composición del precio de venta">
+              <div class="bar-costo" id="barCosto" style="width:73%"></div>
+              <div class="bar-com" id="barCom" style="width:7%"></div>
+              <div class="bar-gan" id="barGan" style="width:20%"></div>
+            </div>
+            <div class="legend">
+              <span><i style="background:#334155"></i>Costo <b id="legCosto">73,0%</b></span>
+              <span><i style="background:var(--amber)"></i>Comisiones <b id="legCom">7,0%</b></span>
+              <span><i style="background:var(--green2)"></i>Tu ganancia <b id="legGan">20,0%</b></span>
+            </div>
+          </div>
 
-        <div class="actions">
-          <button class="primary" id="btnCopiarPrecio" type="button">Copiar precio</button>
-          <button class="secondary" id="btnGuardarCalculo" type="button">Guardar cálculo</button>
-          <button class="secondary" id="btnCopiarMensaje" type="button">Copiar mensaje para el cliente</button>
-          <button class="secondary" id="btnCopiarDesglose" type="button">Copiar desglose completo</button>
-        </div>
-      </section>
+          <div class="alert" id="alertBox">⚠ Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o más. Baja el margen o revisa las comisiones.</div>
+
+          <div class="actions">
+            <button class="primary" id="btnCopiarPrecio" type="button">Copiar precio</button>
+            <button class="secondary" id="btnGuardarCalculo" type="button">Guardar cálculo</button>
+            <button class="secondary" id="btnCopiarMensaje" type="button">Copiar mensaje para el cliente</button>
+            <button class="secondary" id="btnCopiarDesglose" type="button">Copiar desglose completo</button>
+          </div>
+        </section>
+
+        <!-- GUÍA Y MARGEN REAL UNIFICADO EN PC (debajo de precio de venta) -->
+        <div id="desktopGuideSlot" class="desktop-guide-slot"></div>
+      </div>
     </main>
 
     <!-- STEPS -->
@@ -1650,31 +1795,33 @@ input[type="password"] {
     </div>
   </div>
 
-  <!-- TAB VIEW 5: GUÍA Y MARGEN REAL -->
+  <!-- TAB VIEW 5: GUÍA Y MARGEN REAL (Móvil) -->
   <div class="dash-view" id="tabView-guia">
-    <div style="max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
-      <!-- REVERSE CALCULATOR -->
-      <section class="card panel" aria-label="Calculadora inversa">
-        <h2>Revisa lo que cobras hoy: ¿Ganas o pierdes?</h2>
-        <p class="sub">Escribe el precio que cobras actualmente con tus costos y comisiones para calcular tu margen neto real.</p>
-        <label for="precioActual">Precio que cobras hoy</label>
-        <div class="field"><span class="prefix">Bs</span><input type="number" id="precioActual" value="1300" min="0" step="1" inputmode="decimal"></div>
-        <div class="verdict warn" id="verdictBox">
-          <span class="big" id="verdictBig">Margen real: —</span>
-          <span id="verdictText">Escribe un precio para ver tu margen real.</span>
-        </div>
-        <p class="hint" style="margin-top:12px"><strong>Fórmula inversa:</strong> Margen real = (Precio − Costo Bs − Gasto fijo − Comisiones en Bs) ÷ Precio.</p>
-      </section>
+    <div style="max-width:880px;margin:0 auto" id="mobileGuideSlot">
+      <div id="guideContent" class="guide-content-wrap">
+        <!-- REVERSE CALCULATOR -->
+        <section class="card panel" aria-label="Calculadora inversa">
+          <h2>Revisa lo que cobras hoy: ¿Ganas o pierdes?</h2>
+          <p class="sub">Escribe el precio que cobras actualmente con tus costos y comisiones para calcular tu margen neto real.</p>
+          <label for="precioActual">Precio que cobras hoy</label>
+          <div class="field"><span class="prefix">Bs</span><input type="number" id="precioActual" value="1300" min="0" step="1" inputmode="decimal"></div>
+          <div class="verdict warn" id="verdictBox">
+            <span class="big" id="verdictBig">Margen real: —</span>
+            <span id="verdictText">Escribe un precio para ver tu margen real.</span>
+          </div>
+          <p class="hint" style="margin-top:12px"><strong>Fórmula inversa:</strong> Margen real = (Precio − Costo Bs − Gasto fijo − Comisiones en Bs) ÷ Precio.</p>
+        </section>
 
-      <!-- TIPS -->
-      <section class="card panel" aria-label="Errores frecuentes">
-        <div class="section-head"><h2>Los 3 errores que te hacen perder</h2><p class="sub">Los errores más comunes al vender en bolívares en Venezuela:</p></div>
-        <div class="tips">
-          <article class="tip"><span class="tag">Error 01</span><h3>Sumar el margen al costo</h3><p>“Costo + 20%” no da 20% de margen: al descontar comisiones del precio final terminas ganando mucho menos. El margen correcto se calcula sobre la venta dividiendo.</p></article>
-          <article class="tip"><span class="tag">Error 02</span><h3>Cobrar a una tasa y reponer a otra</h3><p>Si cobras con tasa BCV pero repones con tasa paralelo/USDT, la brecha cambiaria se come toda tu ganancia.</p></article>
-          <article class="tip"><span class="tag">Error 03</span><h3>Olvidar una comisión “chiquita”</h3><p>2% de proveedor, 1% de pasarela, el redondeo… sumados reducen drásticamente tu ganancia si no los incluyes en la fórmula.</p></article>
-        </div>
-      </section>
+        <!-- TIPS -->
+        <section class="card panel" aria-label="Errores frecuentes" style="margin-top:18px">
+          <div class="section-head"><h2>Los 3 errores que te hacen perder</h2><p class="sub">Los errores más comunes al vender en bolívares en Venezuela:</p></div>
+          <div class="tips">
+            <article class="tip"><span class="tag">Error 01</span><h3>Sumar el margen al costo</h3><p>“Costo + 20%” no da 20% de margen: al descontar comisiones del precio final terminas ganando mucho menos. El margen correcto se calcula sobre la venta dividiendo.</p></article>
+            <article class="tip"><span class="tag">Error 02</span><h3>Cobrar a una tasa y reponer a otra</h3><p>Si cobras con tasa BCV pero repones con tasa paralelo/USDT, la brecha cambiaria se come toda tu ganancia.</p></article>
+            <article class="tip"><span class="tag">Error 03</span><h3>Olvidar una comisión “chiquita”</h3><p>2% de proveedor, 1% de pasarela, el redondeo… sumados reducen drásticamente tu ganancia si no los incluyes en la fórmula.</p></article>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 
@@ -1738,7 +1885,7 @@ window.FIREBASE_CONFIG = {
 <script>
 (function(){
   var $ = function(id){ return document.getElementById(id); };
-  var ids = ['producto','costoUsd','margen','margenRange','comProveedor','comPasarela','comOtra','gastoFijo','redondeo','precioActual'];
+  var ids = ['producto','costoUsd','comProveedor','comPasarela','comOtra','gastoFijo','redondeo','precioActual'];
 
   function setTxt(id, val){ var el = $(id); if (el) el.textContent = val; }
   function setHtml(id, val){ var el = $(id); if (el) el.innerHTML = val; }
@@ -1771,511 +1918,7 @@ window.FIREBASE_CONFIG = {
      Paralelo / USDT: DolarAPI paralelo. */
   var RATES = {
     bcv:     { label:'BCV · Dólar oficial',      value:899.27,   unit:'
-<script type="module">
-/* auth.js — cuentas (Google + correo/contraseña), historial de cálculos y
- * productos guardados, con Firebase (SDK modular vía CDN, sin build).
- * La calculadora funciona como invitada sin sesión; el historial y los
- * productos exigen haber entrado. Si firebase-config.js aún tiene los
- * valores de ejemplo, Firebase queda desactivado y se avisa en pantalla.
- *
- * ESQUEMA COMPARTIDO CON LA APP FLUTTER (mismo proyecto, mismos usuarios):
- * historial en users/{uid}/history y productos en users/{uid}/products, con
- * los mismos campos y unidades de la app (ver README). La app lee el campo
- * 'id' DENTRO de cada documento y parsea las fechas como strings ISO-8601,
- * así que la web genera el ID del documento antes de escribirlo y nunca usa
- * serverTimestamp(). marginPercent va en porcentaje y las comisiones en
- * fracción; marginMode siempre es 'onSale' (la fórmula de esta web es
- * margen sobre el precio de venta).
- */
-(function () {
-  'use strict';
-
-  var FIREBASE_VERSION = '11.1.0';
-  var SDK = function (name) { return 'https://www.gstatic.com/firebasejs/' + FIREBASE_VERSION + '/' + name; };
-
-  var $ = function (id) { return document.getElementById(id); };
-  var fmtBs = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  var fmtBs0 = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-  var fmtFecha = new Intl.DateTimeFormat('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-  var F = null; // módulos de Firebase cargados por CDN
-  var auth = null, db = null;
-  var user = null;
-  var firebaseOn = false;
-  var unsubHist = null, unsubProd = null;
-  var authMode = 'login'; // 'login' | 'register'
-  var histItems = [];
-  var prodItems = [];
-
-  function toast(msg) {
-    var t = $('toast');
-    if (!t) { alert(msg); return; }
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(function () { t.classList.remove('show'); }, 2600);
-  }
-  function esc(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
-  function numVal(id, def) {
-    var el = $(id);
-    if (!el) return def || 0;
-    var v = parseFloat(String(el.value).replace(',', '.'));
-    return isNaN(v) || v < 0 ? (def || 0) : v;
-  }
-  function setInput(id, v) {
-    var el = $(id);
-    if (!el) return;
-    el.value = v;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-  }
-
-  /* ===== Esquema compartido con la app Flutter ===== */
-  var RATE_SOURCE_MAP = { bcv: 'bcvUsd', binance: 'binanceUsdt', euro: 'euroBcv', custom: 'custom' };
-  // La fuente de tasa activa se lee de la tarjeta marcada en la página
-  // (app.js marca la activa con la clase .active; la clave no es global).
-  function currentRateSourceName() {
-    var card = document.querySelector('.rate-card.active');
-    var key = card ? card.getAttribute('data-rate') : '';
-    if (RATE_SOURCE_MAP[key]) return RATE_SOURCE_MAP[key];
-    var lbl = ($('tasaFuenteLabel') && $('tasaFuenteLabel').textContent) || '';
-    if (lbl.indexOf('Binance') !== -1) return 'binanceUsdt';
-    if (lbl.indexOf('Euro') !== -1) return 'euroBcv';
-    if (lbl.indexOf('Personalizada') !== -1) return 'custom';
-    return 'bcvUsd';
-  }
-  function currentRoundStep() {
-    var v = parseInt(($('redondeo') && $('redondeo').value) || '10', 10);
-    return [1, 10, 50, 100].indexOf(v) !== -1 ? v : 10;
-  }
-  function pctToFrac(v) { // % (ej. 1.5) -> fracción (ej. 0.015)
-    var n = parseFloat(v);
-    return (isNaN(n) || n < 0) ? 0 : Math.round(n * 10000) / 1000000;
-  }
-  function fracToPct(v) { // fracción (ej. 0.015) -> % (ej. 1.5)
-    var n = parseFloat(v);
-    return isNaN(n) ? 0 : Math.round(n * 10000) / 100;
-  }
-  function isoDate(v) {
-    // Acepta string ISO, Date o Timestamp de Firestore; devuelve string ISO o ''.
-    if (!v) return '';
-    if (typeof v === 'string') return v;
-    if (v instanceof Date) return v.toISOString();
-    if (v.toDate) { try { return v.toDate().toISOString(); } catch (e) { return ''; } }
-    return '';
-  }
-  // Referencia a un documento nuevo con ID generado por el cliente: el ID se
-  // guarda también DENTRO del documento (campo 'id'), como exige la app.
-  function newDocRef(colName) {
-    return F.fs.doc(F.fs.collection(db, 'users', user.uid, colName));
-  }
-  // Normaliza un producto leído de Firestore al esquema de la app. Como
-  // respaldo entiende el esquema viejo de la web (nombre, margenSugerido,
-  // comisiones en %, Timestamps) para no perder datos ya guardados.
-  function normalizeProduct(d) {
-    d = d || {};
-    var comP = (d.commissionPlatform != null) ? d.commissionPlatform : pctToFrac(d.comProveedor);
-    var comPa = (d.commissionPaymentMethod != null) ? d.commissionPaymentMethod : pctToFrac(d.comPasarela);
-    var comO = (d.commissionOther != null) ? d.commissionOther : pctToFrac(d.comOtra);
-    return {
-      name: (d.name != null ? d.name : d.nombre || '').toString().trim(),
-      costUsd: d.costUsd || 0,
-      marginPercent: (d.marginPercent != null) ? d.marginPercent : (d.margenSugerido || 0),
-      fixedExpenseBs: d.fixedExpenseBs || d.gastoFijo || 0,
-      commissionPlatform: comP,
-      commissionPaymentMethod: comPa,
-      commissionOther: comO,
-      roundStep: (d.roundStep != null) ? d.roundStep : 10,
-      rateSourceName: d.rateSourceName || 'bcvUsd',
-      marginMode: d.marginMode || 'onSale',
-      customRateValue: (typeof d.customRateValue === 'number') ? d.customRateValue : null,
-      createdAt: isoDate(d.createdAt),
-      updatedAt: isoDate(d.updatedAt)
-    };
-  }
-
-  /* ===== Config y arranque ===== */
-  function configLista() {
-    var c = window.FIREBASE_CONFIG || {};
-    var keys = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
-    for (var i = 0; i < keys.length; i++) {
-      var v = c[keys[i]];
-      if (!v || typeof v !== 'string' || v.indexOf('TU_') === 0) return false;
-    }
-    return true;
-  }
-  function setFirebaseState(state) {
-    var notice = $('fbNotice');
-    if (notice) notice.hidden = (state !== 'noconfig' && state !== 'error');
-    if (notice && state === 'error') notice.textContent = '⚠ No se pudo cargar Firebase (¿sin internet?). La calculadora sigue funcionando como invitada.';
-  }
-
-  async function initFirebase() {
-    if (!configLista()) { setFirebaseState('noconfig'); return; }
-    try {
-      var appMod = await import(SDK('firebase-app.js'));
-      var authMod = await import(SDK('firebase-auth.js'));
-      var fsMod = await import(SDK('firebase-firestore.js'));
-      F = { app: appMod, auth: authMod, fs: fsMod };
-      var fbApp = appMod.initializeApp(window.FIREBASE_CONFIG);
-      auth = authMod.getAuth(fbApp);
-      await authMod.setPersistence(auth, authMod.browserLocalPersistence);
-      db = fsMod.getFirestore(fbApp);
-      firebaseOn = true;
-      try { await authMod.getRedirectResult(auth); } catch (e) { /* sin redirect pendiente */ }
-      authMod.onAuthStateChanged(auth, onUser);
-      setFirebaseState('ok');
-    } catch (e) {
-      console.error('Firebase no se pudo iniciar:', e);
-      setFirebaseState('error');
-      toast('No se pudo cargar Firebase (¿sin internet?). La calculadora sigue funcionando como invitada.');
-    }
-  }
-
-  /* ===== Sesión y UI de cuenta ===== */
-  function onUser(u) {
-    user = u;
-    var btnEntrar = $('btnEntrar');
-    var chip = $('authUser');
-    if (u) {
-      if (btnEntrar) btnEntrar.hidden = true;
-      if (chip) {
-        chip.hidden = false;
-        var nameEl = $('authUserName');
-        if (nameEl) nameEl.textContent = u.displayName || u.email || 'Mi cuenta';
-      }
-      document.querySelectorAll('[data-needs-login]').forEach(function (el) { el.hidden = true; });
-      var pb = $('prodBox'); if (pb) pb.hidden = false;
-      var hb = $('histBox'); if (hb) hb.hidden = false;
-      subscribeHistory();
-      subscribeProducts();
-    } else {
-      if (btnEntrar) btnEntrar.hidden = false;
-      if (chip) chip.hidden = true;
-      document.querySelectorAll('[data-needs-login]').forEach(function (el) { el.hidden = false; });
-      var pb2 = $('prodBox'); if (pb2) pb2.hidden = true;
-      var hb2 = $('histBox'); if (hb2) hb2.hidden = true;
-      if (unsubHist) { unsubHist(); unsubHist = null; }
-      if (unsubProd) { unsubProd(); unsubProd = null; }
-      histItems = []; prodItems = [];
-      renderHistory(); renderProducts();
-    }
-  }
-
-  function showAuthError(e) {
-    var box = $('authError');
-    var msg = 'No se pudo entrar. Revisa los datos e inténtalo de nuevo.';
-    if (e && e.code) {
-      if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found') msg = 'Correo o contraseña incorrectos.';
-      else if (e.code === 'auth/email-already-in-use') msg = 'Ese correo ya tiene cuenta. Entra con él en vez de crear otra.';
-      else if (e.code === 'auth/weak-password') msg = 'La contraseña debe tener al menos 6 caracteres.';
-      else if (e.code === 'auth/invalid-email') msg = 'Revisa el correo, no tiene formato válido.';
-      else if (e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Espera un rato e inténtalo de nuevo.';
-      else if (e.code === 'auth/network-request-failed') msg = 'Sin conexión. Revisa internet e inténtalo de nuevo.';
-      else if (e.code === 'auth/operation-not-allowed') msg = 'Ese proveedor no está activado. Actívalo en la consola de Firebase → Authentication → Sign-in method.';
-      else if (e.code === 'auth/configuration-not-found') msg = 'Falta la configuración de Firebase en firebase-config.js.';
-    }
-    if (box) { box.textContent = msg; box.classList.add('show'); }
-    else { toast(msg); }
-  }
-  function clearAuthError() {
-    var box = $('authError');
-    if (box) { box.textContent = ''; box.classList.remove('show'); }
-  }
-
-  function openAuth() {
-    var m = $('authModal');
-    if (m) {
-      m.hidden = false;
-      m.style.display = 'grid';
-    }
-  }
-  function closeAuth() {
-    var m = $('authModal');
-    if (m) {
-      m.hidden = true;
-      m.style.display = 'none';
-    }
-    clearAuthError();
-  }
-  function setAuthMode(mode) {
-    authMode = mode;
-    var isReg = mode === 'register';
-    var t = $('authTitle'); if (t) t.textContent = isReg ? 'Crear cuenta' : 'Entrar';
-    var s = $('btnAuthSubmit'); if (s) s.textContent = isReg ? 'Registrarme' : 'Entrar';
-    var ln = $('lblNombre');
-    if (ln) {
-      ln.hidden = !isReg;
-      ln.style.display = isReg ? 'flex' : 'none';
-    }
-    var wn = $('wrapNombre');
-    if (wn) {
-      wn.hidden = !isReg;
-      wn.style.display = isReg ? 'flex' : 'none';
-    }
-    var lr = $('linkResetWrap');
-    if (lr) {
-      lr.hidden = isReg;
-      lr.style.display = isReg ? 'none' : 'block';
-    }
-    var tl = $('tabLogin'); if (tl) tl.classList.toggle('active', !isReg);
-    var tr = $('tabRegister'); if (tr) tr.classList.toggle('active', isReg);
-    var pass = $('authPass'); if (pass) pass.setAttribute('autocomplete', isReg ? 'new-password' : 'current-password');
-    var hint = $('authHint');
-    if (hint) hint.textContent = isReg ? 'Tu cuenta guarda tu historial y tus productos en la nube.' : '';
-    clearAuthError();
-  }
-  function showReset(show) {
-    var fb = $('authFormBox'); if (fb) fb.hidden = show;
-    var rb = $('authResetBox'); if (rb) rb.hidden = !show;
-    clearAuthError();
-  }
-
-  async function loginGoogle() {
-    if (!firebaseOn) { toast('Primero pega tu config de Firebase en firebase-config.js'); return; }
-    var provider = new F.auth.GoogleAuthProvider();
-    try {
-      await F.auth.signInWithPopup(auth, provider);
-      closeAuth();
-      toast('Sesión iniciada con Google');
-    } catch (e) {
-      if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user' || e.code === 'auth/operation-not-supported-in-this-environment' || e.code === 'auth/cancelled-popup-request')) {
-        try { await F.auth.signInWithRedirect(auth, provider); }
-        catch (e2) { showAuthError(e2); }
-      } else { showAuthError(e); }
-    }
-  }
-  async function submitEmail() {
-    if (!firebaseOn) { toast('Primero pega tu config de Firebase en firebase-config.js'); return; }
-    var email = ($('authEmail').value || '').trim();
-    var pass = $('authPass').value || '';
-    if (!email || !pass) { showAuthError({ code: 'auth/invalid-email' }); return; }
-    clearAuthError();
-    try {
-      if (authMode === 'register') {
-        var nombre = ($('authNombre').value || '').trim();
-        if (pass.length < 6) { showAuthError({ code: 'auth/weak-password' }); return; }
-        var cred = await F.auth.createUserWithEmailAndPassword(auth, email, pass);
-        if (nombre) await F.auth.updateProfile(cred.user, { displayName: nombre });
-        toast('Cuenta creada. Bienvenido' + (nombre ? ', ' + nombre : ''));
-      } else {
-        await F.auth.signInWithEmailAndPassword(auth, email, pass);
-        toast('Sesión iniciada');
-      }
-      closeAuth();
-    } catch (e) { showAuthError(e); }
-  }
-  async function sendReset() {
-    if (!firebaseOn) { toast('Primero pega tu config de Firebase en firebase-config.js'); return; }
-    var email = ($('resetEmail').value || '').trim();
-    var msg = $('resetMsg');
-    if (!email) {
-      if (msg) { msg.textContent = 'Escribe tu correo para enviarte el enlace.'; msg.classList.add('show'); }
-      return;
-    }
-    try {
-      await F.auth.sendPasswordResetEmail(auth, email);
-      if (msg) { msg.textContent = 'Listo. Revisa tu correo: te llegó un enlace para crear una contraseña nueva.'; msg.classList.add('show'); }
-    } catch (e) {
-      if (msg) { msg.textContent = 'No se pudo enviar. Revisa el correo e inténtalo de nuevo.'; msg.classList.add('show'); }
-    }
-  }
-
-  /* ===== Historial: users/{uid}/history (mismo esquema que la app Flutter) ===== */
-  function currentCalculation() {
-    var last = window.__margenesLast;
-    if (!last) return null;
-    // app.js entrega margen y comisiones en PORCENTAJE; la app los guarda
-    // como marginPercent (porcentaje) y comisiones (fracción).
-    return {
-      title: last.producto,
-      costUsd: last.costoUsd,
-      marginPercent: last.margen,
-      fixedExpenseBs: last.gasto,
-      commissionPlatform: pctToFrac(last.comP),
-      commissionPaymentMethod: pctToFrac(last.comPa),
-      commissionOther: pctToFrac(last.comO),
-      roundStep: currentRoundStep(),
-      rateSourceName: currentRateSourceName(),
-      marginMode: 'onSale', // la fórmula de esta web es margen sobre la venta
-      rateValue: last.tasa,
-      finalPriceBs: last.precioFinal,
-      precioExactoBs: last.precioExacto, // extras: la app los ignora
-      gananciaBs: last.gananciaBs
-    };
-  }
-  async function saveCalculation(silent) {
-    if (!user) { toast('Inicia sesión para guardar tus cálculos en el historial'); return false; }
-    var c = currentCalculation();
-    // La app descarta entradas con costo, tasa o precio final <= 0.
-    if (!c || c.costUsd <= 0 || c.rateValue <= 0 || c.finalPriceBs <= 0) { toast('Revisa los números: ese cálculo no es válido para guardar'); return false; }
-    try {
-      var ref = newDocRef('history');
-      c.v = 1;
-      c.id = ref.id;
-      c.timestamp = new Date().toISOString();
-      await F.fs.setDoc(ref, c);
-      if (!silent) toast('Cálculo guardado en tu historial');
-      return true;
-    } catch (e) {
-      console.error(e);
-      toast('No se pudo guardar el cálculo');
-      return false;
-    }
-  }
-  // Guardado automático al pulsar "Copiar precio" (app.js llama a este hook).
-  // Como invitado no hace nada en silencio: el historial pide sesión en su sección.
-  window.__margenesOnCopyPrice = function () {
-    if (!user) return;
-    saveCalculation(true).then(function (ok) {
-      if (ok) toast('Precio copiado y cálculo guardado en tu historial');
-    });
-  };
-
-  function subscribeHistory() {
-    if (unsubHist) { unsubHist(); unsubHist = null; }
-    if (!user || !db) return;
-    var q = F.fs.query(
-      F.fs.collection(db, 'users', user.uid, 'history'),
-      F.fs.orderBy('timestamp', 'desc'),
-      F.fs.limit(50)
-    );
-    unsubHist = F.fs.onSnapshot(q, function (snap) {
-      histItems = [];
-      snap.forEach(function (d) { histItems.push({ id: d.id, data: d.data() }); });
-      renderHistory();
-    }, function (e) { console.error(e); toast('No se pudo leer tu historial'); });
-  }
-  function renderHistory() {
-    var b = $('badgeHist');
-    if (b) {
-      b.textContent = histItems.length;
-      b.hidden = histItems.length === 0;
-    }
-    var list = $('histList');
-    if (!list) return;
-    var empty = $('histEmpty');
-    if (empty) empty.style.display = histItems.length ? 'none' : '';
-    var html = '';
-    histItems.forEach(function (it) {
-      var d = it.data;
-      var ts = d.timestamp ? new Date(d.timestamp) : null;
-      var fecha = (ts && !isNaN(ts.getTime())) ? fmtFecha.format(ts) : 'ahora mismo';
-      // gananciaBs es un extra que solo escribe la web; las entradas de la
-      // app no lo traen y entonces no se muestra.
-      var gan = (typeof d.gananciaBs === 'number')
-        ? '<span class="green">+ Bs ' + fmtBs.format(d.gananciaBs) + '</span>' : '';
-      html += '<div class="item-row">'
-        + '<div class="item-meta"><b>' + esc(d.title || 'Producto') + '</b>'
-        + '<span>' + esc(fecha) + ' · Tasa Bs ' + fmtBs.format(d.rateValue || 0) + '</span></div>'
-        + '<div class="item-vals"><strong>Bs ' + fmtBs0.format(d.finalPriceBs || 0) + '</strong>'
-        + gan + '</div>'
-        + '<div class="item-actions"><button type="button" class="btn-mini" data-load-hist="' + it.id + '">Cargar</button>'
-        + '<button type="button" class="btn-mini danger" data-del-hist="' + it.id + '">✕</button></div></div>';
-    });
-    list.innerHTML = html;
-  }
-  function loadHistory(id) {
-    var it = null;
-    for (var i = 0; i < histItems.length; i++) { if (histItems[i].id === id) { it = histItems[i]; break; } }
-    if (!it) return;
-    var d = it.data;
-    setInput('producto', d.title || '');
-    setInput('costoUsd', d.costUsd || 0);
-    setInput('tasa', d.rateValue || 0);
-    setInput('margen', d.marginPercent || 0);
-    setInput('comProveedor', fracToPct(d.commissionPlatform));
-    setInput('comPasarela', fracToPct(d.commissionPaymentMethod));
-    setInput('comOtra', fracToPct(d.commissionOther));
-    setInput('gastoFijo', d.fixedExpenseBs || 0);
-    var r = $('redondeo');
-    if (r && d.roundStep && r.querySelector('option[value="' + d.roundStep + '"]')) {
-      r.value = String(d.roundStep);
-      r.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-    if (window.setDashboardTab) window.setDashboardTab('calc');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    toast('Cálculo cargado en la calculadora');
-  }
-  async function deleteHistory(id) {
-    if (!user) return;
-    try { await F.fs.deleteDoc(F.fs.doc(db, 'users', user.uid, 'history', id)); }
-    catch (e) { toast('No se pudo borrar ese cálculo'); }
-  }
-  async function clearHistory() {
-    if (!user) return;
-    if (!histItems.length) { toast('Tu historial ya está vacío'); return; }
-    if (!window.confirm('¿Borrar todo tu historial de cálculos? No se puede deshacer.')) return;
-    try {
-      var batch = F.fs.writeBatch(db);
-      histItems.forEach(function (it) { batch.delete(F.fs.doc(db, 'users', user.uid, 'history', it.id)); });
-      await batch.commit();
-      toast('Historial limpio');
-    } catch (e) { toast('No se pudo limpiar el historial'); }
-  }
-
-  /* ===== Productos: users/{uid}/products (mismo esquema que la app Flutter) ===== */
-  var backfilledProds = {};
-  // Migración única de productos viejos de la web al esquema de la app: les
-  // pone el campo 'id', convierte las fechas a strings ISO y deja las
-  // comisiones en fracción, para que la app también pueda leerlos.
-  function maybeBackfillProduct(docSnap) {
-    var d = docSnap.data();
-    var legacy = !d.id || d.nombre != null || d.margenSugerido != null ||
-      (d.createdAt && d.createdAt.toDate) || (d.updatedAt && d.updatedAt.toDate);
-    if (!legacy || backfilledProds[docSnap.id]) return;
-    backfilledProds[docSnap.id] = true;
-    var n = normalizeProduct(d);
-    var full = {
-      v: 1, id: docSnap.id, name: n.name, costUsd: n.costUsd,
-      marginPercent: n.marginPercent, fixedExpenseBs: n.fixedExpenseBs,
-      commissionPlatform: n.commissionPlatform,
-      commissionPaymentMethod: n.commissionPaymentMethod,
-      commissionOther: n.commissionOther,
-      roundStep: n.roundStep, rateSourceName: n.rateSourceName,
-      marginMode: 'onSale',
-      createdAt: n.createdAt || new Date().toISOString(),
-      updatedAt: n.updatedAt || new Date().toISOString()
-    };
-    if (n.customRateValue != null) full.customRateValue = n.customRateValue;
-    F.fs.setDoc(docSnap.ref, full, { merge: true }).catch(function (e) { console.error(e); });
-  }
-  function subscribeProducts() {
-    if (unsubProd) { unsubProd(); unsubProd = null; }
-    if (!user || !db) return;
-    var q = F.fs.query(
-      F.fs.collection(db, 'users', user.uid, 'products'),
-      F.fs.orderBy('updatedAt', 'desc'),
-      F.fs.limit(100)
-    );
-    unsubProd = F.fs.onSnapshot(q, function (snap) {
-      prodItems = [];
-      snap.forEach(function (d) {
-        prodItems.push({ id: d.id, data: d.data() });
-        maybeBackfillProduct(d);
-      });
-      renderProducts();
-    }, function (e) { console.error(e); toast('No se pudieron leer tus productos'); });
-  }
-  function renderProducts() {
-    var b = $('badgeProd');
-    if (b) {
-      b.textContent = prodItems.length;
-      b.hidden = prodItems.length === 0;
-    }
-    var list = $('prodList');
-    if (!list) return;
-    var empty = $('prodEmpty');
-    if (empty) empty.style.display = prodItems.length ? 'none' : '';
-    var html = '';
-    prodItems.forEach(function (it) {
-      var d = normalizeProduct(it.data);
-      html += '<div class="item-row">'
-        + '<div class="item-meta"><b>' + esc(d.name || 'Producto') + '</b>'
-        + '<span>Costo 
+<script type="module" src="auth.js"></script>
 </body>
 </html>,    fecha:'Vigente: Hoy (10 nov)' },
     binance: { label:'Binance · USDT (P2P)',     value:1077.97,  unit:'USDT', fecha:'Hoy' },
@@ -2289,6 +1932,13 @@ window.FIREBASE_CONFIG = {
   var fmtBs = new Intl.NumberFormat('es-VE',{minimumFractionDigits:2, maximumFractionDigits:2});
   var fmtBs0 = new Intl.NumberFormat('es-VE',{minimumFractionDigits:0, maximumFractionDigits:0});
   var fmtPct = new Intl.NumberFormat('es-VE',{minimumFractionDigits:1, maximumFractionDigits:1});
+
+  /* ===== MODO DE MARGEN (onCost vs onSale) ===== */
+  var marginMode = 'onCost';
+  try {
+    var savedMode = localStorage.getItem('cmv_margin_mode');
+    if (savedMode === 'onSale' || savedMode === 'onCost') marginMode = savedMode;
+  } catch(e){}
 
   function num(id, def){
     var el = $(id);
@@ -2448,635 +2098,77 @@ window.FIREBASE_CONFIG = {
     });
   }
 
-  function calc(){
-    var elProducto = $('producto');
-    var producto = (elProducto && elProducto.value.trim()) || 'Producto';
-    var costoUsd = num('costoUsd');
-    var tasa = num('tasa');
-    var margen = num('margen');
-    var comP = num('comProveedor'), comPa = num('comPasarela'), comO = num('comOtra');
-    var comTotal = comP + comPa + comO;
-    var gasto = num('gastoFijo');
-    var elRedondeo = $('redondeo');
-    var step = elRedondeo ? (parseFloat(elRedondeo.value) || 1) : 1;
+  /* ===== SLIDER DE MARGEN & CHIPS ===== */
+  function updateSliderFill(val){
+    var r = $('margenRange');
+    if (!r) return;
+    var min = parseFloat(r.min) || 0;
+    var max = parseFloat(r.max) || 60;
+    var pct = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+    r.style.background = 'linear-gradient(to right, #00e599 0%, #00e599 ' + pct + '%, #24352b ' + pct + '%, #24352b 100%)';
+  }
 
-    // Sync slider + chips
-    var elMargenRange = $('margenRange');
-    if (elMargenRange) elMargenRange.value = Math.min(60, Math.max(0, margen));
-    setTxt('margenBig', fmtPct.format(margen).replace(',0',''));
+  function syncMarginChips(val){
     document.querySelectorAll('#marginChips .chip').forEach(function(c){
-      c.classList.toggle('active', parseFloat(c.getAttribute('data-margen')) === margen);
+      c.classList.toggle('active', parseFloat(c.getAttribute('data-margen')) === val);
     });
-    setTxt('comTotalLabel', fmtPct.format(comTotal) + '%');
-    setTxt('resProducto', producto);
+  }
 
-    var costoBs = costoUsd * tasa;
-    var denom = 1 - comTotal/100 - margen/100;
-    var alertBox = $('alertBox');
-
-    if (denom <= 0 || tasa <= 0){
-      if (alertBox) alertBox.classList.add('show');
-      last = null;
-      window.__margenesLast = null; // gancho para auth.js (historial)
-      return;
+  /* ===== GESTIÓN DE MODO DE MARGEN ===== */
+  function setMarginMode(mode){
+    if (mode !== 'onSale') mode = 'onCost';
+    marginMode = mode;
+    try { localStorage.setItem('cmv_margin_mode', mode); } catch(e){}
+    var btnCost = $('btnModeCost');
+    var btnSale = $('btnModeSale');
+    if (btnCost) btnCost.classList.toggle('active', mode === 'onCost');
+    if (btnSale) btnSale.classList.toggle('active', mode === 'onSale');
+    var hint = $('modeFormulaHint');
+    if (hint) {
+      hint.textContent = mode === 'onCost'
+        ? 'Markup directo: Precio = Costo × (1 + Margen) ÷ (1 − Comisiones)'
+        : 'Margen comercial: Precio = Costo ÷ (1 − Comisiones − Margen)';
     }
-    if (alertBox) alertBox.classList.remove('show');
-
-    var precioExacto = (costoBs + gasto) / denom;
-    var precioFinal = roundUp(precioExacto, step);
-    var precioUsd = tasa > 0 ? precioFinal / tasa : 0;
-    var comisionesBs = precioFinal * (comTotal/100);
-    var gananciaBs = precioFinal - costoBs - gasto - comisionesBs;
-    var gananciaUsd = tasa > 0 ? gananciaBs / tasa : 0;
-    var margenReal = precioFinal > 0 ? (gananciaBs / precioFinal) * 100 : 0;
-
-    setTxt('precioFinal', fmtBs0.format(precioFinal));
-    setTxt('precioExacto', 'Bs ' + fmtBs.format(precioExacto));
-    setTxt('precioUsd', '
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(precioUsd));
-    setTxt('roundedNote', step <= 1 ? 'Precio exacto, sin redondeo aplicado' : '↑ Precio exacto Bs ' + fmtBs.format(precioExacto) + ' → redondeado hacia arriba a Bs ' + fmtBs0.format(precioFinal));
-    setTxt('gananciaBs', 'Bs ' + fmtBs.format(gananciaBs));
-    setTxt('gananciaUsd', '
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(gananciaUsd) + ' por venta · margen real ' + fmtPct.format(margenReal) + '%');
-    setTxt('comisionesBs', 'Bs ' + fmtBs.format(comisionesBs));
-    setTxt('comisionesPct', fmtPct.format(comTotal) + '% del precio');
-    setTxt('costoBsLabel', 'Bs ' + fmtBs.format(costoBs + gasto));
-    setTxt('costoUsdLabel', '
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(costoUsd) + ' al proveedor' + (gasto>0 ? ' + gasto fijo' : ''));
-
-    var pCosto = precioFinal>0 ? ((costoBs+gasto)/precioFinal)*100 : 0;
-    var pCom = comTotal;
-    var pGan = precioFinal>0 ? (gananciaBs/precioFinal)*100 : 0;
-
-    var barC = $('barCosto'), barCm = $('barCom'), barG = $('barGan');
-    if (barC) barC.style.width = Math.max(0,pCosto) + '%';
-    if (barCm) barCm.style.width = Math.max(0,pCom) + '%';
-    if (barG) barG.style.width = Math.max(0,pGan) + '%';
-
-    setTxt('legCosto', fmtPct.format(pCosto) + '%');
-    setTxt('legCom', fmtPct.format(pCom) + '%');
-    setTxt('legGan', fmtPct.format(pGan) + '%');
-
-    // Steps
-    setTxt('step1f', '
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(costoUsd) + ' × ' + fmtBs.format(tasa) + ' Bs/
-<script type="module" src="auth.js"></script>
-</body>
-</html>);
-    setTxt('step1r', 'Bs ' + fmtBs.format(costoBs));
-    setTxt('step2f', fmtPct.format(comP) + '% + ' + fmtPct.format(comPa) + '% + ' + fmtPct.format(comO) + '%');
-    setTxt('step2r', fmtPct.format(comTotal) + '% en comisiones');
-    setTxt('step3r', '1 − ' + (comTotal/100).toFixed(2).replace('.',',') + ' − ' + (margen/100).toFixed(2).replace('.',',') + ' = ' + denom.toFixed(2).replace('.',','));
-    setTxt('step4f', '(Bs ' + fmtBs.format(costoBs + gasto) + ') ÷ ' + denom.toFixed(2).replace('.',','));
-    setTxt('step4r', 'Bs ' + fmtBs.format(precioExacto));
-    setTxt('step5r', 'Ganancia: Bs ' + fmtBs.format(gananciaBs) + ' (' + fmtPct.format(margenReal) + '%)');
-
-    // Table
-    var elTabla = $('tablaBody');
-    if (elTabla){
-      var margins = [10,15,20,25,30,35,40];
-      var html = '';
-      margins.forEach(function(m){
-        var d = 1 - comTotal/100 - m/100;
-        if (d <= 0){ return; }
-        var p = roundUp((costoBs + gasto) / d, step);
-        var g = p - costoBs - gasto - p*(comTotal/100);
-        var cls = (m === margen) ? ' class="current"' : '';
-        html += '<tr'+cls+'><td>' + m + '%</td><td>Bs ' + fmtBs0.format(p) + '</td><td>
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(tasa>0 ? p/tasa : 0) + '</td><td>Bs ' + fmtBs.format(g) + '</td></tr>';
-      });
-      elTabla.innerHTML = html;
+    var heroF = $('heroFormula');
+    if (heroF) {
+      heroF.textContent = mode === 'onCost'
+        ? 'Precio = (Costo Bs × (1 + Margen) + Gasto fijo) ÷ (1 − Comisiones)'
+        : 'Precio = (Costo Bs + Gasto fijo) ÷ (1 − Comisiones − Margen)';
     }
-
-    // Reverse
-    var precioActual = num('precioActual');
-    var vBox = $('verdictBox');
-    if (vBox){
-      if (precioActual > 0){
-        var comBsA = precioActual * (comTotal/100);
-        var ganA = precioActual - costoBs - gasto - comBsA;
-        var margenA = (ganA / precioActual) * 100;
-        setTxt('verdictBig', 'Margen real: ' + fmtPct.format(margenA) + '%');
-        vBox.className = 'verdict ' + (ganA < 0 ? 'bad' : (margenA < 10 ? 'warn' : 'good'));
-        if (ganA < 0){
-          setTxt('verdictText', 'Estás PERDIENDO Bs ' + fmtBs.format(Math.abs(ganA)) + ' en cada venta ( 
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(tasa>0 ? Math.abs(ganA)/tasa : 0) + ' ). Sube el precio al menos a Bs ' + fmtBs0.format(precioFinal) + ' para ganar el ' + fmtPct.format(margen) + '% que quieres.');
-        } else if (margenA < 10){
-          setTxt('verdictText', 'Ganas Bs ' + fmtBs.format(ganA) + ' por venta, pero el margen es muy bajo: cualquier subida de tasa o comisión te pone en pérdida. El precio sano para ti es Bs ' + fmtBs0.format(precioFinal) + '.');
-        } else {
-          setTxt('verdictText', 'Ganas Bs ' + fmtBs.format(ganA) + ' por venta ( 
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(tasa>0 ? ganA/tasa : 0) + ' ). Margen sano. Compáralo con tu meta del ' + fmtPct.format(margen) + '%: el precio para esa meta es Bs ' + fmtBs0.format(precioFinal) + '.');
-        }
-      } else {
-        vBox.className = 'verdict warn';
-        setTxt('verdictBig', 'Margen real: —');
-        setTxt('verdictText', 'Escribe un precio para ver tu margen real.');
-      }
+    var heroSub = $('heroFormulaSub');
+    if (heroSub) {
+      heroSub.innerHTML = mode === 'onCost'
+        ? 'El margen se calcula como <strong>porcentaje directo del costo</strong> (Markup).'
+        : 'El margen se calcula <strong>sobre el precio de venta</strong> para no perder capital al reponer.';
     }
-
-    last = { producto:producto, costoUsd:costoUsd, tasa:tasa, margen:margen, comTotal:comTotal, comP:comP, comPa:comPa, comO:comO, gasto:gasto, costoBs:costoBs, precioExacto:precioExacto, precioFinal:precioFinal, precioUsd:precioUsd, comisionesBs:comisionesBs, gananciaBs:gananciaBs, gananciaUsd:gananciaUsd, margenReal:margenReal, denom:denom };
-    window.__margenesLast = last; // gancho para auth.js (historial)
-  }
-
-  ids.forEach(function(id){
-    var el = $(id);
-    if (el) {
-      el.addEventListener('input', calc);
-      el.addEventListener('change', calc);
+    var suffix = $('margenSuffix');
+    if (suffix) {
+      suffix.textContent = mode === 'onCost' ? '% sobre el costo' : '% sobre la venta';
     }
-  });
-
-  // Tasa: tarjetas de fuente + edición manual
-  document.querySelectorAll('.rate-card').forEach(function(c){
-    c.addEventListener('click', function(){ selectRate(c.getAttribute('data-rate'), true); });
-  });
-
-  var elTasa = $('tasa');
-  if (elTasa) {
-    elTasa.addEventListener('input', function(){
-      RATES.custom.value = num('tasa');
-      if (rateSource !== 'custom'){ rateSource = 'custom'; }
-      renderRates(); calc();
-    });
-    elTasa.addEventListener('change', calc);
-  }
-
-  var btnRef = $('btnRefreshRates');
-  if (btnRef) btnRef.addEventListener('click', refreshRates);
-
-  var elRange = $('margenRange');
-  var elMargen = $('margen');
-  if (elRange) elRange.addEventListener('input', function(){ if (elMargen) elMargen.value = this.value; calc(); });
-  if (elMargen) elMargen.addEventListener('input', function(){ if (elRange) elRange.value = this.value; });
-
-  document.querySelectorAll('#marginChips .chip').forEach(function(c){
-    c.addEventListener('click', function(){
-      if (elMargen) elMargen.value = c.getAttribute('data-margen');
-      calc();
-    });
-  });
-
-  var bcp = $('btnCopiarPrecio');
-  if (bcp) bcp.addEventListener('click', function(){
-    if(!last) return;
-    copiar('Bs ' + fmtBs0.format(last.precioFinal) + ' (
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(last.precioUsd) + ')', 'Precio copiado: Bs ' + fmtBs0.format(last.precioFinal));
-    if (window.__margenesOnCopyPrice) window.__margenesOnCopyPrice(); // guardado automático en el historial
-  });
-
-  var bcm = $('btnCopiarMensaje');
-  if (bcm) bcm.addEventListener('click', function(){
-    if(!last) return;
-    var txt = last.producto + '\nPrecio: Bs ' + fmtBs0.format(last.precioFinal) + ' (
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(last.precioUsd) + ')\nTasa: Bs ' + fmtBs.format(last.tasa) + ' por $1\nPago Móvil disponible. Entrega inmediata.';
-    copiar(txt, 'Mensaje para el cliente copiado');
-  });
-
-  var bcd = $('btnCopiarDesglose');
-  if (bcd) bcd.addEventListener('click', function(){
-    if(!last) return;
-    var txt = 'DESGLOSE — ' + last.producto + '\n'
-      + '1) Costo en Bs: 
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(last.costoUsd) + ' × ' + fmtBs.format(last.tasa) + ' = Bs ' + fmtBs.format(last.costoBs) + '\n'
-      + '2) Comisiones totales: ' + fmtPct.format(last.comTotal) + '% (' + fmtPct.format(last.comP) + '% proveedor + ' + fmtPct.format(last.comPa) + '% pasarela + ' + fmtPct.format(last.comO) + '% otra)\n'
-      + '3) Denominador: 1 − ' + fmtPct.format(last.comTotal) + '% − ' + fmtPct.format(last.margen) + '% = ' + last.denom.toFixed(2).replace('.',',') + '\n'
-      + '4) Precio exacto: (Bs ' + fmtBs.format(last.costoBs + last.gasto) + ') ÷ ' + last.denom.toFixed(2).replace('.',',') + ' = Bs ' + fmtBs.format(last.precioExacto) + '\n'
-      + '5) Precio a cobrar (redondeado hacia arriba): Bs ' + fmtBs0.format(last.precioFinal) + ' (
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(last.precioUsd) + ')\n'
-      + 'Ganancia neta: Bs ' + fmtBs.format(last.gananciaBs) + ' (
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(last.gananciaUsd) + ') · Margen real: ' + fmtPct.format(last.margenReal) + '%';
-    copiar(txt, 'Desglose completo copiado');
-  });
-
-  /* ===== DASHBOARD TABS ===== */
-  function setDashboardTab(tabId) {
-    if (!tabId) tabId = 'calc';
-    document.querySelectorAll('.dash-tab').forEach(function(b){
-      b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
-    });
-    document.querySelectorAll('.dash-view').forEach(function(v){
-      v.classList.toggle('active', v.id === 'tabView-' + tabId);
-    });
-    if (tabId === 'tasas') updateGapDisplay();
-  }
-  window.setDashboardTab = setDashboardTab;
-
-  document.querySelectorAll('.dash-tab').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var tid = btn.getAttribute('data-tab');
-      setDashboardTab(tid);
-    });
-  });
-
-  renderRates();
-  calc();
-  refreshRates();
-})();
-</script>
-<script type="module" src="auth.js"></script>
-</body>
-</html> + fmtBs.format(d.costUsd || 0) + ' · Margen ' + fmtBs.format(d.marginPercent || 0) + '%</span></div>'
-        + '<div class="item-actions"><button type="button" class="btn-mini" data-load-prod="' + it.id + '">Cargar</button>'
-        + '<button type="button" class="btn-mini" data-edit-prod="' + it.id + '">Editar</button>'
-        + '<button type="button" class="btn-mini danger" data-del-prod="' + it.id + '">✕</button></div></div>';
-    });
-    list.innerHTML = html;
-  }
-  function findProd(id) {
-    for (var i = 0; i < prodItems.length; i++) { if (prodItems[i].id === id) return prodItems[i]; }
-    return null;
-  }
-  function loadProduct(id) {
-    var it = findProd(id);
-    if (!it) return;
-    var d = normalizeProduct(it.data);
-    setInput('producto', d.name || '');
-    setInput('costoUsd', d.costUsd || 0);
-    setInput('margen', d.marginPercent || 0);
-    setInput('comProveedor', fracToPct(d.commissionPlatform));
-    setInput('comPasarela', fracToPct(d.commissionPaymentMethod));
-    setInput('comOtra', fracToPct(d.commissionOther));
-    setInput('gastoFijo', d.fixedExpenseBs || 0);
-    var r = $('redondeo');
-    if (r && d.roundStep && r.querySelector('option[value="' + d.roundStep + '"]')) {
-      r.value = String(d.roundStep);
-      r.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-    if (window.setDashboardTab) window.setDashboardTab('calc');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    toast('Producto cargado en la calculadora');
-  }
-  function editProduct(id) {
-    var it = findProd(id);
-    if (!it) return;
-    var d = normalizeProduct(it.data);
-    $('prodNombre').value = d.name || '';
-    $('prodCosto').value = d.costUsd || 0;
-    $('prodMargen').value = d.marginPercent || 0;
-    $('prodComP').value = fracToPct(d.commissionPlatform);
-    $('prodComPa').value = fracToPct(d.commissionPaymentMethod);
-    $('prodComO').value = fracToPct(d.commissionOther);
-    $('prodGasto').value = d.fixedExpenseBs || 0;
-    $('prodEditId').value = id;
-    var btn = $('btnProdGuardar'); if (btn) btn.textContent = 'Guardar cambios';
-    var cancel = $('btnProdCancelar'); if (cancel) cancel.hidden = false;
-    $('prodNombre').focus();
-  }
-  function resetProdForm() {
-    var form = $('prodForm');
-    if (form) form.reset();
-    $('prodEditId').value = '';
-    var btn = $('btnProdGuardar'); if (btn) btn.textContent = 'Agregar producto';
-    var cancel = $('btnProdCancelar'); if (cancel) cancel.hidden = true;
-  }
-  async function saveProduct(ev) {
-    if (ev) ev.preventDefault();
-    if (!user) { toast('Inicia sesión para guardar productos'); return; }
-    var nombre = ($('prodNombre').value || '').trim();
-    if (!nombre) { toast('Ponle un nombre al producto'); $('prodNombre').focus(); return; }
-    // La app descarta productos con costo <= 0.
-    if (numVal('prodCosto', 0) <= 0) { toast('El costo debe ser mayor que 0'); $('prodCosto').focus(); return; }
-    var now = new Date().toISOString();
-    var editId = $('prodEditId').value;
-    var stored = editId ? normalizeProduct((findProd(editId) || { data: {} }).data) : null;
-    // Al editar se conservan la fuente de tasa, el redondeo y la tasa
-    // personalizada que ya tenía el producto; al crear se usan los valores
-    // actuales de la calculadora como predeterminados.
-    var rateName = (stored && stored.rateSourceName) || currentRateSourceName();
-    var data = {
-      v: 1,
-      name: nombre,
-      costUsd: numVal('prodCosto', 0),
-      marginPercent: numVal('prodMargen', 20),
-      fixedExpenseBs: numVal('prodGasto', 0),
-      commissionPlatform: pctToFrac(numVal('prodComP', 0)),
-      commissionPaymentMethod: pctToFrac(numVal('prodComPa', 0)),
-      commissionOther: pctToFrac(numVal('prodComO', 0)),
-      roundStep: (stored && stored.roundStep) || currentRoundStep(),
-      rateSourceName: rateName,
-      marginMode: 'onSale', // la fórmula de esta web es margen sobre la venta
-      updatedAt: now
-    };
-    if (rateName === 'custom') {
-      var cr = (stored && stored.customRateValue) || numVal('tasa', 0);
-      if (cr > 0) data.customRateValue = cr;
-    }
-    try {
-      if (editId) {
-        data.id = editId;
-        data.createdAt = (stored && stored.createdAt) || now;
-        // Limpia los campos del esquema viejo, si los tenía el documento.
-        data.nombre = F.fs.deleteField();
-        data.margenSugerido = F.fs.deleteField();
-        data.comProveedor = F.fs.deleteField();
-        data.comPasarela = F.fs.deleteField();
-        data.comOtra = F.fs.deleteField();
-        data.gastoFijo = F.fs.deleteField();
-        await F.fs.updateDoc(F.fs.doc(db, 'users', user.uid, 'products', editId), data);
-        toast('Producto actualizado');
-      } else {
-        var ref = newDocRef('products');
-        data.id = ref.id;
-        data.createdAt = now;
-        await F.fs.setDoc(ref, data);
-        toast('Producto guardado');
-      }
-      resetProdForm();
-    } catch (e) {
-      console.error(e);
-      toast('No se pudo guardar el producto');
-    }
-  }
-  async function deleteProduct(id) {
-    if (!user) return;
-    if (!window.confirm('¿Eliminar este producto?')) return;
-    try { await F.fs.deleteDoc(F.fs.doc(db, 'users', user.uid, 'products', id)); }
-    catch (e) { toast('No se pudo eliminar el producto'); }
-  }
-
-  /* ===== Cableado de la UI ===== */
-  function wire() {
-    var btnEntrar = $('btnEntrar');
-    if (btnEntrar) btnEntrar.addEventListener('click', function () { showReset(false); setAuthMode('login'); openAuth(); });
-    var btnSalir = $('btnSalir');
-    if (btnSalir) btnSalir.addEventListener('click', async function () {
-      if (!auth) return;
-      try { await F.auth.signOut(auth); toast('Sesión cerrada'); }
-      catch (e) { toast('No se pudo cerrar la sesión'); }
-    });
-    var btnCerrar = $('btnCerrarModal');
-    if (btnCerrar) {
-      btnCerrar.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        closeAuth();
-      });
-    }
-    var modal = $('authModal');
-    if (modal) {
-      modal.addEventListener('click', function (e) {
-        if (e.target === modal) closeAuth();
-      });
-    }
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') closeAuth();
-    });
-    var tabLogin = $('tabLogin');
-    if (tabLogin) tabLogin.addEventListener('click', function () { setAuthMode('login'); });
-    var tabRegister = $('tabRegister');
-    if (tabRegister) tabRegister.addEventListener('click', function () { setAuthMode('register'); });
-    var btnGoogle = $('btnGoogle');
-    if (btnGoogle) btnGoogle.addEventListener('click', loginGoogle);
-    var btnSubmit = $('btnAuthSubmit');
-    if (btnSubmit) btnSubmit.addEventListener('click', submitEmail);
-    var authPass = $('authPass');
-    if (authPass) authPass.addEventListener('keydown', function (e) { if (e.key === 'Enter') submitEmail(); });
-    var linkReset = $('linkReset');
-    if (linkReset) linkReset.addEventListener('click', function (e) { e.preventDefault(); showReset(true); });
-    var linkVolver = $('linkVolverLogin');
-    if (linkVolver) linkVolver.addEventListener('click', function (e) { e.preventDefault(); showReset(false); });
-    var btnReset = $('btnResetSend');
-    if (btnReset) btnReset.addEventListener('click', sendReset);
-
-    document.querySelectorAll('[data-open-auth]').forEach(function (b) {
-      b.addEventListener('click', function () { showReset(false); setAuthMode('login'); openAuth(); });
-    });
-
-    var btnGuardar = $('btnGuardarCalculo');
-    if (btnGuardar) btnGuardar.addEventListener('click', function () { saveCalculation(false); });
-
-    var btnLimpiar = $('btnLimpiarHist');
-    if (btnLimpiar) btnLimpiar.addEventListener('click', clearHistory);
-    var histList = $('histList');
-    if (histList) histList.addEventListener('click', function (e) {
-      var t = e.target;
-      if (!t.getAttribute) return;
-      var loadId = t.getAttribute('data-load-hist');
-      var delId = t.getAttribute('data-del-hist');
-      if (loadId) loadHistory(loadId);
-      else if (delId) deleteHistory(delId);
-    });
-
-    var prodForm = $('prodForm');
-    if (prodForm) prodForm.addEventListener('submit', saveProduct);
-    var btnCancel = $('btnProdCancelar');
-    if (btnCancel) btnCancel.addEventListener('click', resetProdForm);
-    var prodList = $('prodList');
-    if (prodList) prodList.addEventListener('click', function (e) {
-      var t = e.target;
-      if (!t.getAttribute) return;
-      var loadId = t.getAttribute('data-load-prod');
-      var editId = t.getAttribute('data-edit-prod');
-      var delId = t.getAttribute('data-del-prod');
-      if (loadId) loadProduct(loadId);
-      else if (editId) editProduct(editId);
-      else if (delId) deleteProduct(delId);
-    });
-  }
-
-  wire();
-  setAuthMode('login');
-  closeAuth();
-  initFirebase();
-})();
-
-</script>
-</body>
-</html>,    fecha:'Vigente: Hoy (10 nov)' },
-    binance: { label:'Binance · USDT (P2P)',     value:1077.97,  unit:'USDT', fecha:'Hoy' },
-    euro:    { label:'BCV · Euro oficial',       value:1006.61,  unit:'€',    fecha:'Vigente: Hoy (10 nov)' },
-    custom:  { label:'Personalizada',            value:899.27,   unit:'
-<script type="module" src="auth.js"></script>
-</body>
-</html>,    fecha:'' }
-  };
-  var rateSource = 'bcv';
-  var fmtBs = new Intl.NumberFormat('es-VE',{minimumFractionDigits:2, maximumFractionDigits:2});
-  var fmtBs0 = new Intl.NumberFormat('es-VE',{minimumFractionDigits:0, maximumFractionDigits:0});
-  var fmtPct = new Intl.NumberFormat('es-VE',{minimumFractionDigits:1, maximumFractionDigits:1});
-
-  function num(id, def){
-    var el = $(id);
-    if (!el) return def || 0;
-    var v = parseFloat(String(el.value).replace(',','.'));
-    return isNaN(v) || v < 0 ? (def||0) : v;
-  }
-  function toast(msg){
-    var t = $('toast');
-    if (!t) return;
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(function(){ t.classList.remove('show'); }, 2200);
-  }
-  function copiar(texto, msg){
-    function done(){ toast(msg); }
-    if (navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(texto).then(done).catch(function(){ fallback(); });
-    } else { fallback(); }
-    function fallback(){
-      var ta = document.createElement('textarea'); ta.value = texto; ta.style.position='fixed'; ta.style.opacity='0';
-      document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); done(); } catch(e){ toast('No se pudo copiar, selecciónalo a mano'); }
-      document.body.removeChild(ta);
-    }
-  }
-  function roundUp(v, step){ return step <= 1 ? v : Math.ceil(v / step) * step; }
-
-  var last = null;
-
-  /* ===== LÓGICA DE TASAS ===== */
-  function fmtRate(v){ return 'Bs ' + fmtBs.format(v); }
-  function renderRates(){
-    ['bcv','binance','euro','custom'].forEach(function(k){
-      var el = $('rateVal-' + k);
-      if (el) el.innerHTML = fmtRate(RATES[k].value) + ' <small>/ ' + RATES[k].unit + '</small>';
-      var elSrc = $('rateSrc-' + k);
-      if (elSrc) {
-        if (k === 'bcv') elSrc.textContent = RATES.bcv.fecha || 'Oficial';
-        else if (k === 'euro') elSrc.textContent = RATES.euro.fecha || 'Oficial EUR';
-      }
-    });
-    document.querySelectorAll('.rate-card').forEach(function(c){
-      c.classList.toggle('active', c.getAttribute('data-rate') === rateSource);
-    });
-    var lbl = $('tasaFuenteLabel');
-    if (lbl) lbl.textContent = rateSource === 'custom' ? 'Personalizada · escrita a mano' : RATES[rateSource].label + (RATES[rateSource].fecha ? ' · ' + RATES[rateSource].fecha : '');
-    updateGapDisplay();
-  }
-  function updateGapDisplay(){
-    var bcv = RATES.bcv.value;
-    var binance = RATES.binance.value;
-    var elPct = $('gapPct');
-    var elDiff = $('gapDiff');
-    if (!elPct || !elDiff || !bcv || !binance) return;
-    var diff = binance - bcv;
-    var pct = (diff / bcv) * 100;
-    var sign = diff >= 0 ? '+' : '';
-    elPct.textContent = sign + pct.toFixed(2).replace('.', ',') + '%';
-    elDiff.textContent = 'Diferencia: ' + sign + 'Bs ' + fmtBs.format(diff) + ' por USD';
-  }
-  function setStatus(state, msg){
-    var d = $('rateDot');
-    if (d) d.className = 'dot' + (state === 'ok' ? ' ok' : state === 'err' ? ' err' : '');
-    var s = $('rateStatus');
-    if (s) s.textContent = msg;
-  }
-  function selectRate(key, fromUser){
-    rateSource = key;
-    var elTasa = $('tasa');
-    if (key === 'custom'){
-      RATES.custom.value = num('tasa') || RATES.custom.value;
-    } else {
-      if (elTasa) elTasa.value = RATES[key].value;
-    }
-    renderRates();
     calc();
-    if (fromUser && key !== 'custom') toast('Tasa activa: ' + RATES[key].label + ' — Bs ' + fmtBs.format(RATES[key].value));
   }
-  function horaAhora(){
-    try { return new Intl.DateTimeFormat('es-VE',{hour:'numeric',minute:'2-digit'}).format(new Date()); }
-    catch(e){ return ''; }
-  }
-  function fetchJSON(url, opts){
-    return fetch(url, opts || {}).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
-  }
+  window.getMarginMode = function(){ return marginMode; };
+  window.setMarginMode = function(m){ setMarginMode(m); };
 
-  function refreshRates(){
-    var btn = $('btnRefreshRates');
-    if (btn) { btn.disabled = true; btn.textContent = 'Actualizando…'; }
-    setStatus('', 'Buscando tasas en vivo…');
-    var got = { bcv:false, euro:false, binance:false };
-    var jobs = [];
-
-    function applyRate(key, value, fechaTxt){
-      if (!value || !(value > 0)) return;
-      RATES[key].value = Math.round(value * 100) / 100;
-      if (fechaTxt) RATES[key].fecha = fechaTxt;
-      got[key] = true;
-      if (rateSource === key) {
-        var elTasa = $('tasa');
-        if (elTasa) elTasa.value = RATES[key].value;
+  /* ===== UNIFICACIÓN GUÍA EN PC & MÓVIL ===== */
+  function syncGuideSlot(){
+    var content = $('guideContent');
+    var desktopSlot = $('desktopGuideSlot');
+    var mobileSlot = $('mobileGuideSlot');
+    if (!content || !desktopSlot || !mobileSlot) return;
+    if (window.innerWidth > 960) {
+      if (content.parentNode !== desktopSlot) {
+        desktopSlot.appendChild(content);
+      }
+    } else {
+      if (content.parentNode !== mobileSlot) {
+        mobileSlot.appendChild(content);
       }
     }
-
-    // 1) BCV (Dólar y Euro) — Principal: BCV Today (rápido, vigencia oficial, sin clave)
-    //    Respaldo: DolarAPI oficial (USD y EUR)
-    var bcvJob = fetchJSON('https://bcv.today/api/v1/rate.json')
-      .then(function(d){
-        if (d){
-          var effDate = d.effective_date || d.date;
-          var vigTxt = formatEffDate(effDate);
-          if (d.USD) applyRate('bcv', d.USD, vigTxt);
-          if (d.EUR) applyRate('euro', d.EUR, vigTxt);
-        }
-      })
-      .catch(function(){
-        // Respaldo DolarAPI
-        return Promise.all([
-          fetchJSON('https://ve.dolarapi.com/v1/dolares/oficial')
-            .then(function(d){
-              if (!got.bcv && d && d.promedio){
-                var eff = (d.fechaActualizacion || '').split('T')[0];
-                applyRate('bcv', d.promedio, formatEffDate(eff));
-              }
-            }).catch(function(){}),
-          fetchJSON('https://ve.dolarapi.com/v1/euros/oficial')
-            .then(function(d){
-              if (!got.euro && d && d.promedio){
-                var eff = (d.fechaActualizacion || '').split('T')[0];
-                applyRate('euro', d.promedio, formatEffDate(eff));
-              }
-            }).catch(function(){})
-        ]);
-      });
-    jobs.push(bcvJob);
-
-    // 2) Binance USDT — Paralelo vía DolarAPI
-    jobs.push(
-      fetchJSON('https://ve.dolarapi.com/v1/dolares/paralelo')
-        .then(function(d){
-          if (d && d.promedio) applyRate('binance', d.promedio, 'Hoy');
-        })
-        .catch(function(){})
-    );
-
-    Promise.all(jobs).then(function(){
-      if (btn) { btn.disabled = false; btn.textContent = '↻ Actualizar tasas'; }
-      renderRates();
-      try { calc(); } catch(e){ console.error('calc error:', e); }
-      var n = (got.bcv?1:0) + (got.euro?1:0) + (got.binance?1:0);
-      if (n === 3) setStatus('ok', 'Tasas en vivo · actualizadas hoy a las ' + horaAhora());
-      else if (n > 0) setStatus('ok', 'Tasas actualizadas · ' + horaAhora());
-      else setStatus('err', 'Sin conexión: se usan las tasas guardadas.');
-    }).catch(function(err){
-      if (btn) { btn.disabled = false; btn.textContent = '↻ Actualizar tasas'; }
-      setStatus('err', 'Sin conexión: se usan las tasas guardadas.');
-    });
   }
+  window.addEventListener('resize', syncGuideSlot);
 
+  /* ===== CÁLCULO PRINCIPAL ===== */
   function calc(){
     var elProducto = $('producto');
     var producto = (elProducto && elProducto.value.trim()) || 'Producto';
@@ -3089,35 +2181,55 @@ window.FIREBASE_CONFIG = {
     var elRedondeo = $('redondeo');
     var step = elRedondeo ? (parseFloat(elRedondeo.value) || 1) : 1;
 
-    // Sync slider + chips
-    var elMargenRange = $('margenRange');
-    if (elMargenRange) elMargenRange.value = Math.min(60, Math.max(0, margen));
+    // Actualiza indicador grande, chips y barra deslizable
     setTxt('margenBig', fmtPct.format(margen).replace(',0',''));
-    document.querySelectorAll('#marginChips .chip').forEach(function(c){
-      c.classList.toggle('active', parseFloat(c.getAttribute('data-margen')) === margen);
-    });
+    updateSliderFill(Math.min(60, Math.max(0, margen)));
+    syncMarginChips(margen);
     setTxt('comTotalLabel', fmtPct.format(comTotal) + '%');
     setTxt('resProducto', producto);
 
     var costoBs = costoUsd * tasa;
-    var denom = 1 - comTotal/100 - margen/100;
+    var comFraction = comTotal / 100;
+    var margenFraction = margen / 100;
+    var denom;
+    var precioExacto;
     var alertBox = $('alertBox');
 
-    if (denom <= 0 || tasa <= 0){
-      if (alertBox) alertBox.classList.add('show');
-      last = null;
-      window.__margenesLast = null; // gancho para auth.js (historial)
-      return;
+    if (marginMode === 'onCost') {
+      denom = 1 - comFraction;
+      if (denom <= 0 || tasa <= 0) {
+        if (alertBox) {
+          alertBox.classList.add('show');
+          alertBox.textContent = '⚠ Comisiones (' + fmtPct.format(comTotal) + '%) >= 100%. Baja las comisiones para poder calcular el precio.';
+        }
+        last = null;
+        window.__margenesLast = null;
+        return;
+      }
+      if (alertBox) alertBox.classList.remove('show');
+      precioExacto = ((costoBs * (1 + margenFraction)) + gasto) / denom;
+    } else {
+      denom = 1 - comFraction - margenFraction;
+      if (denom <= 0 || tasa <= 0) {
+        if (alertBox) {
+          alertBox.classList.add('show');
+          alertBox.textContent = '⚠ Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o más. Baja el margen o revisa las comisiones.';
+        }
+        last = null;
+        window.__margenesLast = null;
+        return;
+      }
+      if (alertBox) alertBox.classList.remove('show');
+      precioExacto = (costoBs + gasto) / denom;
     }
-    if (alertBox) alertBox.classList.remove('show');
 
-    var precioExacto = (costoBs + gasto) / denom;
     var precioFinal = roundUp(precioExacto, step);
     var precioUsd = tasa > 0 ? precioFinal / tasa : 0;
-    var comisionesBs = precioFinal * (comTotal/100);
+    var comisionesBs = precioFinal * comFraction;
     var gananciaBs = precioFinal - costoBs - gasto - comisionesBs;
     var gananciaUsd = tasa > 0 ? gananciaBs / tasa : 0;
-    var margenReal = precioFinal > 0 ? (gananciaBs / precioFinal) * 100 : 0;
+    var margenRealSale = precioFinal > 0 ? (gananciaBs / precioFinal) * 100 : 0;
+    var margenRealCost = costoBs > 0 ? (gananciaBs / costoBs) * 100 : 0;
 
     setTxt('precioFinal', fmtBs0.format(precioFinal));
     setTxt('precioExacto', 'Bs ' + fmtBs.format(precioExacto));
@@ -3127,10 +2239,19 @@ window.FIREBASE_CONFIG = {
 </html> + fmtBs.format(precioUsd));
     setTxt('roundedNote', step <= 1 ? 'Precio exacto, sin redondeo aplicado' : '↑ Precio exacto Bs ' + fmtBs.format(precioExacto) + ' → redondeado hacia arriba a Bs ' + fmtBs0.format(precioFinal));
     setTxt('gananciaBs', 'Bs ' + fmtBs.format(gananciaBs));
-    setTxt('gananciaUsd', '
+
+    if (marginMode === 'onCost') {
+      setTxt('gananciaUsd', '
 <script type="module" src="auth.js"></script>
 </body>
-</html> + fmtBs.format(gananciaUsd) + ' por venta · margen real ' + fmtPct.format(margenReal) + '%');
+</html> + fmtBs.format(gananciaUsd) + ' por venta · margen s/costo ' + fmtPct.format(margenRealCost) + '% (s/venta: ' + fmtPct.format(margenRealSale) + '%)');
+    } else {
+      setTxt('gananciaUsd', '
+<script type="module" src="auth.js"></script>
+</body>
+</html> + fmtBs.format(gananciaUsd) + ' por venta · margen real ' + fmtPct.format(margenRealSale) + '%');
+    }
+
     setTxt('comisionesBs', 'Bs ' + fmtBs.format(comisionesBs));
     setTxt('comisionesPct', fmtPct.format(comTotal) + '% del precio');
     setTxt('costoBsLabel', 'Bs ' + fmtBs.format(costoBs + gasto));
@@ -3152,7 +2273,7 @@ window.FIREBASE_CONFIG = {
     setTxt('legCom', fmtPct.format(pCom) + '%');
     setTxt('legGan', fmtPct.format(pGan) + '%');
 
-    // Steps
+    // Desglose paso a paso
     setTxt('step1f', '
 <script type="module" src="auth.js"></script>
 </body>
@@ -3163,21 +2284,38 @@ window.FIREBASE_CONFIG = {
     setTxt('step1r', 'Bs ' + fmtBs.format(costoBs));
     setTxt('step2f', fmtPct.format(comP) + '% + ' + fmtPct.format(comPa) + '% + ' + fmtPct.format(comO) + '%');
     setTxt('step2r', fmtPct.format(comTotal) + '% en comisiones');
-    setTxt('step3r', '1 − ' + (comTotal/100).toFixed(2).replace('.',',') + ' − ' + (margen/100).toFixed(2).replace('.',',') + ' = ' + denom.toFixed(2).replace('.',','));
-    setTxt('step4f', '(Bs ' + fmtBs.format(costoBs + gasto) + ') ÷ ' + denom.toFixed(2).replace('.',','));
-    setTxt('step4r', 'Bs ' + fmtBs.format(precioExacto));
-    setTxt('step5r', 'Ganancia: Bs ' + fmtBs.format(gananciaBs) + ' (' + fmtPct.format(margenReal) + '%)');
 
-    // Table
+    if (marginMode === 'onCost') {
+      setTxt('step3f', '100% − Comisiones (divisor pasarela)');
+      setTxt('step3r', '1 − ' + comFraction.toFixed(2).replace('.',',') + ' = ' + denom.toFixed(2).replace('.',','));
+      setTxt('step4f', '(Bs ' + fmtBs.format(costoBs) + ' × (1 + ' + margenFraction.toFixed(2).replace('.',',') + ') + Bs ' + fmtBs.format(gasto) + ') ÷ ' + denom.toFixed(2).replace('.',','));
+      setTxt('step4r', 'Bs ' + fmtBs.format(precioExacto));
+      setTxt('step5r', 'Ganancia: Bs ' + fmtBs.format(gananciaBs) + ' (s/costo ' + fmtPct.format(margenRealCost) + '%)');
+    } else {
+      setTxt('step3f', '100% − Comisiones − Margen');
+      setTxt('step3r', '1 − ' + comFraction.toFixed(2).replace('.',',') + ' − ' + margenFraction.toFixed(2).replace('.',',') + ' = ' + denom.toFixed(2).replace('.',','));
+      setTxt('step4f', '(Bs ' + fmtBs.format(costoBs + gasto) + ') ÷ ' + denom.toFixed(2).replace('.',','));
+      setTxt('step4r', 'Bs ' + fmtBs.format(precioExacto));
+      setTxt('step5r', 'Ganancia: Bs ' + fmtBs.format(gananciaBs) + ' (' + fmtPct.format(margenRealSale) + '%)');
+    }
+
+    // Tabla comparativa
     var elTabla = $('tablaBody');
     if (elTabla){
       var margins = [10,15,20,25,30,35,40];
       var html = '';
       margins.forEach(function(m){
-        var d = 1 - comTotal/100 - m/100;
-        if (d <= 0){ return; }
-        var p = roundUp((costoBs + gasto) / d, step);
-        var g = p - costoBs - gasto - p*(comTotal/100);
+        var mFrac = m / 100;
+        var pEx;
+        if (marginMode === 'onCost') {
+          pEx = ((costoBs * (1 + mFrac)) + gasto) / denom;
+        } else {
+          var d = 1 - comFraction - mFrac;
+          if (d <= 0) return;
+          pEx = (costoBs + gasto) / d;
+        }
+        var p = roundUp(pEx, step);
+        var g = p - costoBs - gasto - p * comFraction;
         var cls = (m === margen) ? ' class="current"' : '';
         html += '<tr'+cls+'><td>' + m + '%</td><td>Bs ' + fmtBs0.format(p) + '</td><td>
 <script type="module" src="auth.js"></script>
@@ -3187,22 +2325,27 @@ window.FIREBASE_CONFIG = {
       elTabla.innerHTML = html;
     }
 
-    // Reverse
+    // Calculadora inversa
     var precioActual = num('precioActual');
     var vBox = $('verdictBox');
     if (vBox){
       if (precioActual > 0){
-        var comBsA = precioActual * (comTotal/100);
+        var comBsA = precioActual * comFraction;
         var ganA = precioActual - costoBs - gasto - comBsA;
-        var margenA = (ganA / precioActual) * 100;
-        setTxt('verdictBig', 'Margen real: ' + fmtPct.format(margenA) + '%');
-        vBox.className = 'verdict ' + (ganA < 0 ? 'bad' : (margenA < 10 ? 'warn' : 'good'));
+        var margenRealA = (ganA / precioActual) * 100;
+        var margenRealCostA = costoBs > 0 ? (ganA / costoBs) * 100 : 0;
+        if (marginMode === 'onCost') {
+          setTxt('verdictBig', 'Margen s/costo: ' + fmtPct.format(margenRealCostA) + '% (s/venta: ' + fmtPct.format(margenRealA) + '%)');
+        } else {
+          setTxt('verdictBig', 'Margen real: ' + fmtPct.format(margenRealA) + '%');
+        }
+        vBox.className = 'verdict ' + (ganA < 0 ? 'bad' : (margenRealA < 10 ? 'warn' : 'good'));
         if (ganA < 0){
           setTxt('verdictText', 'Estás PERDIENDO Bs ' + fmtBs.format(Math.abs(ganA)) + ' en cada venta ( 
 <script type="module" src="auth.js"></script>
 </body>
 </html> + fmtBs.format(tasa>0 ? Math.abs(ganA)/tasa : 0) + ' ). Sube el precio al menos a Bs ' + fmtBs0.format(precioFinal) + ' para ganar el ' + fmtPct.format(margen) + '% que quieres.');
-        } else if (margenA < 10){
+        } else if (margenRealA < 10){
           setTxt('verdictText', 'Ganas Bs ' + fmtBs.format(ganA) + ' por venta, pero el margen es muy bajo: cualquier subida de tasa o comisión te pone en pérdida. El precio sano para ti es Bs ' + fmtBs0.format(precioFinal) + '.');
         } else {
           setTxt('verdictText', 'Ganas Bs ' + fmtBs.format(ganA) + ' por venta ( 
@@ -3217,10 +2360,32 @@ window.FIREBASE_CONFIG = {
       }
     }
 
-    last = { producto:producto, costoUsd:costoUsd, tasa:tasa, margen:margen, comTotal:comTotal, comP:comP, comPa:comPa, comO:comO, gasto:gasto, costoBs:costoBs, precioExacto:precioExacto, precioFinal:precioFinal, precioUsd:precioUsd, comisionesBs:comisionesBs, gananciaBs:gananciaBs, gananciaUsd:gananciaUsd, margenReal:margenReal, denom:denom };
+    last = {
+      producto: producto,
+      costoUsd: costoUsd,
+      tasa: tasa,
+      margen: margen,
+      marginMode: marginMode,
+      comTotal: comTotal,
+      comP: comP,
+      comPa: comPa,
+      comO: comO,
+      gasto: gasto,
+      costoBs: costoBs,
+      precioExacto: precioExacto,
+      precioFinal: precioFinal,
+      precioUsd: precioUsd,
+      comisionesBs: comisionesBs,
+      gananciaBs: gananciaBs,
+      gananciaUsd: gananciaUsd,
+      margenReal: margenRealSale,
+      margenRealCost: margenRealCost,
+      denom: denom
+    };
     window.__margenesLast = last; // gancho para auth.js (historial)
   }
 
+  // Escucha inputs numéricos genéricos
   ids.forEach(function(id){
     var el = $(id);
     if (el) {
@@ -3228,6 +2393,55 @@ window.FIREBASE_CONFIG = {
       el.addEventListener('change', calc);
     }
   });
+
+  // Slider de margen deslizable continuo (nunca se traba ni reinicia al arrastrar)
+  var elRange = $('margenRange');
+  var elMargen = $('margen');
+  if (elRange) {
+    elRange.addEventListener('input', function(){
+      var val = parseFloat(this.value);
+      if (isNaN(val)) return;
+      if (elMargen) elMargen.value = val;
+      setTxt('margenBig', fmtPct.format(val).replace(',0',''));
+      updateSliderFill(val);
+      syncMarginChips(val);
+      calc();
+    });
+  }
+  if (elMargen) {
+    elMargen.addEventListener('input', function(){
+      var val = parseFloat(this.value);
+      if (!isNaN(val)) {
+        if (elRange) elRange.value = Math.min(60, Math.max(0, val));
+        setTxt('margenBig', fmtPct.format(val).replace(',0',''));
+        updateSliderFill(Math.min(60, Math.max(0, val)));
+        syncMarginChips(val);
+      }
+      calc();
+    });
+    elMargen.addEventListener('change', calc);
+  }
+
+  // Chips de margen rápido
+  document.querySelectorAll('#marginChips .chip').forEach(function(c){
+    c.addEventListener('click', function(){
+      var val = parseFloat(c.getAttribute('data-margen'));
+      if (!isNaN(val)) {
+        if (elMargen) elMargen.value = val;
+        if (elRange) elRange.value = val;
+        setTxt('margenBig', fmtPct.format(val).replace(',0',''));
+        updateSliderFill(val);
+        syncMarginChips(val);
+        calc();
+      }
+    });
+  });
+
+  // Botones de selección de modo de margen (Sobre costo vs Sobre venta)
+  var btnModeCost = $('btnModeCost');
+  if (btnModeCost) btnModeCost.addEventListener('click', function(){ setMarginMode('onCost'); });
+  var btnModeSale = $('btnModeSale');
+  if (btnModeSale) btnModeSale.addEventListener('click', function(){ setMarginMode('onSale'); });
 
   // Tasa: tarjetas de fuente + edición manual
   document.querySelectorAll('.rate-card').forEach(function(c){
@@ -3247,18 +2461,7 @@ window.FIREBASE_CONFIG = {
   var btnRef = $('btnRefreshRates');
   if (btnRef) btnRef.addEventListener('click', refreshRates);
 
-  var elRange = $('margenRange');
-  var elMargen = $('margen');
-  if (elRange) elRange.addEventListener('input', function(){ if (elMargen) elMargen.value = this.value; calc(); });
-  if (elMargen) elMargen.addEventListener('input', function(){ if (elRange) elRange.value = this.value; });
-
-  document.querySelectorAll('#marginChips .chip').forEach(function(c){
-    c.addEventListener('click', function(){
-      if (elMargen) elMargen.value = c.getAttribute('data-margen');
-      calc();
-    });
-  });
-
+  // Botones de acción y portapapeles
   var bcp = $('btnCopiarPrecio');
   if (bcp) bcp.addEventListener('click', function(){
     if(!last) return;
@@ -3282,28 +2485,54 @@ window.FIREBASE_CONFIG = {
   var bcd = $('btnCopiarDesglose');
   if (bcd) bcd.addEventListener('click', function(){
     if(!last) return;
-    var txt = 'DESGLOSE — ' + last.producto + '\n'
-      + '1) Costo en Bs: 
+    var txt;
+    if (last.marginMode === 'onCost') {
+      txt = 'DESGLOSE (Sobre costo / Markup) — ' + last.producto + '\n'
+        + '1) Costo en Bs: 
 <script type="module" src="auth.js"></script>
 </body>
 </html> + fmtBs.format(last.costoUsd) + ' × ' + fmtBs.format(last.tasa) + ' = Bs ' + fmtBs.format(last.costoBs) + '\n'
-      + '2) Comisiones totales: ' + fmtPct.format(last.comTotal) + '% (' + fmtPct.format(last.comP) + '% proveedor + ' + fmtPct.format(last.comPa) + '% pasarela + ' + fmtPct.format(last.comO) + '% otra)\n'
-      + '3) Denominador: 1 − ' + fmtPct.format(last.comTotal) + '% − ' + fmtPct.format(last.margen) + '% = ' + last.denom.toFixed(2).replace('.',',') + '\n'
-      + '4) Precio exacto: (Bs ' + fmtBs.format(last.costoBs + last.gasto) + ') ÷ ' + last.denom.toFixed(2).replace('.',',') + ' = Bs ' + fmtBs.format(last.precioExacto) + '\n'
-      + '5) Precio a cobrar (redondeado hacia arriba): Bs ' + fmtBs0.format(last.precioFinal) + ' (
+        + '2) Comisiones: ' + fmtPct.format(last.comTotal) + '% (' + fmtPct.format(last.comP) + '% proveedor + ' + fmtPct.format(last.comPa) + '% pasarela + ' + fmtPct.format(last.comO) + '% otra)\n'
+        + '3) Markup s/costo: ' + fmtPct.format(last.margen) + '% -> Costo con margen: Bs ' + fmtBs.format(last.costoBs * (1 + last.margen/100)) + '\n'
+        + '4) Precio exacto: (Costo con margen + Gasto) ÷ (1 − Comisiones) = Bs ' + fmtBs.format(last.precioExacto) + '\n'
+        + '5) Precio a cobrar: Bs ' + fmtBs0.format(last.precioFinal) + ' (
 <script type="module" src="auth.js"></script>
 </body>
 </html> + fmtBs.format(last.precioUsd) + ')\n'
-      + 'Ganancia neta: Bs ' + fmtBs.format(last.gananciaBs) + ' (
+        + 'Ganancia neta: Bs ' + fmtBs.format(last.gananciaBs) + ' (
+<script type="module" src="auth.js"></script>
+</body>
+</html> + fmtBs.format(last.gananciaUsd) + ') · Margen s/costo: ' + fmtPct.format(last.margenRealCost) + '% (s/venta: ' + fmtPct.format(last.margenReal) + '%)';
+    } else {
+      txt = 'DESGLOSE (Sobre venta / Comercial) — ' + last.producto + '\n'
+        + '1) Costo en Bs: 
+<script type="module" src="auth.js"></script>
+</body>
+</html> + fmtBs.format(last.costoUsd) + ' × ' + fmtBs.format(last.tasa) + ' = Bs ' + fmtBs.format(last.costoBs) + '\n'
+        + '2) Comisiones totales: ' + fmtPct.format(last.comTotal) + '% (' + fmtPct.format(last.comP) + '% proveedor + ' + fmtPct.format(last.comPa) + '% pasarela + ' + fmtPct.format(last.comO) + '% otra)\n'
+        + '3) Denominador: 1 − ' + fmtPct.format(last.comTotal) + '% − ' + fmtPct.format(last.margen) + '% = ' + last.denom.toFixed(2).replace('.',',') + '\n'
+        + '4) Precio exacto: (Bs ' + fmtBs.format(last.costoBs + last.gasto) + ') ÷ ' + last.denom.toFixed(2).replace('.',',') + ' = Bs ' + fmtBs.format(last.precioExacto) + '\n'
+        + '5) Precio a cobrar (redondeado hacia arriba): Bs ' + fmtBs0.format(last.precioFinal) + ' (
+<script type="module" src="auth.js"></script>
+</body>
+</html> + fmtBs.format(last.precioUsd) + ')\n'
+        + 'Ganancia neta: Bs ' + fmtBs.format(last.gananciaBs) + ' (
 <script type="module" src="auth.js"></script>
 </body>
 </html> + fmtBs.format(last.gananciaUsd) + ') · Margen real: ' + fmtPct.format(last.margenReal) + '%';
+    }
     copiar(txt, 'Desglose completo copiado');
   });
 
   /* ===== DASHBOARD TABS ===== */
   function setDashboardTab(tabId) {
     if (!tabId) tabId = 'calc';
+    if (tabId === 'guia' && window.innerWidth > 960) {
+      setDashboardTab('calc');
+      var elSlot = $('desktopGuideSlot');
+      if (elSlot) elSlot.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
     document.querySelectorAll('.dash-tab').forEach(function(b){
       b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
     });
@@ -3321,10 +2550,13 @@ window.FIREBASE_CONFIG = {
     });
   });
 
+  // Inicialización
+  syncGuideSlot();
+  setMarginMode(marginMode);
   renderRates();
-  calc();
   refreshRates();
 })();
+
 </script>
 <script type="module" src="auth.js"></script>
 </body>

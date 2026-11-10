@@ -326,7 +326,7 @@
       commissionOther: pctToFrac(last.comO),
       roundStep: currentRoundStep(),
       rateSourceName: currentRateSourceName(),
-      marginMode: 'onSale', // la fórmula de esta web es margen sobre la venta
+      marginMode: (window.getMarginMode ? window.getMarginMode() : 'onCost'),
       rateValue: last.tasa,
       finalPriceBs: last.precioFinal,
       precioExactoBs: last.precioExacto, // extras: la app los ignora
@@ -394,9 +394,10 @@
       // app no lo traen y entonces no se muestra.
       var gan = (typeof d.gananciaBs === 'number')
         ? '<span class="green">+ Bs ' + fmtBs.format(d.gananciaBs) + '</span>' : '';
+      var modeLabel = (d.marginMode === 'onCost') ? 's/costo' : 's/venta';
       html += '<div class="item-row">'
         + '<div class="item-meta"><b>' + esc(d.title || 'Producto') + '</b>'
-        + '<span>' + esc(fecha) + ' · Tasa Bs ' + fmtBs.format(d.rateValue || 0) + '</span></div>'
+        + '<span>' + esc(fecha) + ' · Tasa Bs ' + fmtBs.format(d.rateValue || 0) + ' (' + modeLabel + ')</span></div>'
         + '<div class="item-vals"><strong>Bs ' + fmtBs0.format(d.finalPriceBs || 0) + '</strong>'
         + gan + '</div>'
         + '<div class="item-actions"><button type="button" class="btn-mini" data-load-hist="' + it.id + '">Cargar</button>'
@@ -417,6 +418,7 @@
     setInput('comPasarela', fracToPct(d.commissionPaymentMethod));
     setInput('comOtra', fracToPct(d.commissionOther));
     setInput('gastoFijo', d.fixedExpenseBs || 0);
+    if (window.setMarginMode) window.setMarginMode(d.marginMode || 'onSale');
     var r = $('redondeo');
     if (r && d.roundStep && r.querySelector('option[value="' + d.roundStep + '"]')) {
       r.value = String(d.roundStep);
@@ -499,9 +501,10 @@
     var html = '';
     prodItems.forEach(function (it) {
       var d = normalizeProduct(it.data);
+      var modeLabel = (d.marginMode === 'onCost') ? 's/costo' : 's/venta';
       html += '<div class="item-row">'
         + '<div class="item-meta"><b>' + esc(d.name || 'Producto') + '</b>'
-        + '<span>Costo $' + fmtBs.format(d.costUsd || 0) + ' · Margen ' + fmtBs.format(d.marginPercent || 0) + '%</span></div>'
+        + '<span>Costo $' + fmtBs.format(d.costUsd || 0) + ' · Margen ' + fmtBs.format(d.marginPercent || 0) + '% (' + modeLabel + ')</span></div>'
         + '<div class="item-actions"><button type="button" class="btn-mini" data-load-prod="' + it.id + '">Cargar</button>'
         + '<button type="button" class="btn-mini" data-edit-prod="' + it.id + '">Editar</button>'
         + '<button type="button" class="btn-mini danger" data-del-prod="' + it.id + '">✕</button></div></div>';
@@ -523,6 +526,7 @@
     setInput('comPasarela', fracToPct(d.commissionPaymentMethod));
     setInput('comOtra', fracToPct(d.commissionOther));
     setInput('gastoFijo', d.fixedExpenseBs || 0);
+    if (window.setMarginMode) window.setMarginMode(d.marginMode || 'onCost');
     var r = $('redondeo');
     if (r && d.roundStep && r.querySelector('option[value="' + d.roundStep + '"]')) {
       r.value = String(d.roundStep);
@@ -580,7 +584,7 @@
       commissionOther: pctToFrac(numVal('prodComO', 0)),
       roundStep: (stored && stored.roundStep) || currentRoundStep(),
       rateSourceName: rateName,
-      marginMode: 'onSale', // la fórmula de esta web es margen sobre la venta
+      marginMode: (stored && stored.marginMode) || (window.getMarginMode ? window.getMarginMode() : 'onCost'),
       updatedAt: now
     };
     if (rateName === 'custom') {
