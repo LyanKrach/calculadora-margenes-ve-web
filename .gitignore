@@ -1,0 +1,5 @@
+# Ignorar archivos locales y secretos
+.DS_Store
+*.log
+.env
+.env.local

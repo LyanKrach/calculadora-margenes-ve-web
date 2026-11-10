@@ -1,0 +1,1558 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>Calculadora de mÃ¡rgenes para vendedores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+    --bg:#F4F1E9;
+    --bg2:#EDE8DC;
+    --card:#FFFFFF;
+    --card2:#FFFDF6;
+    --ink:#12211A;
+    --muted:#5A6B62;
+    --line:#DAD2BE;
+    --green:#0E4A34;
+    --green2:#146B4A;
+    --green-soft:#E3EFE7;
+    --amber:#D97706;
+    --amber-soft:#FEF3C7;
+    --amber-ink:#92400E;
+    --red:#B42318;
+    --red-soft:#FEF2F2;
+    --shadow:0 12px 32px rgba(18,33,26,.10);
+    --radius:20px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0D1512;
+      --bg2:#111D17;
+      --card:#16211C;
+      --card2:#1A2921;
+      --ink:#EDF5EF;
+      --muted:#9AB0A4;
+      --line:#2A3D33;
+      --green:#2ED3A0;
+      --green2:#34D399;
+      --green-soft:#123527;
+      --amber:#F59E0B;
+      --amber-soft:#2A1F08;
+      --amber-ink:#FCD34D;
+      --red:#F87171;
+      --red-soft:#2A1210;
+      --shadow:0 12px 32px rgba(0,0,0,.35);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Archivo",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--green2)}
+  .wrap{max-width:1160px;margin:0 auto;padding:20px 18px 48px}
+  /* HERO */
+  .hero{padding:18px 0 22px;display:grid;grid-template-columns:1.25fr .75fr;gap:20px;align-items:end}
+  .kicker{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--bg);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:11px;padding:7px 10px;border-radius:999px}
+  .kicker i{width:7px;height:7px;background:#2ED3A0;border-radius:50%;display:block}
+  h1{font-size:clamp(36px,6vw,62px);line-height:.92;letter-spacing:-.04em;margin:14px 0 12px;font-weight:900}
+  h1 em{font-style:normal;color:var(--green2);text-decoration:underline;text-decoration-thickness:5px;text-underline-offset:6px;text-decoration-color:var(--amber)}
+  .hero p{font-size:17px;color:var(--muted);max-width:620px;margin:0}
+  .hero-card{background:var(--green);color:#EFFFF6;border-radius:18px;padding:18px 18px 16px;box-shadow:var(--shadow)}
+  @media (prefers-color-scheme: dark){.hero-card{background:#123527;border:1px solid var(--line)}}
+  .hero-card b{font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+  .hero-card .formula{font-family:"JetBrains Mono",monospace;font-weight:800;font-size:15px;line-height:1.45;margin:10px 0 8px;word-break:break-word}
+  .hero-card p{color:#CDE8D9;font-size:13.5px;margin:0}
+  /* LAYOUT */
+  .layout{display:grid;grid-template-columns:460px 1fr;gap:18px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .panel{padding:20px}
+  .panel h2{margin:0 0 4px;font-size:19px;letter-spacing:-.02em}
+  .panel .sub{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+  label{font-size:12.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;margin:16px 0 7px}
+  label:first-of-type{margin-top:0}
+  label span{font-weight:600;text-transform:none;letter-spacing:0;color:var(--muted)}
+  .input-row{display:flex;gap:8px}
+  .field{flex:1;display:flex;align-items:center;background:var(--card2);border:1.5px solid var(--line);border-radius:14px;overflow:hidden}
+  .field:focus-within{border-color:var(--green2);box-shadow:0 0 0 3px var(--green-soft)}
+  .field .prefix{padding:0 0 0 13px;font-family:"JetBrains Mono",monospace;font-weight:800;color:var(--muted);font-size:14px;white-space:nowrap}
+  .field .suffix{padding:0 13px 0 0;font-weight:800;color:var(--muted);font-size:13px;white-space:nowrap}
+  input[type="number"],input[type="text"],select{width:100%;border:0;background:transparent;color:var(--ink);font-family:"JetBrains Mono",monospace;font-weight:700;font-size:17px;padding:12px 10px;outline:none;min-width:0}
+  input[type="text"]{font-family:"Archivo",sans-serif;font-weight:600}
+  select{font-family:"Archivo",sans-serif;font-size:14px;font-weight:700;padding:11px 10px}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+  /* RATES */
+  .rates{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .rate-card{position:relative;text-align:left;background:var(--card2);border:1.5px solid var(--line);border-radius:14px;padding:12px 12px 10px;cursor:pointer;font-family:inherit;color:var(--ink);width:100%}
+  .rate-card:hover{border-color:var(--green2)}
+  .rate-card.active{border-color:var(--green2);background:var(--green-soft);box-shadow:0 0 0 2px var(--green-soft)}
+  .rate-card .rc-name{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .rate-card.active .rc-name{color:var(--green)}
+  @media (prefers-color-scheme: dark){.rate-card.active .rc-name{color:#A7F3D0}}
+  .rate-card .rc-name svg{flex:none}
+  .rate-card .rc-val{font-family:"JetBrains Mono",monospace;font-weight:800;font-size:19px;line-height:1.15;margin-top:4px;word-break:break-word}
+  .rate-card .rc-val small{font-size:11px;color:var(--muted);font-weight:700}
+  .rate-card .rc-src{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.35}
+  .rate-card .rc-check{position:absolute;top:9px;right:9px;width:18px;height:18px;border-radius:50%;background:var(--green2);color:#fff;display:none;place-items:center;font-size:11px;font-weight:900;line-height:1}
+  .rate-card.active .rc-check{display:grid}
+  .rate-status{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);margin-top:12px;flex-wrap:wrap}
+  .rate-status .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);flex:none}
+  .rate-status .dot.ok{background:var(--green2)}
+  .rate-status .dot.err{background:var(--red)}
+  .rate-refresh{margin-left:auto;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit}
+  .rate-refresh:hover{border-color:var(--green2)}
+  .rate-refresh:disabled{opacity:.5;cursor:wait}
+  .apikey-row{display:none;margin-top:12px}
+  .apikey-row.show{display:block}
+  .rate-note{font-size:12px;color:var(--muted);margin-top:10px;background:var(--bg2);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;line-height:1.5}
+  .rate-note b{color:var(--ink)}
+  /* margin slider */
+  .margin-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .margin-big{font-family:"JetBrains Mono",monospace;font-size:34px;font-weight:800;line-height:1;color:var(--green2)}
+  input[type="range"]{width:100%;accent-color:var(--green2);height:28px;cursor:pointer}
+  .ticks{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-weight:700;margin-top:-2px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+  .chip{border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:7px 11px;border-radius:999px;font-weight:700;font-size:12.5px;cursor:pointer}
+  .chip:hover{border-color:var(--green2)}
+  .chip.active{background:var(--green);color:#fff;border-color:var(--green)}
+  .divider{height:1px;background:var(--line);margin:20px 0 4px}
+  .total-line{display:flex;justify-content:space-between;align-items:center;background:var(--amber-soft);border:1px solid #FDE68A;border-radius:12px;padding:10px 12px;margin-top:12px}
+  @media (prefers-color-scheme: dark){.total-line{border-color:#4A3508}}
+  .total-line b{font-size:13px;color:var(--amber-ink)}
+  .total-line strong{font-family:"JetBrains Mono",monospace;color:var(--amber-ink)}
+  /* RESULT */
+  .result{overflow:hidden}
+  .result-top{background:var(--green);color:#fff;padding:22px}
+  @media (prefers-color-scheme: dark){.result-top{background:#0F2E20}}
+  .result-top .label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;opacity:.8}
+  .price{font-family:"JetBrains Mono",monospace;font-size:clamp(38px,5vw,56px);font-weight:800;line-height:1;letter-spacing:-.03em;margin:8px 0 4px;word-break:break-word}
+  .price small{font-size:18px;opacity:.85}
+  .price-usd{font-size:15px;opacity:.92;font-weight:600}
+  .rounded-note{margin-top:12px;display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);padding:7px 10px;border-radius:999px;font-size:12.5px;font-weight:700}
+  .stats{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--line)}
+  .stat{padding:15px 16px;border-right:1px solid var(--line)}
+  .stat:last-child{border-right:0}
+  .stat span{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .stat strong{display:block;font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px;word-break:break-word}
+  .stat strong.green{color:var(--green2)}
+  .bar-wrap{padding:16px 18px 6px}
+  .bar{display:flex;height:18px;border-radius:999px;overflow:hidden;background:var(--bg2);border:1px solid var(--line)}
+  .bar div{height:100%;transition:width .25s ease}
+  .bar-costo{background:#334155}
+  @media (prefers-color-scheme: dark){.bar-costo{background:#94A3B8}}
+  .bar-com{background:var(--amber)}
+  .bar-gan{background:var(--green2)}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;padding:10px 2px 14px;font-size:12.5px;color:var(--muted);font-weight:600}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:-1px}
+  .actions{display:flex;flex-wrap:wrap;gap:9px;padding:0 18px 18px}
+  button.primary,button.secondary{border:0;cursor:pointer;font-weight:800;border-radius:12px;padding:12px 15px;font-size:14px}
+  button.primary{background:var(--ink);color:var(--bg)}
+  button.secondary{background:var(--green-soft);color:var(--green);border:1px solid var(--line)}
+  @media (prefers-color-scheme: dark){button.secondary{color:#A7F3D0}}
+  button:active{transform:translateY(1px)}
+  .alert{display:none;margin:0 18px 18px;background:var(--red-soft);border:1px solid #FECACA;color:var(--red);border-radius:12px;padding:12px 13px;font-size:13.5px;font-weight:600}
+  .alert.show{display:block}
+  /* STEPS */
+  .section{margin-top:18px}
+  .section-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin:22px 0 12px}
+  .section-head h2{font-size:24px;letter-spacing:-.03em;margin:0;line-height:1.05}
+  .section-head p{color:var(--muted);margin:0;max-width:520px;font-size:14px}
+  .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px}
+  .step .num{width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:"JetBrains Mono",monospace;font-weight:800;font-size:13px;margin-bottom:10px}
+  .step b{font-size:13px;display:block;line-height:1.25}
+  .step code{display:block;font-family:"JetBrains Mono",monospace;font-size:11.5px;background:var(--bg2);border-radius:8px;padding:8px;margin:9px 0;color:var(--muted);word-break:break-word}
+  .step strong{font-family:"JetBrains Mono",monospace;font-size:14px;word-break:break-word}
+  /* TABLE + REVERSE */
+  .two{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:start}
+  table{width:100%;border-collapse:collapse;overflow:hidden}
+  th,td{padding:11px 13px;text-align:right;border-bottom:1px solid var(--line);font-size:14px}
+  th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:right;background:var(--card2)}
+  th:first-child,td:first-child{text-align:left}
+  td{font-family:"JetBrains Mono",monospace;font-weight:600}
+  td:first-child{font-family:"Archivo",sans-serif;font-weight:800}
+  tr.current td{background:var(--green-soft);color:var(--green)}
+  @media (prefers-color-scheme: dark){tr.current td{color:#A7F3D0}}
+  .verdict{border-radius:14px;padding:14px;margin-top:14px;font-weight:700;font-size:14px}
+  .verdict.bad{background:var(--red-soft);color:var(--red);border:1px solid #FECACA}
+  .verdict.warn{background:var(--amber-soft);color:var(--amber-ink);border:1px solid #FDE68A}
+  .verdict.good{background:var(--green-soft);color:var(--green);border:1px solid var(--line)}
+  @media (prefers-color-scheme: dark){.verdict.good{color:#A7F3D0}}
+  .verdict .big{font-family:"JetBrains Mono",monospace;font-size:26px;display:block;line-height:1.1}
+  /* TIPS */
+  .tips{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .tip{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .tip h3{margin:0 0 7px;font-size:15px}
+  .tip p{margin:0;color:var(--muted);font-size:13.5px}
+  .tip .tag{font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:800;color:var(--amber);letter-spacing:.06em;text-transform:uppercase}
+  footer{color:var(--muted);font-size:12.5px;text-align:center;padding:26px 0 4px}
+  .toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,80px);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:999px;font-weight:800;font-size:13.5px;box-shadow:var(--shadow);transition:transform .25s ease;z-index:20;max-width:92vw;text-align:center}
+  .toast.show{transform:translate(-50%,0)}
+  @media (max-width:960px){
+    .hero{grid-template-columns:1fr}
+    .layout{grid-template-columns:1fr}
+    .steps{grid-template-columns:1fr 1fr}
+    .two{grid-template-columns:1fr}
+    .tips{grid-template-columns:1fr}
+    .stats{grid-template-columns:1fr}
+    .stat{border-right:0;border-bottom:1px solid var(--line)}
+    .stat:last-child{border-bottom:0}
+  }
+  @media (max-width:520px){ .steps{grid-template-columns:1fr} .wrap{padding:14px 12px 36px} }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;scroll-behavior:auto !important} }
+
+  /* CUENTAS / HISTORIAL / PRODUCTOS */
+  .authbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:2px 0 14px}
+  .authbar-brand{font-weight:900;letter-spacing:-.02em;font-size:15px}
+  .authbar-brand b{color:var(--green2)}
+  .auth-btn{padding:9px 14px;font-size:13px}
+  .auth-user{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:13.5px}
+  .notice{font-size:13px;color:var(--amber-ink);background:var(--amber-soft);border:1px solid #FDE68A;border-radius:12px;padding:11px 13px;line-height:1.5;margin-bottom:14px}
+  @media (prefers-color-scheme: dark){.notice{border-color:#4A3508}}
+  .notice code{font-family:"JetBrains Mono",monospace;font-size:12px}
+  .notice .chip{margin-left:6px}
+  input[type="email"],input[type="password"]{width:100%;border:0;background:transparent;color:var(--ink);font-family:"Archivo",sans-serif;font-weight:600;font-size:16px;padding:12px 10px;outline:none;min-width:0}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+  @media (max-width:520px){.form-grid{grid-template-columns:1fr}}
+  .item-row{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid var(--line)}
+  .item-row:last-child{border-bottom:0}
+  .item-meta{flex:1;min-width:0}
+  .item-meta b{display:block;font-size:14px;word-break:break-word}
+  .item-meta span{font-size:12px;color:var(--muted)}
+  .item-vals{text-align:right;flex:none}
+  .item-vals strong{display:block;font-family:"JetBrains Mono",monospace;font-size:15px}
+  .item-vals span{font-size:12px;color:var(--muted)}
+  .item-vals span.green{color:var(--green2);font-weight:700}
+  .item-actions{display:flex;gap:6px;flex:none}
+  .btn-mini{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 11px;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit}
+  .btn-mini:hover{border-color:var(--green2)}
+  .btn-mini.danger{color:var(--red);border-color:#FECACA}
+  .btn-mini.danger:hover{border-color:var(--red)}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(10,20,14,.55);display:grid;place-items:center;z-index:30;padding:16px}
+  .modal{width:100%;max-width:420px;padding:22px;max-height:92vh;overflow-y:auto}
+  .modal-head{display:flex;justify-content:space-between;align-items:center}
+  .modal-head h2{margin:0;font-size:21px;letter-spacing:-.02em}
+  .auth-tabs{display:flex;gap:7px;margin:14px 0}
+  .google-btn{width:100%;margin-top:4px}
+  .modal .divider{margin:16px 0 4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="authbar">
+    <span class="authbar-brand">Calculadora de MÃ¡rgenes <b>VE</b></span>
+    <span id="authArea">
+      <button type="button" class="secondary auth-btn" id="btnEntrar">Entrar / Crear cuenta</button>
+      <span id="authUser" class="auth-user" hidden>
+        <span id="authUserName"></span>
+        <button type="button" class="rate-refresh" id="btnSalir">Salir</button>
+      </span>
+    </span>
+  </div>
+  <div class="notice" id="fbNotice" hidden>âš  Falta la configuraciÃ³n de Firebase: pega tu config web en <code>firebase-config.js</code> para activar cuentas, historial y productos. La calculadora sigue funcionando como invitada.</div>
+
+  <header class="hero">
+    <div>
+      <span class="kicker"><i></i> Para vendedores en Venezuela</span>
+      <h1>Vende en Bs.<br><em>Sin perder</em> ni un centavo.</h1>
+      <p>Metes tu costo en dÃ³lares, eliges la tasa â€” BCV dÃ³lar, euro BCV o Binance USDT se traen solas de internet; la cuarta la pones tÃº â€” y tus comisiones. La calculadora te devuelve el precio exacto en bolÃ­vares para ganar el margen que quieres, con el desglose paso a paso.</p>
+    </div>
+    <aside class="hero-card" aria-label="FÃ³rmula principal">
+      <b>La fÃ³rmula que usa</b>
+      <div class="formula">Precio = (Costo Bs + Gasto fijo) Ã· (1 âˆ’ Comisiones âˆ’ Margen)</div>
+      <p>El margen se calcula <strong>sobre el precio de venta</strong>, no sobre el costo. Por eso no pierdes cuando la pasarela y el proveedor se llevan su parte.</p>
+    </aside>
+  </header>
+
+  <main class="layout">
+    <!-- INPUTS -->
+    <section class="card panel" aria-label="Datos de la venta">
+      <h2>1 Â· Tus nÃºmeros</h2>
+      <p class="sub">Todo se recalcula al instante. Ajusta la tasa cada vez que cambie.</p>
+
+      <label for="producto">Producto <span>opcional, para copiar el mensaje</span></label>
+      <div class="field"><input type="text" id="producto" value="Recarga / producto digital" autocomplete="off"></div>
+
+      <label for="costoUsd">Costo en dÃ³lares <span>lo que pagas al proveedor</span></label>
+      <div class="field"><span class="prefix">$</span><input type="number" id="costoUsd" value="10" min="0" step="0.01" inputmode="decimal"></div>
+
+      <div class="divider"></div>
+      <h2 style="font-size:16px">Tasa automÃ¡tica</h2>
+      <p class="sub" style="margin-bottom:12px">Toca una tarjeta y esa tasa entra sola en el cÃ¡lculo. Sin API key: BCV y euro se traen de DolarAPI. Con tu key gratis de DolarVzla: las 3 tasas + Binance USDT en vivo.</p>
+
+      <div class="rates" role="group" aria-label="Fuente de la tasa">
+        <button type="button" class="rate-card" data-rate="bcv">
+          <span class="rc-check" aria-hidden="true">âœ“</span>
+          <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg> BCV Â· DÃ³lar</span>
+          <span class="rc-val" id="rateVal-bcv">Bs 897,54 <small>/ $</small></span>
+          <span class="rc-src">Banco Central Â· oficial</span>
+        </button>
+        <button type="button" class="rate-card" data-rate="binance">
+          <span class="rc-check" aria-hidden="true">âœ“</span>
+          <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6.5 15.2 9.7 12 12.9 8.8 9.7Z M6.5 12 3.3 15.2 6.5 18.4 9.7 15.2Z M17.5 12 20.7 15.2 17.5 18.4 14.3 15.2Z M12 14.3 15.2 17.5 12 20.7 8.8 17.5Z M12 1.8 15.2 5 12 8.2 8.8 5Z"/></svg> Binance Â· USDT</span>
+          <span class="rc-val" id="rateVal-binance">Bs 1.045,00 <small>/ USDT</small></span>
+          <span class="rc-src">P2P USDT/VES Â· mediana de anuncios</span>
+        </button>
+        <button type="button" class="rate-card" data-rate="euro">
+          <span class="rc-check" aria-hidden="true">âœ“</span>
+          <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg> BCV Â· Euro</span>
+          <span class="rc-val" id="rateVal-euro">Bs 1.001,19 <small>/ â‚¬</small></span>
+          <span class="rc-src">Banco Central Â· oficial</span>
+        </button>
+        <button type="button" class="rate-card active" data-rate="custom">
+          <span class="rc-check" aria-hidden="true">âœ“</span>
+          <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Personalizada</span>
+          <span class="rc-val" id="rateVal-custom">Bs 100,00 <small>/ $</small></span>
+          <span class="rc-src">La que escribas abajo, a mano</span>
+        </button>
+      </div>
+
+      <div class="rate-status">
+        <span class="dot" id="rateDot" aria-hidden="true"></span>
+        <span id="rateStatus">Tasas guardadas del 09/11/2026, 2:25 p. m. â€” buscando las de ahoraâ€¦</span>
+        <button type="button" class="rate-refresh" id="btnRefreshRates">â†» Actualizar tasas</button>
+      </div>
+
+      <div class="apikey-row" id="apiKeyRow">
+        <label for="apiKey" style="margin-top:0">API key de DolarVzla <span>opcional Â· gratis en dolarvzla.com</span></label>
+        <div class="input-row">
+          <div class="field"><input type="text" id="apiKey" placeholder="Pega aquÃ­ tu x-dolarvzla-key" autocomplete="off" spellcheck="false"></div>
+          <button type="button" class="secondary" id="btnSaveKey" style="white-space:nowrap">Usar key</button>
+        </div>
+        <p class="hint">Con key, un solo llamado trae BCV dÃ³lar, euro BCV y Binance USDT en vivo. La key se queda solo en esta pestaÃ±a: no se guarda en ningÃºn servidor ni en el telÃ©fono.</p>
+      </div>
+      <button type="button" class="chip" id="btnToggleKey" style="margin-top:10px">Â¿Tienes API key? Activa las tasas en vivo</button>
+
+      <label for="tasa">Tasa que entra en el cÃ¡lculo <span id="tasaFuenteLabel">Personalizada Â· escrita a mano</span></label>
+      <div class="field"><input type="number" id="tasa" value="100" min="0" step="0.01" inputmode="decimal"><span class="suffix">Bs / $</span></div>
+      <p class="hint">Usa la tasa real con la que repones: BCV, la de tu proveedor o la que pagas al cambiar. Si repones mÃ¡s caro de lo que cobras, pierdes aunque el margen se vea bien. Si tocas este nÃºmero a mano, la fuente pasa a â€œPersonalizadaâ€.</p>
+      <div class="rate-note"><b>Â¿La quieres como app en el telÃ©fono?</b> Esta misma calculadora es la base: Ã¡brela en Chrome en Android y toca â€œInstalar app / Agregar a pantalla principalâ€ para usarla como APK mientras se prepara la publicaciÃ³n en Play Store. Las tasas automÃ¡ticas funcionan igual, sin instalar nada raro.</div>
+
+      <div class="divider"></div>
+
+      <div class="margin-head">
+        <label for="margen" style="margin:0">Margen que quieres ganar</label>
+        <div class="margin-big"><span id="margenBig">20</span>%</div>
+      </div>
+      <input type="range" id="margenRange" min="0" max="60" step="1" value="20" aria-label="Margen deseado">
+      <div class="ticks"><span>0%</span><span>15%</span><span>30%</span><span>45%</span><span>60%</span></div>
+      <div class="input-row" style="margin-top:8px">
+        <div class="field"><input type="number" id="margen" value="20" min="0" max="95" step="0.5" inputmode="decimal"><span class="suffix">% sobre la venta</span></div>
+      </div>
+      <div class="chips" id="marginChips">
+        <button class="chip" data-margen="10" type="button">10% Â· rotaciÃ³n</button>
+        <button class="chip" data-margen="15" type="button">15%</button>
+        <button class="chip active" data-margen="20" type="button">20% Â· sano</button>
+        <button class="chip" data-margen="25" type="button">25%</button>
+        <button class="chip" data-margen="30" type="button">30% Â· premium</button>
+      </div>
+
+      <div class="divider"></div>
+      <h2 style="font-size:16px">Comisiones que te quitan</h2>
+      <p class="sub" style="margin-bottom:4px">EdÃ­talas con tus nÃºmeros reales. Los valores de arranque son solo un ejemplo.</p>
+
+      <label for="comProveedor">Proveedor / API</label>
+      <div class="field"><input type="number" id="comProveedor" value="5" min="0" max="90" step="0.1" inputmode="decimal"><span class="suffix">%</span></div>
+
+      <label for="comPasarela">Pasarela / verificaciÃ³n de pago</label>
+      <div class="field"><input type="number" id="comPasarela" value="2" min="0" max="90" step="0.1" inputmode="decimal"><span class="suffix">%</span></div>
+
+      <label for="comOtra">Banco, P2P u otra comisiÃ³n</label>
+      <div class="field"><input type="number" id="comOtra" value="0" min="0" max="90" step="0.1" inputmode="decimal"><span class="suffix">%</span></div>
+
+      <div class="total-line"><b>Total en comisiones</b><strong id="comTotalLabel">7,0%</strong></div>
+
+      <label for="gastoFijo">Gasto fijo por venta <span>internet, tiempo, entregaâ€¦</span></label>
+      <div class="field"><span class="prefix">Bs</span><input type="number" id="gastoFijo" value="0" min="0" step="1" inputmode="decimal"></div>
+
+      <label for="redondeo">Precio a cobrar</label>
+      <div class="field">
+        <select id="redondeo">
+          <option value="1">Exacto, sin redondear</option>
+          <option value="10" selected>Redondear hacia arriba a Bs 10</option>
+          <option value="50">Redondear hacia arriba a Bs 50</option>
+          <option value="100">Redondear hacia arriba a Bs 100</option>
+        </select>
+      </div>
+      <p class="hint">Redondear <strong>hacia arriba</strong> protege tu margen. Nunca redondees hacia abajo para â€œquedar bonitoâ€.</p>
+    </section>
+
+    <!-- RESULT -->
+    <section class="card result" aria-label="Resultado">
+      <div class="result-top">
+        <div class="label">Precio de venta a cobrar â€” <span id="resProducto">Recarga / producto digital</span></div>
+        <div class="price"><small>Bs</small> <span id="precioFinal">1.370</span></div>
+        <div class="price-usd">Equivale a <strong id="precioUsd">$13,70</strong> a la tasa que pusiste Â· Precio exacto sin redondear: <span id="precioExacto">Bs 1.369,86</span></div>
+        <div><span class="rounded-note" id="roundedNote">â†‘ Redondeado hacia arriba para no perder por el redondeo</span></div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span>Tu ganancia neta</span><strong class="green" id="gananciaBs">Bs 274,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="gananciaUsd">$2,74 por venta</span></div>
+        <div class="stat"><span>Se va en comisiones</span><strong id="comisionesBs">Bs 95,90</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="comisionesPct">7,0% del precio</span></div>
+        <div class="stat"><span>Tu costo total</span><strong id="costoBsLabel">Bs 1.000,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="costoUsdLabel">$10,00 al proveedor</span></div>
+      </div>
+
+      <div class="bar-wrap">
+        <div class="bar" role="img" aria-label="ComposiciÃ³n del precio de venta">
+          <div class="bar-costo" id="barCosto" style="width:73%"></div>
+          <div class="bar-com" id="barCom" style="width:7%"></div>
+          <div class="bar-gan" id="barGan" style="width:20%"></div>
+        </div>
+        <div class="legend">
+          <span><i style="background:#334155"></i>Costo <b id="legCosto">73,0%</b></span>
+          <span><i style="background:var(--amber)"></i>Comisiones <b id="legCom">7,0%</b></span>
+          <span><i style="background:var(--green2)"></i>Tu ganancia <b id="legGan">20,0%</b></span>
+        </div>
+      </div>
+
+      <div class="alert" id="alertBox">âš  Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o mÃ¡s. Baja el margen o revisa las comisiones.</div>
+
+      <div class="actions">
+        <button class="primary" id="btnCopiarPrecio" type="button">Copiar precio</button>
+        <button class="secondary" id="btnGuardarCalculo" type="button">Guardar cÃ¡lculo</button>
+        <button class="secondary" id="btnCopiarMensaje" type="button">Copiar mensaje para el cliente</button>
+        <button class="secondary" id="btnCopiarDesglose" type="button">Copiar desglose completo</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- STEPS -->
+  <section class="section" aria-label="Desglose paso a paso">
+    <div class="section-head">
+      <h2>2 Â· Desglose paso a paso</h2>
+      <p>AsÃ­ sale el precio, con tus nÃºmeros en vivo. Si alguien te discute el precio, esto es lo que le muestras.</p>
+    </div>
+    <div class="steps">
+      <article class="step"><div class="num">1</div><b>Pasa el costo a bolÃ­vares</b><code id="step1f">Costo $ Ã— Tasa</code><strong id="step1r">Bs 1.000,00</strong></article>
+      <article class="step"><div class="num">2</div><b>Suma todo lo que te quitan</b><code id="step2f">Proveedor + Pasarela + Otra</code><strong id="step2r">7,0% en comisiones</strong></article>
+      <article class="step"><div class="num">3</div><b>Saca lo que queda para ti</b><code>1 âˆ’ Comisiones âˆ’ Margen</code><strong id="step3r">1 âˆ’ 0,07 âˆ’ 0,20 = 0,73</strong></article>
+      <article class="step"><div class="num">4</div><b>Divide el costo entre eso</b><code id="step4f">(Costo Bs + Gasto fijo) Ã· 0,73</code><strong id="step4r">Bs 1.369,86</strong></article>
+      <article class="step"><div class="num">5</div><b>Verifica que no pierdes</b><code>Precio âˆ’ Costo âˆ’ Comisiones</code><strong id="step5r">Ganancia: Bs 273,97</strong></article>
+    </div>
+  </section>
+
+  <div class="two section">
+    <!-- TABLE -->
+    <section class="card" aria-label="Comparativa de mÃ¡rgenes" style="overflow:hidden">
+      <div class="panel" style="padding-bottom:10px">
+        <h2>3 Â· Â¿Y si cambias el margen?</h2>
+        <p class="sub" style="margin-bottom:0">Mismo costo y mismas comisiones. Solo cambia lo que quieres ganar.</p>
+      </div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Margen</th><th>Precio en Bs</th><th>Precio en $</th><th>Ganas por venta</th></tr></thead>
+        <tbody id="tablaBody"></tbody>
+      </table>
+      </div>
+      <p class="hint" style="padding:10px 16px 16px;margin:0">La fila marcada es tu margen actual, ya con el redondeo que elegiste.</p>
+    </section>
+
+    <!-- REVERSE -->
+    <section class="card panel" aria-label="Calculadora inversa">
+      <h2>4 Â· Ya tengo un precio, Â¿gano o pierdo?</h2>
+      <p class="sub">Pega el precio que estÃ¡s cobrando hoy, con el mismo costo, tasa y comisiones de la izquierda.</p>
+      <label for="precioActual">Precio que cobras hoy</label>
+      <div class="field"><span class="prefix">Bs</span><input type="number" id="precioActual" value="1300" min="0" step="1" inputmode="decimal"></div>
+      <div class="verdict warn" id="verdictBox">
+        <span class="big" id="verdictBig">Margen real: â€”</span>
+        <span id="verdictText">Escribe un precio para ver tu margen real.</span>
+      </div>
+      <p class="hint" style="margin-top:12px"><strong>FÃ³rmula inversa:</strong> Margen real = (Precio âˆ’ Costo Bs âˆ’ Gasto fijo âˆ’ Comisiones en Bs) Ã· Precio. Las comisiones se calculan sobre el precio que cobras, no sobre el costo.</p>
+    </section>
+  </div>
+
+  <div class="two section">
+    <!-- PRODUCTS -->
+    <section class="card panel" aria-label="Mis productos">
+      <h2>5 Â· Mis productos</h2>
+      <p class="sub">Guarda tus productos con su costo y comisiones. Al cargar uno, la calculadora se llena sola.</p>
+      <div class="notice" data-needs-login hidden>Inicia sesiÃ³n para guardar tus productos. <button type="button" class="chip" data-open-auth>Entrar</button></div>
+      <div id="prodBox" hidden>
+        <form id="prodForm">
+          <label for="prodNombre">Nombre del producto</label>
+          <div class="field"><input type="text" id="prodNombre" placeholder="Ej. 100 diamantes Free Fire" autocomplete="off"></div>
+          <div class="form-grid">
+            <div><label for="prodCosto">Costo USD</label><div class="field"><span class="prefix">$</span><input type="number" id="prodCosto" min="0" step="0.01" inputmode="decimal"></div></div>
+            <div><label for="prodMargen">Margen sugerido %</label><div class="field"><input type="number" id="prodMargen" min="0" max="95" step="0.5" inputmode="decimal"></div></div>
+            <div><label for="prodComP">ComisiÃ³n proveedor %</label><div class="field"><input type="number" id="prodComP" min="0" max="90" step="0.1" inputmode="decimal"></div></div>
+            <div><label for="prodComPa">ComisiÃ³n pasarela %</label><div class="field"><input type="number" id="prodComPa" min="0" max="90" step="0.1" inputmode="decimal"></div></div>
+            <div><label for="prodComO">Otra comisiÃ³n %</label><div class="field"><input type="number" id="prodComO" min="0" max="90" step="0.1" inputmode="decimal"></div></div>
+            <div><label for="prodGasto">Gasto fijo Bs</label><div class="field"><span class="prefix">Bs</span><input type="number" id="prodGasto" min="0" step="1" inputmode="decimal"></div></div>
+          </div>
+          <input type="hidden" id="prodEditId" value="">
+          <div class="actions" style="padding:14px 0 0">
+            <button type="submit" class="primary" id="btnProdGuardar">Agregar producto</button>
+            <button type="button" class="secondary" id="btnProdCancelar" hidden>Cancelar ediciÃ³n</button>
+          </div>
+        </form>
+        <div class="divider"></div>
+        <div id="prodList"></div>
+        <p class="hint" id="prodEmpty">AÃºn no tienes productos guardados.</p>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="card panel" aria-label="Historial de cÃ¡lculos">
+      <h2>6 Â· Historial de cÃ¡lculos</h2>
+      <p class="sub">Se guarda solo cuando copias el precio, o con el botÃ³n â€œGuardar cÃ¡lculoâ€. Toca uno para cargarlo de nuevo.</p>
+      <div class="notice" data-needs-login hidden>Inicia sesiÃ³n para ver tu historial. <button type="button" class="chip" data-open-auth>Entrar</button></div>
+      <div id="histBox" hidden>
+        <div class="actions" style="padding:0 0 10px">
+          <button type="button" class="secondary" id="btnLimpiarHist">Limpiar historial</button>
+        </div>
+        <div id="histList"></div>
+        <p class="hint" id="histEmpty">AÃºn no tienes cÃ¡lculos guardados.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- TIPS -->
+  <section class="section" aria-label="Errores que hacen perder plata">
+    <div class="section-head"><h2>Los 3 errores que te hacen perder</h2><p>Son los que mÃ¡s se ven vendiendo en Bs. La calculadora ya te protege de los tres.</p></div>
+    <div class="tips">
+      <article class="tip"><span class="tag">Error 01</span><h3>Sumar el margen al costo</h3><p>â€œCosto + 20%â€ no es 20% de margen: precio Bs 120, comisiÃ³n del 7% = Bs 8,40, ganancia Bs 11,60 â†’ margen real 11,60 Ã· 120 = 9,7% sobre el precio. El margen correcto se calcula sobre el precio final, dividiendo â€” como hace esta calculadora.</p></article>
+      <article class="tip"><span class="tag">Error 02</span><h3>Cobrar a una tasa y reponer a otra</h3><p>Cobras con tasa BCV pero repones pagando paralelo y la diferencia se come tu ganancia. Pon en la calculadora la tasa de reposiciÃ³n, no la mÃ¡s bonita.</p></article>
+      <article class="tip"><span class="tag">Error 03</span><h3>Olvidar una comisiÃ³n â€œchiquitaâ€</h3><p>2% aquÃ­, 1% allÃ¡, el redondeoâ€¦ sumados son tu margen. Mete <em>todas</em> las comisiones, aunque parezcan mÃ­nimas, y redondea siempre hacia arriba.</p></article>
+    </div>
+  </section>
+
+  <footer>Hecha para vender en Venezuela sin perder por tasa, comisiones ni redondeo. Los valores de arranque son un ejemplo editable â€” pon siempre tu tasa y tus comisiones reales del dÃ­a.</footer>
+</div>
+
+<div class="modal-backdrop" id="authModal" hidden>
+  <div class="modal card" role="dialog" aria-modal="true" aria-label="Cuenta">
+    <div class="modal-head"><h2 id="authTitle">Entrar</h2><button type="button" class="rate-refresh" id="btnCerrarModal">âœ•</button></div>
+    <div class="auth-tabs">
+      <button type="button" class="chip active" id="tabLogin">Entrar</button>
+      <button type="button" class="chip" id="tabRegister">Crear cuenta</button>
+    </div>
+    <button type="button" class="primary google-btn" id="btnGoogle">Continuar con Google</button>
+    <div class="divider"></div>
+    <div id="authFormBox">
+      <label for="authNombre" id="lblNombre" hidden>Tu nombre</label>
+      <div class="field" id="wrapNombre" hidden><input type="text" id="authNombre" autocomplete="name" placeholder="Ej. Layan"></div>
+      <label for="authEmail">Correo</label>
+      <div class="field"><input type="email" id="authEmail" autocomplete="email" placeholder="tu@correo.com"></div>
+      <label for="authPass">ContraseÃ±a</label>
+      <div class="field"><input type="password" id="authPass" autocomplete="current-password" placeholder="MÃ­nimo 6 caracteres"></div>
+      <p class="hint" id="authHint"></p>
+      <button type="button" class="primary" id="btnAuthSubmit" style="width:100%;margin-top:12px">Entrar</button>
+      <p class="hint" style="text-align:center;margin-top:12px"><a href="#" id="linkReset">OlvidÃ© mi contraseÃ±a</a></p>
+      <p class="alert" id="authError" style="margin:12px 0 0"></p>
+    </div>
+    <div id="authResetBox" hidden>
+      <p class="sub">Te enviamos un enlace para crear una contraseÃ±a nueva.</p>
+      <label for="resetEmail">Correo</label>
+      <div class="field"><input type="email" id="resetEmail" autocomplete="email" placeholder="tu@correo.com"></div>
+      <button type="button" class="primary" id="btnResetSend" style="width:100%;margin-top:12px">Enviar enlace</button>
+      <p class="hint" style="text-align:center;margin-top:12px"><a href="#" id="linkVolverLogin">Volver a entrar</a></p>
+      <p class="alert" id="resetMsg" style="margin:12px 0 0"></p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status">Copiado</div>
+
+<script>
+/* ConfiguraciÃ³n web de Firebase â€” proyecto "Calculadora Margenes VE".
+ * Valores reales del proyecto, puestos por el dueÃ±o. Si clonas este
+ * proyecto, reemplÃ¡zalos por los de tu propia app web de Firebase
+ * (consola â†’ ConfiguraciÃ³n del proyecto â†’ "Tus apps" â†’ Web).
+ */
+window.FIREBASE_CONFIG = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROYECTO.firebaseapp.com",
+  projectId: "TU_PROYECTO",
+  storageBucket: "TU_PROYECTO.firebasestorage.app",
+  messagingSenderId: "TU_SENDER_ID",
+  appId: "TU_APP_ID"
+};
+
+</script>
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var ids = ['producto','costoUsd','margen','margenRange','comProveedor','comPasarela','comOtra','gastoFijo','redondeo','precioActual'];
+
+  /* ===== TASAS AUTOMÃTICAS =====
+     Respaldo guardado: tasas reales consultadas el 09/11/2026, 2:25 p. m. (hora de Caracas).
+     BCV dÃ³lar y euro BCV: DolarAPI (fuente oficial BCV). Binance USDT: P2P USDT/VES. */
+  var RATES = {
+    bcv:     { label:'BCV Â· DÃ³lar oficial',      value:897.54,   unit:'$',    fecha:'09/11/2026' },
+    binance: { label:'Binance Â· USDT (P2P)',     value:1045.00,  unit:'USDT', fecha:'09/11/2026' },
+    euro:    { label:'BCV Â· Euro oficial',       value:1001.19,  unit:'â‚¬',    fecha:'09/11/2026' },
+    custom:  { label:'Personalizada',            value:100,      unit:'$',    fecha:'' }
+  };
+  var rateSource = 'custom';
+  var apiKey = '';
+  var fmtBs = new Intl.NumberFormat('es-VE',{minimumFractionDigits:2, maximumFractionDigits:2});
+  var fmtBs0 = new Intl.NumberFormat('es-VE',{minimumFractionDigits:0, maximumFractionDigits:0});
+  var fmtPct = new Intl.NumberFormat('es-VE',{minimumFractionDigits:1, maximumFractionDigits:1});
+
+  function num(id, def){
+    var v = parseFloat(String($(id).value).replace(',','.'));
+    return isNaN(v) || v < 0 ? (def||0) : v;
+  }
+  function toast(msg){
+    var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+  function copiar(texto, msg){
+    function done(){ toast(msg); }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(texto).then(done).catch(function(){ fallback(); });
+    } else { fallback(); }
+    function fallback(){
+      var ta = document.createElement('textarea'); ta.value = texto; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch(e){ toast('No se pudo copiar, selecciÃ³nalo a mano'); }
+      document.body.removeChild(ta);
+    }
+  }
+  function roundUp(v, step){ return step <= 1 ? v : Math.ceil(v / step) * step; }
+
+  var last = null;
+
+  /* ===== LÃ“GICA DE TASAS ===== */
+  function fmtRate(v){ return 'Bs ' + fmtBs.format(v); }
+  function renderRates(){
+    ['bcv','binance','euro','custom'].forEach(function(k){
+      var el = $('rateVal-' + k);
+      if (el) el.innerHTML = fmtRate(RATES[k].value) + ' <small>/ ' + RATES[k].unit + '</small>';
+    });
+    document.querySelectorAll('.rate-card').forEach(function(c){
+      c.classList.toggle('active', c.getAttribute('data-rate') === rateSource);
+    });
+    var lbl = $('tasaFuenteLabel');
+    if (lbl) lbl.textContent = rateSource === 'custom' ? 'Personalizada Â· escrita a mano' : RATES[rateSource].label + (RATES[rateSource].fecha ? ' Â· ' + RATES[rateSource].fecha : '');
+  }
+  function setStatus(state, msg){
+    var d = $('rateDot');
+    d.className = 'dot' + (state === 'ok' ? ' ok' : state === 'err' ? ' err' : '');
+    $('rateStatus').textContent = msg;
+  }
+  function selectRate(key, fromUser){
+    rateSource = key;
+    if (key === 'custom'){ RATES.custom.value = num('tasa') || RATES.custom.value; }
+    else { $('tasa').value = RATES[key].value; }
+    renderRates();
+    calc();
+    if (fromUser && key !== 'custom') toast('Tasa activa: ' + RATES[key].label + ' â€” Bs ' + fmtBs.format(RATES[key].value));
+  }
+  function horaAhora(){
+    try { return new Intl.DateTimeFormat('es-VE',{hour:'numeric',minute:'2-digit'}).format(new Date()); }
+    catch(e){ return ''; }
+  }
+  function findRateIn(obj, patterns, depth){
+    if (!obj || typeof obj !== 'object' || depth > 5) return null;
+    for (var k in obj){
+      if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
+      var v = obj[k], lk = String(k).toLowerCase();
+      if (typeof v === 'number' && v > 10 && v < 1000000){
+        for (var i = 0; i < patterns.length; i++){ if (lk.indexOf(patterns[i]) !== -1) return v; }
+      }
+    }
+    for (var k2 in obj){
+      if (!Object.prototype.hasOwnProperty.call(obj, k2)) continue;
+      var r = findRateIn(obj[k2], patterns, depth + 1);
+      if (r !== null) return r;
+    }
+    return null;
+  }
+  function fetchJSON(url, opts){
+    return fetch(url, opts || {}).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  }
+  function median(arr){ var s = arr.slice().sort(function(a,b){ return a-b; }); return s[Math.floor(s.length/2)]; }
+
+  function refreshRates(){
+    var btn = $('btnRefreshRates');
+    btn.disabled = true; btn.textContent = 'Actualizandoâ€¦';
+    setStatus('', 'Buscando tasas en vivoâ€¦');
+    var got = { bcv:false, euro:false, binance:false };
+    var jobs = [];
+
+    function applyRate(key, value, fechaTxt){
+      if (!value || !(value > 0)) return;
+      RATES[key].value = Math.round(value * 100) / 100;
+      if (fechaTxt) RATES[key].fecha = fechaTxt;
+      got[key] = true;
+      if (rateSource === key) $('tasa').value = RATES[key].value;
+    }
+
+    if (apiKey){
+      jobs.push(fetchJSON('https://api.dolarvzla.com/public/exchange-rate', { headers:{ 'x-dolarvzla-key': apiKey } })
+        .then(function(d){
+          var hoy = new Intl.DateTimeFormat('es-VE').format(new Date());
+          applyRate('bcv', findRateIn(d, ['usd','dolar','dollar']), hoy);
+          applyRate('euro', findRateIn(d, ['eur','euro']), hoy);
+          applyRate('binance', findRateIn(d, ['usdt','binance','p2p','cripto']), hoy);
+        }).catch(function(){ /* si la key falla, caen los respaldos sin key */ }));
+    }
+    // Sin key (o como respaldo): DolarAPI, gratis y sin key â€” BCV dÃ³lar y euro.
+    jobs.push(fetchJSON('https://ve.dolarapi.com/v1/dolares/oficial')
+      .then(function(d){ if (!got.bcv) applyRate('bcv', d && d.promedio, 'BCV ' + String(d.fechaActualizacion || '').slice(0,10)); })
+      .catch(function(){}));
+    jobs.push(fetchJSON('https://ve.dolarapi.com/v1/euros/oficial')
+      .then(function(d){ if (!got.euro) applyRate('euro', d && d.promedio, 'BCV ' + String(d.fechaActualizacion || '').slice(0,10)); })
+      .catch(function(){}));
+    if (!apiKey){
+      // Binance P2P directo (sin key): mediana de los primeros anuncios USDT/VES.
+      jobs.push(fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
+          method:'POST', headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ fiat:'VES', page:1, rows:10, tradeType:'BUY', asset:'USDT', countries:[], proMerchantAds:false, shieldMerchantAds:false, filterType:'all', periods:[], additionalKycVerifyFilter:0, publisherType:null, payTypes:[], classifies:['mass','profession','fiat_trade'] })
+        }).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function(d){
+          var prices = ((d && d.data) || []).map(function(x){ return parseFloat(x && x.adv && x.adv.price); }).filter(function(p){ return p > 0; });
+          if (prices.length >= 3) applyRate('binance', median(prices), 'P2P en vivo');
+        }).catch(function(){}));
+    }
+
+    Promise.all(jobs).then(function(){
+      btn.disabled = false; btn.textContent = 'â†» Actualizar tasas';
+      renderRates(); calc();
+      var n = (got.bcv?1:0) + (got.euro?1:0) + (got.binance?1:0);
+      if (n === 3) setStatus('ok', 'Tasas en vivo Â· actualizadas hoy a las ' + horaAhora() + (apiKey ? ' Â· vÃ­a DolarVzla (tu API key)' : ' Â· DolarAPI + Binance P2P'));
+      else if (n > 0) setStatus('ok', 'Se actualizaron ' + n + ' de 3 tasas en vivo Â· ' + horaAhora() + '. El resto quedÃ³ con el valor guardado del 09/11/2026.');
+      else setStatus('err', 'Sin conexiÃ³n con las APIs: quedaron las tasas guardadas del 09/11/2026. Revisa internet o pega tu API key de DolarVzla.');
+    });
+  }
+
+  function calc(){
+    var producto = $('producto').value.trim() || 'Producto';
+    var costoUsd = num('costoUsd');
+    var tasa = num('tasa');
+    var margen = num('margen');
+    var comP = num('comProveedor'), comPa = num('comPasarela'), comO = num('comOtra');
+    var comTotal = comP + comPa + comO;
+    var gasto = num('gastoFijo');
+    var step = parseFloat($('redondeo').value) || 1;
+
+    // Sync slider + chips
+    $('margenRange').value = Math.min(60, Math.max(0, margen));
+    $('margenBig').textContent = fmtPct.format(margen).replace(',0','');
+    document.querySelectorAll('#marginChips .chip').forEach(function(c){
+      c.classList.toggle('active', parseFloat(c.getAttribute('data-margen')) === margen);
+    });
+    $('comTotalLabel').textContent = fmtPct.format(comTotal) + '%';
+    $('resProducto').textContent = producto;
+
+    var costoBs = costoUsd * tasa;
+    var denom = 1 - comTotal/100 - margen/100;
+    var alertBox = $('alertBox');
+
+    if (denom <= 0 || tasa <= 0){
+      alertBox.classList.add('show');
+      last = null;
+      window.__margenesLast = null; // gancho para auth.js (historial)
+      return;
+    }
+    alertBox.classList.remove('show');
+
+    var precioExacto = (costoBs + gasto) / denom;
+    var precioFinal = roundUp(precioExacto, step);
+    var precioUsd = tasa > 0 ? precioFinal / tasa : 0;
+    var comisionesBs = precioFinal * (comTotal/100);
+    var gananciaBs = precioFinal - costoBs - gasto - comisionesBs;
+    var gananciaUsd = tasa > 0 ? gananciaBs / tasa : 0;
+    var margenReal = precioFinal > 0 ? (gananciaBs / precioFinal) * 100 : 0;
+
+    $('precioFinal').textContent = fmtBs0.format(precioFinal);
+    $('precioExacto').textContent = 'Bs ' + fmtBs.format(precioExacto);
+    $('precioUsd').textContent = '$' + fmtBs.format(precioUsd);
+    $('roundedNote').textContent = step <= 1 ? 'Precio exacto, sin redondeo aplicado' : 'â†‘ Precio exacto Bs ' + fmtBs.format(precioExacto) + ' â†’ redondeado hacia arriba a Bs ' + fmtBs0.format(precioFinal);
+    $('gananciaBs').textContent = 'Bs ' + fmtBs.format(gananciaBs);
+    $('gananciaUsd').textContent = '$' + fmtBs.format(gananciaUsd) + ' por venta Â· margen real ' + fmtPct.format(margenReal) + '%';
+    $('comisionesBs').textContent = 'Bs ' + fmtBs.format(comisionesBs);
+    $('comisionesPct').textContent = fmtPct.format(comTotal) + '% del precio';
+    $('costoBsLabel').textContent = 'Bs ' + fmtBs.format(costoBs + gasto);
+    $('costoUsdLabel').textContent = '$' + fmtBs.format(costoUsd) + ' al proveedor' + (gasto>0 ? ' + gasto fijo' : '');
+
+    var pCosto = precioFinal>0 ? ((costoBs+gasto)/precioFinal)*100 : 0;
+    var pCom = comTotal;
+    var pGan = precioFinal>0 ? (gananciaBs/precioFinal)*100 : 0;
+    $('barCosto').style.width = Math.max(0,pCosto) + '%';
+    $('barCom').style.width = Math.max(0,pCom) + '%';
+    $('barGan').style.width = Math.max(0,pGan) + '%';
+    $('legCosto').textContent = fmtPct.format(pCosto) + '%';
+    $('legCom').textContent = fmtPct.format(pCom) + '%';
+    $('legGan').textContent = fmtPct.format(pGan) + '%';
+
+    // Steps
+    $('step1f').textContent = '$' + fmtBs.format(costoUsd) + ' Ã— ' + fmtBs.format(tasa) + ' Bs/$';
+    $('step1r').textContent = 'Bs ' + fmtBs.format(costoBs);
+    $('step2f').textContent = fmtPct.format(comP) + '% + ' + fmtPct.format(comPa) + '% + ' + fmtPct.format(comO) + '%';
+    $('step2r').textContent = fmtPct.format(comTotal) + '% en comisiones';
+    $('step3r').textContent = '1 âˆ’ ' + (comTotal/100).toFixed(2).replace('.',',') + ' âˆ’ ' + (margen/100).toFixed(2).replace('.',',') + ' = ' + denom.toFixed(2).replace('.',',');
+    $('step4f').textContent = '(Bs ' + fmtBs.format(costoBs + gasto) + ') Ã· ' + denom.toFixed(2).replace('.',',');
+    $('step4r').textContent = 'Bs ' + fmtBs.format(precioExacto);
+    $('step5r').textContent = 'Ganancia: Bs ' + fmtBs.format(gananciaBs) + ' (' + fmtPct.format(margenReal) + '%)';
+
+    // Table
+    var margins = [10,15,20,25,30,35,40];
+    var html = '';
+    margins.forEach(function(m){
+      var d = 1 - comTotal/100 - m/100;
+      if (d <= 0){ return; }
+      var p = roundUp((costoBs + gasto) / d, step);
+      var g = p - costoBs - gasto - p*(comTotal/100);
+      var cls = (m === margen) ? ' class="current"' : '';
+      html += '<tr'+cls+'><td>' + m + '%</td><td>Bs ' + fmtBs0.format(p) + '</td><td>$' + fmtBs.format(tasa>0 ? p/tasa : 0) + '</td><td>Bs ' + fmtBs.format(g) + '</td></tr>';
+    });
+    $('tablaBody').innerHTML = html;
+
+    // Reverse
+    var precioActual = num('precioActual');
+    var vBox = $('verdictBox');
+    if (precioActual > 0){
+      var comBsA = precioActual * (comTotal/100);
+      var ganA = precioActual - costoBs - gasto - comBsA;
+      var margenA = (ganA / precioActual) * 100;
+      $('verdictBig').textContent = 'Margen real: ' + fmtPct.format(margenA) + '%';
+      vBox.className = 'verdict ' + (ganA < 0 ? 'bad' : (margenA < 10 ? 'warn' : 'good'));
+      if (ganA < 0){
+        $('verdictText').textContent = 'EstÃ¡s PERDIENDO Bs ' + fmtBs.format(Math.abs(ganA)) + ' en cada venta ( $' + fmtBs.format(tasa>0 ? Math.abs(ganA)/tasa : 0) + ' ). Sube el precio al menos a Bs ' + fmtBs0.format(precioFinal) + ' para ganar el ' + fmtPct.format(margen) + '% que quieres.';
+      } else if (margenA < 10){
+        $('verdictText').textContent = 'Ganas Bs ' + fmtBs.format(ganA) + ' por venta, pero el margen es muy bajo: cualquier subida de tasa o comisiÃ³n te pone en pÃ©rdida. El precio sano para ti es Bs ' + fmtBs0.format(precioFinal) + '.';
+      } else {
+        $('verdictText').textContent = 'Ganas Bs ' + fmtBs.format(ganA) + ' por venta ( $' + fmtBs.format(tasa>0 ? ganA/tasa : 0) + ' ). Margen sano. CompÃ¡ralo con tu meta del ' + fmtPct.format(margen) + '%: el precio para esa meta es Bs ' + fmtBs0.format(precioFinal) + '.';
+      }
+    } else {
+      vBox.className = 'verdict warn';
+      $('verdictBig').textContent = 'Margen real: â€”';
+      $('verdictText').textContent = 'Escribe un precio para ver tu margen real.';
+    }
+
+    last = { producto:producto, costoUsd:costoUsd, tasa:tasa, margen:margen, comTotal:comTotal, comP:comP, comPa:comPa, comO:comO, gasto:gasto, costoBs:costoBs, precioExacto:precioExacto, precioFinal:precioFinal, precioUsd:precioUsd, comisionesBs:comisionesBs, gananciaBs:gananciaBs, gananciaUsd:gananciaUsd, margenReal:margenReal, denom:denom };
+    window.__margenesLast = last; // gancho para auth.js (historial)
+  }
+
+  ids.forEach(function(id){ $(id).addEventListener('input', calc); $(id).addEventListener('change', calc); });
+
+  // Tasa: tarjetas de fuente + ediciÃ³n manual
+  document.querySelectorAll('.rate-card').forEach(function(c){
+    c.addEventListener('click', function(){ selectRate(c.getAttribute('data-rate'), true); });
+  });
+  $('tasa').addEventListener('input', function(){
+    RATES.custom.value = num('tasa');
+    if (rateSource !== 'custom'){ rateSource = 'custom'; }
+    renderRates(); calc();
+  });
+  $('tasa').addEventListener('change', calc);
+  $('btnRefreshRates').addEventListener('click', refreshRates);
+  $('btnToggleKey').addEventListener('click', function(){
+    var row = $('apiKeyRow');
+    var show = !row.classList.contains('show');
+    row.classList.toggle('show', show);
+    this.textContent = show ? 'Ocultar API key' : 'Â¿Tienes API key? Activa las tasas en vivo';
+    if (show) $('apiKey').focus();
+  });
+  $('btnSaveKey').addEventListener('click', function(){
+    apiKey = $('apiKey').value.trim();
+    if (!apiKey){ toast('Pega primero tu API key de DolarVzla'); return; }
+    toast('API key cargada en esta sesiÃ³n â€” actualizando tasasâ€¦');
+    refreshRates();
+  });
+  $('margenRange').addEventListener('input', function(){ $('margen').value = this.value; calc(); });
+  $('margen').addEventListener('input', function(){ $('margenRange').value = this.value; });
+  document.querySelectorAll('#marginChips .chip').forEach(function(c){
+    c.addEventListener('click', function(){ $('margen').value = c.getAttribute('data-margen'); calc(); });
+  });
+
+  $('btnCopiarPrecio').addEventListener('click', function(){
+    if(!last) return;
+    copiar('Bs ' + fmtBs0.format(last.precioFinal) + ' ($' + fmtBs.format(last.precioUsd) + ')', 'Precio copiado: Bs ' + fmtBs0.format(last.precioFinal));
+    if (window.__margenesOnCopyPrice) window.__margenesOnCopyPrice(); // guardado automÃ¡tico en el historial
+  });
+  $('btnCopiarMensaje').addEventListener('click', function(){
+    if(!last) return;
+    var txt = last.producto + '\nPrecio: Bs ' + fmtBs0.format(last.precioFinal) + ' ($' + fmtBs.format(last.precioUsd) + ')\nTasa: Bs ' + fmtBs.format(last.tasa) + ' por $1\nPago MÃ³vil disponible. Entrega inmediata.';
+    copiar(txt, 'Mensaje para el cliente copiado');
+  });
+  $('btnCopiarDesglose').addEventListener('click', function(){
+    if(!last) return;
+    var txt = 'DESGLOSE â€” ' + last.producto + '\n'
+      + '1) Costo en Bs: $' + fmtBs.format(last.costoUsd) + ' Ã— ' + fmtBs.format(last.tasa) + ' = Bs ' + fmtBs.format(last.costoBs) + '\n'
+      + '2) Comisiones totales: ' + fmtPct.format(last.comTotal) + '% (' + fmtPct.format(last.comP) + '% proveedor + ' + fmtPct.format(last.comPa) + '% pasarela + ' + fmtPct.format(last.comO) + '% otra)\n'
+      + '3) Denominador: 1 âˆ’ ' + fmtPct.format(last.comTotal) + '% âˆ’ ' + fmtPct.format(last.margen) + '% = ' + last.denom.toFixed(2).replace('.',',') + '\n'
+      + '4) Precio exacto: (Bs ' + fmtBs.format(last.costoBs + last.gasto) + ') Ã· ' + last.denom.toFixed(2).replace('.',',') + ' = Bs ' + fmtBs.format(last.precioExacto) + '\n'
+      + '5) Precio a cobrar (redondeado hacia arriba): Bs ' + fmtBs0.format(last.precioFinal) + ' ($' + fmtBs.format(last.precioUsd) + ')\n'
+      + 'Ganancia neta: Bs ' + fmtBs.format(last.gananciaBs) + ' ($' + fmtBs.format(last.gananciaUsd) + ') Â· Margen real: ' + fmtPct.format(last.margenReal) + '%';
+    copiar(txt, 'Desglose completo copiado');
+  });
+
+  renderRates();
+  calc();
+  refreshRates();
+})();
+
+</script>
+<script type="module">
+/* auth.js â€” cuentas (Google + correo/contraseÃ±a), historial de cÃ¡lculos y
+ * productos guardados, con Firebase (SDK modular vÃ­a CDN, sin build).
+ * La calculadora funciona como invitada sin sesiÃ³n; el historial y los
+ * productos exigen haber entrado. Si firebase-config.js aÃºn tiene los
+ * valores de ejemplo, Firebase queda desactivado y se avisa en pantalla.
+ *
+ * ESQUEMA COMPARTIDO CON LA APP FLUTTER (mismo proyecto, mismos usuarios):
+ * historial en users/{uid}/history y productos en users/{uid}/products, con
+ * los mismos campos y unidades de la app (ver README). La app lee el campo
+ * 'id' DENTRO de cada documento y parsea las fechas como strings ISO-8601,
+ * asÃ­ que la web genera el ID del documento antes de escribirlo y nunca usa
+ * serverTimestamp(). marginPercent va en porcentaje y las comisiones en
+ * fracciÃ³n; marginMode siempre es 'onSale' (la fÃ³rmula de esta web es
+ * margen sobre el precio de venta).
+ */
+(function () {
+  'use strict';
+
+  var FIREBASE_VERSION = '11.1.0';
+  var SDK = function (name) { return 'https://www.gstatic.com/firebasejs/' + FIREBASE_VERSION + '/' + name; };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var fmtBs = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var fmtBs0 = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  var fmtFecha = new Intl.DateTimeFormat('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  var F = null; // mÃ³dulos de Firebase cargados por CDN
+  var auth = null, db = null;
+  var user = null;
+  var firebaseOn = false;
+  var unsubHist = null, unsubProd = null;
+  var authMode = 'login'; // 'login' | 'register'
+  var histItems = [];
+  var prodItems = [];
+
+  function toast(msg) {
+    var t = $('toast');
+    if (!t) { alert(msg); return; }
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function () { t.classList.remove('show'); }, 2600);
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function numVal(id, def) {
+    var el = $(id);
+    if (!el) return def || 0;
+    var v = parseFloat(String(el.value).replace(',', '.'));
+    return isNaN(v) || v < 0 ? (def || 0) : v;
+  }
+  function setInput(id, v) {
+    var el = $(id);
+    if (!el) return;
+    el.value = v;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  /* ===== Esquema compartido con la app Flutter ===== */
+  var RATE_SOURCE_MAP = { bcv: 'bcvUsd', binance: 'binanceUsdt', euro: 'euroBcv', custom: 'custom' };
+  // La fuente de tasa activa se lee de la tarjeta marcada en la pÃ¡gina
+  // (app.js marca la activa con la clase .active; la clave no es global).
+  function currentRateSourceName() {
+    var card = document.querySelector('.rate-card.active');
+    var key = card ? card.getAttribute('data-rate') : '';
+    if (RATE_SOURCE_MAP[key]) return RATE_SOURCE_MAP[key];
+    var lbl = ($('tasaFuenteLabel') && $('tasaFuenteLabel').textContent) || '';
+    if (lbl.indexOf('Binance') !== -1) return 'binanceUsdt';
+    if (lbl.indexOf('Euro') !== -1) return 'euroBcv';
+    if (lbl.indexOf('Personalizada') !== -1) return 'custom';
+    return 'bcvUsd';
+  }
+  function currentRoundStep() {
+    var v = parseInt(($('redondeo') && $('redondeo').value) || '10', 10);
+    return [1, 10, 50, 100].indexOf(v) !== -1 ? v : 10;
+  }
+  function pctToFrac(v) { // % (ej. 1.5) -> fracciÃ³n (ej. 0.015)
+    var n = parseFloat(v);
+    return (isNaN(n) || n < 0) ? 0 : Math.round(n * 10000) / 1000000;
+  }
+  function fracToPct(v) { // fracciÃ³n (ej. 0.015) -> % (ej. 1.5)
+    var n = parseFloat(v);
+    return isNaN(n) ? 0 : Math.round(n * 10000) / 100;
+  }
+  function isoDate(v) {
+    // Acepta string ISO, Date o Timestamp de Firestore; devuelve string ISO o ''.
+    if (!v) return '';
+    if (typeof v === 'string') return v;
+    if (v instanceof Date) return v.toISOString();
+    if (v.toDate) { try { return v.toDate().toISOString(); } catch (e) { return ''; } }
+    return '';
+  }
+  // Referencia a un documento nuevo con ID generado por el cliente: el ID se
+  // guarda tambiÃ©n DENTRO del documento (campo 'id'), como exige la app.
+  function newDocRef(colName) {
+    return F.fs.doc(F.fs.collection(db, 'users', user.uid, colName));
+  }
+  // Normaliza un producto leÃ­do de Firestore al esquema de la app. Como
+  // respaldo entiende el esquema viejo de la web (nombre, margenSugerido,
+  // comisiones en %, Timestamps) para no perder datos ya guardados.
+  function normalizeProduct(d) {
+    d = d || {};
+    var comP = (d.commissionPlatform != null) ? d.commissionPlatform : pctToFrac(d.comProveedor);
+    var comPa = (d.commissionPaymentMethod != null) ? d.commissionPaymentMethod : pctToFrac(d.comPasarela);
+    var comO = (d.commissionOther != null) ? d.commissionOther : pctToFrac(d.comOtra);
+    return {
+      name: (d.name != null ? d.name : d.nombre || '').toString().trim(),
+      costUsd: d.costUsd || 0,
+      marginPercent: (d.marginPercent != null) ? d.marginPercent : (d.margenSugerido || 0),
+      fixedExpenseBs: d.fixedExpenseBs || d.gastoFijo || 0,
+      commissionPlatform: comP,
+      commissionPaymentMethod: comPa,
+      commissionOther: comO,
+      roundStep: (d.roundStep != null) ? d.roundStep : 10,
+      rateSourceName: d.rateSourceName || 'bcvUsd',
+      marginMode: d.marginMode || 'onSale',
+      customRateValue: (typeof d.customRateValue === 'number') ? d.customRateValue : null,
+      createdAt: isoDate(d.createdAt),
+      updatedAt: isoDate(d.updatedAt)
+    };
+  }
+
+  /* ===== Config y arranque ===== */
+  function configLista() {
+    var c = window.FIREBASE_CONFIG || {};
+    var keys = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
+    for (var i = 0; i < keys.length; i++) {
+      var v = c[keys[i]];
+      if (!v || typeof v !== 'string' || v.indexOf('TU_') === 0) return false;
+    }
+    return true;
+  }
+  function setFirebaseState(state) {
+    var notice = $('fbNotice');
+    if (notice) notice.hidden = (state !== 'noconfig' && state !== 'error');
+    if (notice && state === 'error') notice.textContent = 'âš  No se pudo cargar Firebase (Â¿sin internet?). La calculadora sigue funcionando como invitada.';
+  }
+
+  async function initFirebase() {
+    if (!configLista()) { setFirebaseState('noconfig'); return; }
+    try {
+      var appMod = await import(SDK('firebase-app.js'));
+      var authMod = await import(SDK('firebase-auth.js'));
+      var fsMod = await import(SDK('firebase-firestore.js'));
+      F = { app: appMod, auth: authMod, fs: fsMod };
+      var fbApp = appMod.initializeApp(window.FIREBASE_CONFIG);
+      auth = authMod.getAuth(fbApp);
+      await authMod.setPersistence(auth, authMod.browserLocalPersistence);
+      db = fsMod.getFirestore(fbApp);
+      firebaseOn = true;
+      try { await authMod.getRedirectResult(auth); } catch (e) { /* sin redirect pendiente */ }
+      authMod.onAuthStateChanged(auth, onUser);
+      setFirebaseState('ok');
+    } catch (e) {
+      console.error('Firebase no se pudo iniciar:', e);
+      setFirebaseState('error');
+      toast('No se pudo cargar Firebase (Â¿sin internet?). La calculadora sigue funcionando como invitada.');
+    }
+  }
+
+  /* ===== SesiÃ³n y UI de cuenta ===== */
+  function onUser(u) {
+    user = u;
+    var btnEntrar = $('btnEntrar');
+    var chip = $('authUser');
+    if (u) {
+      if (btnEntrar) btnEntrar.hidden = true;
+      if (chip) {
+        chip.hidden = false;
+        var nameEl = $('authUserName');
+        if (nameEl) nameEl.textContent = u.displayName || u.email || 'Mi cuenta';
+      }
+      document.querySelectorAll('[data-needs-login]').forEach(function (el) { el.hidden = true; });
+      var pb = $('prodBox'); if (pb) pb.hidden = false;
+      var hb = $('histBox'); if (hb) hb.hidden = false;
+      subscribeHistory();
+      subscribeProducts();
+    } else {
+      if (btnEntrar) btnEntrar.hidden = false;
+      if (chip) chip.hidden = true;
+      document.querySelectorAll('[data-needs-login]').forEach(function (el) { el.hidden = false; });
+      var pb2 = $('prodBox'); if (pb2) pb2.hidden = true;
+      var hb2 = $('histBox'); if (hb2) hb2.hidden = true;
+      if (unsubHist) { unsubHist(); unsubHist = null; }
+      if (unsubProd) { unsubProd(); unsubProd = null; }
+      histItems = []; prodItems = [];
+      renderHistory(); renderProducts();
+    }
+  }
+
+  function showAuthError(e) {
+    var box = $('authError');
+    var msg = 'No se pudo entrar. Revisa los datos e intÃ©ntalo de nuevo.';
+    if (e && e.code) {
+      if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found') msg = 'Correo o contraseÃ±a incorrectos.';
+      else if (e.code === 'auth/email-already-in-use') msg = 'Ese correo ya tiene cuenta. Entra con Ã©l en vez de crear otra.';
+      else if (e.code === 'auth/weak-password') msg = 'La contraseÃ±a debe tener al menos 6 caracteres.';
+      else if (e.code === 'auth/invalid-email') msg = 'Revisa el correo, no tiene formato vÃ¡lido.';
+      else if (e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Espera un rato e intÃ©ntalo de nuevo.';
+      else if (e.code === 'auth/network-request-failed') msg = 'Sin conexiÃ³n. Revisa internet e intÃ©ntalo de nuevo.';
+      else if (e.code === 'auth/operation-not-allowed') msg = 'Ese proveedor no estÃ¡ activado. ActÃ­valo en la consola de Firebase â†’ Authentication â†’ Sign-in method.';
+      else if (e.code === 'auth/configuration-not-found') msg = 'Falta la configuraciÃ³n de Firebase en firebase-config.js.';
+    }
+    if (box) { box.textContent = msg; box.classList.add('show'); }
+    else { toast(msg); }
+  }
+  function clearAuthError() {
+    var box = $('authError');
+    if (box) { box.textContent = ''; box.classList.remove('show'); }
+  }
+
+  function openAuth() {
+    var m = $('authModal');
+    if (m) m.hidden = false;
+  }
+  function closeAuth() {
+    var m = $('authModal');
+    if (m) m.hidden = true;
+    clearAuthError();
+  }
+  function setAuthMode(mode) {
+    authMode = mode;
+    var isReg = mode === 'register';
+    var t = $('authTitle'); if (t) t.textContent = isReg ? 'Crear cuenta' : 'Entrar';
+    var s = $('btnAuthSubmit'); if (s) s.textContent = isReg ? 'Crear mi cuenta' : 'Entrar';
+    var ln = $('lblNombre'); if (ln) ln.hidden = !isReg;
+    var wn = $('wrapNombre'); if (wn) wn.hidden = !isReg;
+    var tl = $('tabLogin'); if (tl) tl.classList.toggle('active', !isReg);
+    var tr = $('tabRegister'); if (tr) tr.classList.toggle('active', isReg);
+    var pass = $('authPass'); if (pass) pass.setAttribute('autocomplete', isReg ? 'new-password' : 'current-password');
+    var hint = $('authHint');
+    if (hint) hint.textContent = isReg ? 'Tu cuenta guarda tu historial de cÃ¡lculos y tus productos en este telÃ©fono y en cualquier otro donde entres.' : '';
+    clearAuthError();
+  }
+  function showReset(show) {
+    var fb = $('authFormBox'); if (fb) fb.hidden = show;
+    var rb = $('authResetBox'); if (rb) rb.hidden = !show;
+    clearAuthError();
+  }
+
+  async function loginGoogle() {
+    if (!firebaseOn) { toast('Primero pega tu config de Firebase en firebase-config.js'); return; }
+    var provider = new F.auth.GoogleAuthProvider();
+    try {
+      await F.auth.signInWithPopup(auth, provider);
+      closeAuth();
+      toast('SesiÃ³n iniciada con Google');
+    } catch (e) {
+      if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user' || e.code === 'auth/operation-not-supported-in-this-environment' || e.code === 'auth/cancelled-popup-request')) {
+        try { await F.auth.signInWithRedirect(auth, provider); }
+        catch (e2) { showAuthError(e2); }
+      } else { showAuthError(e); }
+    }
+  }
+  async function submitEmail() {
+    if (!firebaseOn) { toast('Primero pega tu config de Firebase en firebase-config.js'); return; }
+    var email = ($('authEmail').value || '').trim();
+    var pass = $('authPass').value || '';
+    if (!email || !pass) { showAuthError({ code: 'auth/invalid-email' }); return; }
+    clearAuthError();
+    try {
+      if (authMode === 'register') {
+        var nombre = ($('authNombre').value || '').trim();
+        if (pass.length < 6) { showAuthError({ code: 'auth/weak-password' }); return; }
+        var cred = await F.auth.createUserWithEmailAndPassword(auth, email, pass);
+        if (nombre) await F.auth.updateProfile(cred.user, { displayName: nombre });
+        toast('Cuenta creada. Bienvenido' + (nombre ? ', ' + nombre : ''));
+      } else {
+        await F.auth.signInWithEmailAndPassword(auth, email, pass);
+        toast('SesiÃ³n iniciada');
+      }
+      closeAuth();
+    } catch (e) { showAuthError(e); }
+  }
+  async function sendReset() {
+    if (!firebaseOn) { toast('Primero pega tu config de Firebase en firebase-config.js'); return; }
+    var email = ($('resetEmail').value || '').trim();
+    var msg = $('resetMsg');
+    if (!email) {
+      if (msg) { msg.textContent = 'Escribe tu correo para enviarte el enlace.'; msg.classList.add('show'); }
+      return;
+    }
+    try {
+      await F.auth.sendPasswordResetEmail(auth, email);
+      if (msg) { msg.textContent = 'Listo. Revisa tu correo: te llegÃ³ un enlace para crear una contraseÃ±a nueva.'; msg.classList.add('show'); }
+    } catch (e) {
+      if (msg) { msg.textContent = 'No se pudo enviar. Revisa el correo e intÃ©ntalo de nuevo.'; msg.classList.add('show'); }
+    }
+  }
+
+  /* ===== Historial: users/{uid}/history (mismo esquema que la app Flutter) ===== */
+  function currentCalculation() {
+    var last = window.__margenesLast;
+    if (!last) return null;
+    // app.js entrega margen y comisiones en PORCENTAJE; la app los guarda
+    // como marginPercent (porcentaje) y comisiones (fracciÃ³n).
+    return {
+      title: last.producto,
+      costUsd: last.costoUsd,
+      marginPercent: last.margen,
+      fixedExpenseBs: last.gasto,
+      commissionPlatform: pctToFrac(last.comP),
+      commissionPaymentMethod: pctToFrac(last.comPa),
+      commissionOther: pctToFrac(last.comO),
+      roundStep: currentRoundStep(),
+      rateSourceName: currentRateSourceName(),
+      marginMode: 'onSale', // la fÃ³rmula de esta web es margen sobre la venta
+      rateValue: last.tasa,
+      finalPriceBs: last.precioFinal,
+      precioExactoBs: last.precioExacto, // extras: la app los ignora
+      gananciaBs: last.gananciaBs
+    };
+  }
+  async function saveCalculation(silent) {
+    if (!user) { toast('Inicia sesiÃ³n para guardar tus cÃ¡lculos en el historial'); return false; }
+    var c = currentCalculation();
+    // La app descarta entradas con costo, tasa o precio final <= 0.
+    if (!c || c.costUsd <= 0 || c.rateValue <= 0 || c.finalPriceBs <= 0) { toast('Revisa los nÃºmeros: ese cÃ¡lculo no es vÃ¡lido para guardar'); return false; }
+    try {
+      var ref = newDocRef('history');
+      c.v = 1;
+      c.id = ref.id;
+      c.timestamp = new Date().toISOString();
+      await F.fs.setDoc(ref, c);
+      if (!silent) toast('CÃ¡lculo guardado en tu historial');
+      return true;
+    } catch (e) {
+      console.error(e);
+      toast('No se pudo guardar el cÃ¡lculo');
+      return false;
+    }
+  }
+  // Guardado automÃ¡tico al pulsar "Copiar precio" (app.js llama a este hook).
+  // Como invitado no hace nada en silencio: el historial pide sesiÃ³n en su secciÃ³n.
+  window.__margenesOnCopyPrice = function () {
+    if (!user) return;
+    saveCalculation(true).then(function (ok) {
+      if (ok) toast('Precio copiado y cÃ¡lculo guardado en tu historial');
+    });
+  };
+
+  function subscribeHistory() {
+    if (unsubHist) { unsubHist(); unsubHist = null; }
+    if (!user || !db) return;
+    var q = F.fs.query(
+      F.fs.collection(db, 'users', user.uid, 'history'),
+      F.fs.orderBy('timestamp', 'desc'),
+      F.fs.limit(50)
+    );
+    unsubHist = F.fs.onSnapshot(q, function (snap) {
+      histItems = [];
+      snap.forEach(function (d) { histItems.push({ id: d.id, data: d.data() }); });
+      renderHistory();
+    }, function (e) { console.error(e); toast('No se pudo leer tu historial'); });
+  }
+  function renderHistory() {
+    var list = $('histList');
+    if (!list) return;
+    var empty = $('histEmpty');
+    if (empty) empty.style.display = histItems.length ? 'none' : '';
+    var html = '';
+    histItems.forEach(function (it) {
+      var d = it.data;
+      var ts = d.timestamp ? new Date(d.timestamp) : null;
+      var fecha = (ts && !isNaN(ts.getTime())) ? fmtFecha.format(ts) : 'ahora mismo';
+      // gananciaBs es un extra que solo escribe la web; las entradas de la
+      // app no lo traen y entonces no se muestra.
+      var gan = (typeof d.gananciaBs === 'number')
+        ? '<span class="green">+ Bs ' + fmtBs.format(d.gananciaBs) + '</span>' : '';
+      html += '<div class="item-row">'
+        + '<div class="item-meta"><b>' + esc(d.title || 'Producto') + '</b>'
+        + '<span>' + esc(fecha) + ' Â· Tasa Bs ' + fmtBs.format(d.rateValue || 0) + '</span></div>'
+        + '<div class="item-vals"><strong>Bs ' + fmtBs0.format(d.finalPriceBs || 0) + '</strong>'
+        + gan + '</div>'
+        + '<div class="item-actions"><button type="button" class="btn-mini" data-load-hist="' + it.id + '">Cargar</button>'
+        + '<button type="button" class="btn-mini danger" data-del-hist="' + it.id + '">âœ•</button></div></div>';
+    });
+    list.innerHTML = html;
+  }
+  function loadHistory(id) {
+    var it = null;
+    for (var i = 0; i < histItems.length; i++) { if (histItems[i].id === id) { it = histItems[i]; break; } }
+    if (!it) return;
+    var d = it.data;
+    setInput('producto', d.title || '');
+    setInput('costoUsd', d.costUsd || 0);
+    setInput('tasa', d.rateValue || 0);
+    setInput('margen', d.marginPercent || 0);
+    setInput('comProveedor', fracToPct(d.commissionPlatform));
+    setInput('comPasarela', fracToPct(d.commissionPaymentMethod));
+    setInput('comOtra', fracToPct(d.commissionOther));
+    setInput('gastoFijo', d.fixedExpenseBs || 0);
+    var r = $('redondeo');
+    if (r && d.roundStep && r.querySelector('option[value="' + d.roundStep + '"]')) {
+      r.value = String(d.roundStep);
+      r.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    toast('CÃ¡lculo cargado en la calculadora');
+  }
+  async function deleteHistory(id) {
+    if (!user) return;
+    try { await F.fs.deleteDoc(F.fs.doc(db, 'users', user.uid, 'history', id)); }
+    catch (e) { toast('No se pudo borrar ese cÃ¡lculo'); }
+  }
+  async function clearHistory() {
+    if (!user) return;
+    if (!histItems.length) { toast('Tu historial ya estÃ¡ vacÃ­o'); return; }
+    if (!window.confirm('Â¿Borrar todo tu historial de cÃ¡lculos? No se puede deshacer.')) return;
+    try {
+      var batch = F.fs.writeBatch(db);
+      histItems.forEach(function (it) { batch.delete(F.fs.doc(db, 'users', user.uid, 'history', it.id)); });
+      await batch.commit();
+      toast('Historial limpio');
+    } catch (e) { toast('No se pudo limpiar el historial'); }
+  }
+
+  /* ===== Productos: users/{uid}/products (mismo esquema que la app Flutter) ===== */
+  var backfilledProds = {};
+  // MigraciÃ³n Ãºnica de productos viejos de la web al esquema de la app: les
+  // pone el campo 'id', convierte las fechas a strings ISO y deja las
+  // comisiones en fracciÃ³n, para que la app tambiÃ©n pueda leerlos.
+  function maybeBackfillProduct(docSnap) {
+    var d = docSnap.data();
+    var legacy = !d.id || d.nombre != null || d.margenSugerido != null ||
+      (d.createdAt && d.createdAt.toDate) || (d.updatedAt && d.updatedAt.toDate);
+    if (!legacy || backfilledProds[docSnap.id]) return;
+    backfilledProds[docSnap.id] = true;
+    var n = normalizeProduct(d);
+    var full = {
+      v: 1, id: docSnap.id, name: n.name, costUsd: n.costUsd,
+      marginPercent: n.marginPercent, fixedExpenseBs: n.fixedExpenseBs,
+      commissionPlatform: n.commissionPlatform,
+      commissionPaymentMethod: n.commissionPaymentMethod,
+      commissionOther: n.commissionOther,
+      roundStep: n.roundStep, rateSourceName: n.rateSourceName,
+      marginMode: 'onSale',
+      createdAt: n.createdAt || new Date().toISOString(),
+      updatedAt: n.updatedAt || new Date().toISOString()
+    };
+    if (n.customRateValue != null) full.customRateValue = n.customRateValue;
+    F.fs.setDoc(docSnap.ref, full, { merge: true }).catch(function (e) { console.error(e); });
+  }
+  function subscribeProducts() {
+    if (unsubProd) { unsubProd(); unsubProd = null; }
+    if (!user || !db) return;
+    var q = F.fs.query(
+      F.fs.collection(db, 'users', user.uid, 'products'),
+      F.fs.orderBy('updatedAt', 'desc'),
+      F.fs.limit(100)
+    );
+    unsubProd = F.fs.onSnapshot(q, function (snap) {
+      prodItems = [];
+      snap.forEach(function (d) {
+        prodItems.push({ id: d.id, data: d.data() });
+        maybeBackfillProduct(d);
+      });
+      renderProducts();
+    }, function (e) { console.error(e); toast('No se pudieron leer tus productos'); });
+  }
+  function renderProducts() {
+    var list = $('prodList');
+    if (!list) return;
+    var empty = $('prodEmpty');
+    if (empty) empty.style.display = prodItems.length ? 'none' : '';
+    var html = '';
+    prodItems.forEach(function (it) {
+      var d = normalizeProduct(it.data);
+      html += '<div class="item-row">'
+        + '<div class="item-meta"><b>' + esc(d.name || 'Producto') + '</b>'
+        + '<span>Costo $' + fmtBs.format(d.costUsd || 0) + ' Â· Margen ' + fmtBs.format(d.marginPercent || 0) + '%</span></div>'
+        + '<div class="item-actions"><button type="button" class="btn-mini" data-load-prod="' + it.id + '">Cargar</button>'
+        + '<button type="button" class="btn-mini" data-edit-prod="' + it.id + '">Editar</button>'
+        + '<button type="button" class="btn-mini danger" data-del-prod="' + it.id + '">âœ•</button></div></div>';
+    });
+    list.innerHTML = html;
+  }
+  function findProd(id) {
+    for (var i = 0; i < prodItems.length; i++) { if (prodItems[i].id === id) return prodItems[i]; }
+    return null;
+  }
+  function loadProduct(id) {
+    var it = findProd(id);
+    if (!it) return;
+    var d = normalizeProduct(it.data);
+    setInput('producto', d.name || '');
+    setInput('costoUsd', d.costUsd || 0);
+    setInput('margen', d.marginPercent || 0);
+    setInput('comProveedor', fracToPct(d.commissionPlatform));
+    setInput('comPasarela', fracToPct(d.commissionPaymentMethod));
+    setInput('comOtra', fracToPct(d.commissionOther));
+    setInput('gastoFijo', d.fixedExpenseBs || 0);
+    var r = $('redondeo');
+    if (r && d.roundStep && r.querySelector('option[value="' + d.roundStep + '"]')) {
+      r.value = String(d.roundStep);
+      r.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    toast('Producto cargado en la calculadora');
+  }
+  function editProduct(id) {
+    var it = findProd(id);
+    if (!it) return;
+    var d = normalizeProduct(it.data);
+    $('prodNombre').value = d.name || '';
+    $('prodCosto').value = d.costUsd || 0;
+    $('prodMargen').value = d.marginPercent || 0;
+    $('prodComP').value = fracToPct(d.commissionPlatform);
+    $('prodComPa').value = fracToPct(d.commissionPaymentMethod);
+    $('prodComO').value = fracToPct(d.commissionOther);
+    $('prodGasto').value = d.fixedExpenseBs || 0;
+    $('prodEditId').value = id;
+    var btn = $('btnProdGuardar'); if (btn) btn.textContent = 'Guardar cambios';
+    var cancel = $('btnProdCancelar'); if (cancel) cancel.hidden = false;
+    $('prodNombre').focus();
+  }
+  function resetProdForm() {
+    var form = $('prodForm');
+    if (form) form.reset();
+    $('prodEditId').value = '';
+    var btn = $('btnProdGuardar'); if (btn) btn.textContent = 'Agregar producto';
+    var cancel = $('btnProdCancelar'); if (cancel) cancel.hidden = true;
+  }
+  async function saveProduct(ev) {
+    if (ev) ev.preventDefault();
+    if (!user) { toast('Inicia sesiÃ³n para guardar productos'); return; }
+    var nombre = ($('prodNombre').value || '').trim();
+    if (!nombre) { toast('Ponle un nombre al producto'); $('prodNombre').focus(); return; }
+    // La app descarta productos con costo <= 0.
+    if (numVal('prodCosto', 0) <= 0) { toast('El costo debe ser mayor que 0'); $('prodCosto').focus(); return; }
+    var now = new Date().toISOString();
+    var editId = $('prodEditId').value;
+    var stored = editId ? normalizeProduct((findProd(editId) || { data: {} }).data) : null;
+    // Al editar se conservan la fuente de tasa, el redondeo y la tasa
+    // personalizada que ya tenÃ­a el producto; al crear se usan los valores
+    // actuales de la calculadora como predeterminados.
+    var rateName = (stored && stored.rateSourceName) || currentRateSourceName();
+    var data = {
+      v: 1,
+      name: nombre,
+      costUsd: numVal('prodCosto', 0),
+      marginPercent: numVal('prodMargen', 20),
+      fixedExpenseBs: numVal('prodGasto', 0),
+      commissionPlatform: pctToFrac(numVal('prodComP', 0)),
+      commissionPaymentMethod: pctToFrac(numVal('prodComPa', 0)),
+      commissionOther: pctToFrac(numVal('prodComO', 0)),
+      roundStep: (stored && stored.roundStep) || currentRoundStep(),
+      rateSourceName: rateName,
+      marginMode: 'onSale', // la fÃ³rmula de esta web es margen sobre la venta
+      updatedAt: now
+    };
+    if (rateName === 'custom') {
+      var cr = (stored && stored.customRateValue) || numVal('tasa', 0);
+      if (cr > 0) data.customRateValue = cr;
+    }
+    try {
+      if (editId) {
+        data.id = editId;
+        data.createdAt = (stored && stored.createdAt) || now;
+        // Limpia los campos del esquema viejo, si los tenÃ­a el documento.
+        data.nombre = F.fs.deleteField();
+        data.margenSugerido = F.fs.deleteField();
+        data.comProveedor = F.fs.deleteField();
+        data.comPasarela = F.fs.deleteField();
+        data.comOtra = F.fs.deleteField();
+        data.gastoFijo = F.fs.deleteField();
+        await F.fs.updateDoc(F.fs.doc(db, 'users', user.uid, 'products', editId), data);
+        toast('Producto actualizado');
+      } else {
+        var ref = newDocRef('products');
+        data.id = ref.id;
+        data.createdAt = now;
+        await F.fs.setDoc(ref, data);
+        toast('Producto guardado');
+      }
+      resetProdForm();
+    } catch (e) {
+      console.error(e);
+      toast('No se pudo guardar el producto');
+    }
+  }
+  async function deleteProduct(id) {
+    if (!user) return;
+    if (!window.confirm('Â¿Eliminar este producto?')) return;
+    try { await F.fs.deleteDoc(F.fs.doc(db, 'users', user.uid, 'products', id)); }
+    catch (e) { toast('No se pudo eliminar el producto'); }
+  }
+
+  /* ===== Cableado de la UI ===== */
+  function wire() {
+    var btnEntrar = $('btnEntrar');
+    if (btnEntrar) btnEntrar.addEventListener('click', function () { showReset(false); setAuthMode('login'); openAuth(); });
+    var btnSalir = $('btnSalir');
+    if (btnSalir) btnSalir.addEventListener('click', async function () {
+      if (!auth) return;
+      try { await F.auth.signOut(auth); toast('SesiÃ³n cerrada'); }
+      catch (e) { toast('No se pudo cerrar la sesiÃ³n'); }
+    });
+    var btnCerrar = $('btnCerrarModal');
+    if (btnCerrar) btnCerrar.addEventListener('click', closeAuth);
+    var modal = $('authModal');
+    if (modal) modal.addEventListener('click', function (e) { if (e.target === modal) closeAuth(); });
+    var tabLogin = $('tabLogin');
+    if (tabLogin) tabLogin.addEventListener('click', function () { setAuthMode('login'); });
+    var tabRegister = $('tabRegister');
+    if (tabRegister) tabRegister.addEventListener('click', function () { setAuthMode('register'); });
+    var btnGoogle = $('btnGoogle');
+    if (btnGoogle) btnGoogle.addEventListener('click', loginGoogle);
+    var btnSubmit = $('btnAuthSubmit');
+    if (btnSubmit) btnSubmit.addEventListener('click', submitEmail);
+    var authPass = $('authPass');
+    if (authPass) authPass.addEventListener('keydown', function (e) { if (e.key === 'Enter') submitEmail(); });
+    var linkReset = $('linkReset');
+    if (linkReset) linkReset.addEventListener('click', function (e) { e.preventDefault(); showReset(true); });
+    var linkVolver = $('linkVolverLogin');
+    if (linkVolver) linkVolver.addEventListener('click', function (e) { e.preventDefault(); showReset(false); });
+    var btnReset = $('btnResetSend');
+    if (btnReset) btnReset.addEventListener('click', sendReset);
+
+    document.querySelectorAll('[data-open-auth]').forEach(function (b) {
+      b.addEventListener('click', function () { showReset(false); setAuthMode('login'); openAuth(); });
+    });
+
+    var btnGuardar = $('btnGuardarCalculo');
+    if (btnGuardar) btnGuardar.addEventListener('click', function () { saveCalculation(false); });
+
+    var btnLimpiar = $('btnLimpiarHist');
+    if (btnLimpiar) btnLimpiar.addEventListener('click', clearHistory);
+    var histList = $('histList');
+    if (histList) histList.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!t.getAttribute) return;
+      var loadId = t.getAttribute('data-load-hist');
+      var delId = t.getAttribute('data-del-hist');
+      if (loadId) loadHistory(loadId);
+      else if (delId) deleteHistory(delId);
+    });
+
+    var prodForm = $('prodForm');
+    if (prodForm) prodForm.addEventListener('submit', saveProduct);
+    var btnCancel = $('btnProdCancelar');
+    if (btnCancel) btnCancel.addEventListener('click', resetProdForm);
+    var prodList = $('prodList');
+    if (prodList) prodList.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!t.getAttribute) return;
+      var loadId = t.getAttribute('data-load-prod');
+      var editId = t.getAttribute('data-edit-prod');
+      var delId = t.getAttribute('data-del-prod');
+      if (loadId) loadProduct(loadId);
+      else if (editId) editProduct(editId);
+      else if (delId) deleteProduct(delId);
+    });
+  }
+
+  wire();
+  initFirebase();
+})();
+
+</script>
+</body>
+</html>
