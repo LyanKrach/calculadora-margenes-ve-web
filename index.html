@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="color-scheme" content="light dark" />
 <link rel="icon" href="data:," />
-<title>Calculadora de márgenes para vendedores</title>
+<title>Calculadora de márgenes para vendedores en Venezuela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
@@ -26,211 +26,189 @@
   </div>
   <div class="notice" id="fbNotice" hidden>⚠ Falta la configuración de Firebase: pega tu config web en <code>firebase-config.js</code> para activar cuentas, historial y productos. La calculadora sigue funcionando como invitada.</div>
 
-  <header class="hero">
+  <header class="hero" style="padding:14px 0 18px">
     <div>
       <span class="kicker"><i></i> Para vendedores en Venezuela</span>
-      <h1>Vende en Bs.<br><em>Sin perder</em> ni un centavo.</h1>
-      <p>Metes tu costo en dólares, eliges la tasa — BCV dólar, euro BCV o Binance USDT se traen solas de internet; la cuarta la pones tú — y tus comisiones. La calculadora te devuelve el precio exacto en bolívares para ganar el margen que quieres, con el desglose paso a paso.</p>
+      <h1 style="font-size:clamp(28px,4.5vw,46px);margin:10px 0 8px">Calculadora de Márgenes <em>Venezuela</em></h1>
+      <p style="margin:0;font-size:14.5px;color:var(--muted)">Calcula precios en bolívares para ganar tu margen real sin perder por comisiones, redondeo ni brecha de tasa.</p>
     </div>
     <aside class="hero-card" aria-label="Fórmula principal">
-      <b>La fórmula que usa</b>
+      <b>La fórmula que te protege</b>
       <div class="formula">Precio = (Costo Bs + Gasto fijo) ÷ (1 − Comisiones − Margen)</div>
-      <p>El margen se calcula <strong>sobre el precio de venta</strong>, no sobre el costo. Por eso no pierdes cuando la pasarela y el proveedor se llevan su parte.</p>
+      <p>El margen se calcula <strong>sobre el precio de venta</strong> para no perder capital al reponer.</p>
     </aside>
   </header>
 
-  <main class="layout">
-    <!-- INPUTS -->
-    <section class="card panel" aria-label="Datos de la venta">
-      <h2>1 · Tus números</h2>
-      <p class="sub">Todo se recalcula al instante. Ajusta la tasa cada vez que cambie.</p>
+  <!-- DASHBOARD NAVIGATION -->
+  <nav class="dash-nav" aria-label="Navegación del Dashboard">
+    <button type="button" class="dash-tab active" data-tab="calc">🧮 Calculadora</button>
+    <button type="button" class="dash-tab" data-tab="prod">📦 Mis Productos <span class="tab-badge" id="badgeProd" hidden>0</span></button>
+    <button type="button" class="dash-tab" data-tab="hist">📜 Historial <span class="tab-badge" id="badgeHist" hidden>0</span></button>
+    <button type="button" class="dash-tab" data-tab="tasas">📈 Tasas y Brecha</button>
+    <button type="button" class="dash-tab" data-tab="guia">💡 Guía y Margen Real</button>
+  </nav>
 
-      <label for="producto">Producto <span>opcional, para copiar el mensaje</span></label>
-      <div class="field"><input type="text" id="producto" value="Recarga / producto digital" autocomplete="off"></div>
+  <!-- TAB VIEW 1: CALCULADORA -->
+  <div class="dash-view active" id="tabView-calc">
+    <main class="layout">
+      <!-- INPUTS -->
+      <section class="card panel" aria-label="Datos de la venta">
+        <h2>1 · Tus números</h2>
+        <p class="sub">Todo se recalcula al instante. Ajusta la tasa cada vez que cambie.</p>
 
-      <label for="costoUsd">Costo en dólares <span>lo que pagas al proveedor</span></label>
-      <div class="field"><span class="prefix">$</span><input type="number" id="costoUsd" value="10" min="0" step="0.01" inputmode="decimal"></div>
+        <label for="producto">Producto <span>opcional, para copiar el mensaje</span></label>
+        <div class="field"><input type="text" id="producto" value="Recarga / producto digital" autocomplete="off"></div>
 
-      <div class="divider"></div>
-      <h2 style="font-size:16px">Tasa automática</h2>
-      <p class="sub" style="margin-bottom:12px">Toca una tarjeta para usar esa tasa directamente en el cálculo.</p>
+        <label for="costoUsd">Costo en dólares <span>lo que pagas al proveedor</span></label>
+        <div class="field"><span class="prefix">$</span><input type="number" id="costoUsd" value="10" min="0" step="0.01" inputmode="decimal"></div>
 
-      <div class="rates" role="group" aria-label="Fuente de la tasa">
-        <button type="button" class="rate-card" data-rate="bcv">
-          <span class="rc-check" aria-hidden="true">✓</span>
-          <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg> BCV · Dólar</span>
-          <span class="rc-val" id="rateVal-bcv">Bs 897,54 <small>/ $</small></span>
-          <span class="rc-src">Oficial</span>
-        </button>
-        <button type="button" class="rate-card" data-rate="binance">
-          <span class="rc-check" aria-hidden="true">✓</span>
-          <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6.5 15.2 9.7 12 12.9 8.8 9.7Z M6.5 12 3.3 15.2 6.5 18.4 9.7 15.2Z M17.5 12 20.7 15.2 17.5 18.4 14.3 15.2Z M12 14.3 15.2 17.5 12 20.7 8.8 17.5Z M12 1.8 15.2 5 12 8.2 8.8 5Z"/></svg> Binance · USDT</span>
-          <span class="rc-val" id="rateVal-binance">Bs 1.045,00 <small>/ USDT</small></span>
-          <span class="rc-src">Paralelo / USDT</span>
-        </button>
-        <button type="button" class="rate-card" data-rate="euro">
-          <span class="rc-check" aria-hidden="true">✓</span>
-          <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg> BCV · Euro</span>
-          <span class="rc-val" id="rateVal-euro">Bs 1.001,19 <small>/ €</small></span>
-          <span class="rc-src">Oficial EUR</span>
-        </button>
-        <button type="button" class="rate-card active" data-rate="custom">
-          <span class="rc-check" aria-hidden="true">✓</span>
-          <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Personalizada</span>
-          <span class="rc-val" id="rateVal-custom">Bs 100,00 <small>/ $</small></span>
-          <span class="rc-src">Manual</span>
-        </button>
-      </div>
+        <div class="divider"></div>
+        <h2 style="font-size:16px">Tasa automática</h2>
+        <p class="sub" style="margin-bottom:12px">Toca una tarjeta para usar esa tasa directamente en el cálculo.</p>
 
-      <div class="rate-status">
-        <span class="dot" id="rateDot" aria-hidden="true"></span>
-        <span id="rateStatus">Tasas del día — actualizando…</span>
-        <button type="button" class="rate-refresh" id="btnRefreshRates">↻ Actualizar tasas</button>
-      </div>
-
-      <label for="tasa">Tasa que entra en el cálculo <span id="tasaFuenteLabel">Personalizada · escrita a mano</span></label>
-      <div class="field"><input type="number" id="tasa" value="100" min="0" step="0.01" inputmode="decimal"><span class="suffix">Bs / $</span></div>
-      <p class="hint">Usa la tasa real con la que repones: BCV, la de tu proveedor o la que pagas al cambiar. Si repones más caro de lo que cobras, pierdes aunque el margen se vea bien. Si tocas este número a mano, la fuente pasa a “Personalizada”.</p>
-
-      <div class="divider"></div>
-
-      <div class="margin-head">
-        <label for="margen" style="margin:0">Margen que quieres ganar</label>
-        <div class="margin-big"><span id="margenBig">20</span>%</div>
-      </div>
-      <input type="range" id="margenRange" min="0" max="60" step="1" value="20" aria-label="Margen deseado">
-      <div class="ticks"><span>0%</span><span>15%</span><span>30%</span><span>45%</span><span>60%</span></div>
-      <div class="input-row" style="margin-top:8px">
-        <div class="field"><input type="number" id="margen" value="20" min="0" max="95" step="0.5" inputmode="decimal"><span class="suffix">% sobre la venta</span></div>
-      </div>
-      <div class="chips" id="marginChips">
-        <button class="chip" data-margen="10" type="button">10% · rotación</button>
-        <button class="chip" data-margen="15" type="button">15%</button>
-        <button class="chip active" data-margen="20" type="button">20% · sano</button>
-        <button class="chip" data-margen="25" type="button">25%</button>
-        <button class="chip" data-margen="30" type="button">30% · premium</button>
-      </div>
-
-      <div class="divider"></div>
-      <h2 style="font-size:16px">Comisiones que te quitan</h2>
-      <p class="sub" style="margin-bottom:4px">Edítalas con tus números reales. Los valores de arranque son solo un ejemplo.</p>
-
-      <label for="comProveedor">Proveedor / API</label>
-      <div class="field"><input type="number" id="comProveedor" value="5" min="0" max="90" step="0.1" inputmode="decimal"><span class="suffix">%</span></div>
-
-      <label for="comPasarela">Pasarela / verificación de pago</label>
-      <div class="field"><input type="number" id="comPasarela" value="2" min="0" max="90" step="0.1" inputmode="decimal"><span class="suffix">%</span></div>
-
-      <label for="comOtra">Banco, P2P u otra comisión</label>
-      <div class="field"><input type="number" id="comOtra" value="0" min="0" max="90" step="0.1" inputmode="decimal"><span class="suffix">%</span></div>
-
-      <div class="total-line"><b>Total en comisiones</b><strong id="comTotalLabel">7,0%</strong></div>
-
-      <label for="gastoFijo">Gasto fijo por venta <span>internet, tiempo, entrega…</span></label>
-      <div class="field"><span class="prefix">Bs</span><input type="number" id="gastoFijo" value="0" min="0" step="1" inputmode="decimal"></div>
-
-      <label for="redondeo">Precio a cobrar</label>
-      <div class="field">
-        <select id="redondeo">
-          <option value="1">Exacto, sin redondear</option>
-          <option value="10" selected>Redondear hacia arriba a Bs 10</option>
-          <option value="50">Redondear hacia arriba a Bs 50</option>
-          <option value="100">Redondear hacia arriba a Bs 100</option>
-        </select>
-      </div>
-      <p class="hint">Redondear <strong>hacia arriba</strong> protege tu margen. Nunca redondees hacia abajo para “quedar bonito”.</p>
-    </section>
-
-    <!-- RESULT -->
-    <section class="card result" aria-label="Resultado">
-      <div class="result-top">
-        <div class="label">Precio de venta a cobrar — <span id="resProducto">Recarga / producto digital</span></div>
-        <div class="price"><small>Bs</small> <span id="precioFinal">1.370</span></div>
-        <div class="price-usd">Equivale a <strong id="precioUsd">$13,70</strong> a la tasa que pusiste · Precio exacto sin redondear: <span id="precioExacto">Bs 1.369,86</span></div>
-        <div><span class="rounded-note" id="roundedNote">↑ Redondeado hacia arriba para no perder por el redondeo</span></div>
-      </div>
-
-      <div class="stats">
-        <div class="stat"><span>Tu ganancia neta</span><strong class="green" id="gananciaBs">Bs 274,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="gananciaUsd">$2,74 por venta</span></div>
-        <div class="stat"><span>Se va en comisiones</span><strong id="comisionesBs">Bs 95,90</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="comisionesPct">7,0% del precio</span></div>
-        <div class="stat"><span>Tu costo total</span><strong id="costoBsLabel">Bs 1.000,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="costoUsdLabel">$10,00 al proveedor</span></div>
-      </div>
-
-      <div class="bar-wrap">
-        <div class="bar" role="img" aria-label="Composición del precio de venta">
-          <div class="bar-costo" id="barCosto" style="width:73%"></div>
-          <div class="bar-com" id="barCom" style="width:7%"></div>
-          <div class="bar-gan" id="barGan" style="width:20%"></div>
+        <div class="rates" role="group" aria-label="Fuente de la tasa">
+          <button type="button" class="rate-card" data-rate="bcv">
+            <span class="rc-check" aria-hidden="true">✓</span>
+            <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg> BCV · Dólar</span>
+            <span class="rc-val" id="rateVal-bcv">Bs 899,27 <small>/ $</small></span>
+            <span class="rc-src">Oficial</span>
+          </button>
+          <button type="button" class="rate-card" data-rate="binance">
+            <span class="rc-check" aria-hidden="true">✓</span>
+            <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6.5 15.2 9.7 12 12.9 8.8 9.7Z M6.5 12 3.3 15.2 6.5 18.4 9.7 15.2Z M17.5 12 20.7 15.2 17.5 18.4 14.3 15.2Z M12 14.3 15.2 17.5 12 20.7 8.8 17.5Z M12 1.8 15.2 5 12 8.2 8.8 5Z"/></svg> Binance · USDT</span>
+            <span class="rc-val" id="rateVal-binance">Bs 1.082,50 <small>/ USDT</small></span>
+            <span class="rc-src">Paralelo / USDT</span>
+          </button>
+          <button type="button" class="rate-card" data-rate="euro">
+            <span class="rc-check" aria-hidden="true">✓</span>
+            <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg> BCV · Euro</span>
+            <span class="rc-val" id="rateVal-euro">Bs 1.006,61 <small>/ €</small></span>
+            <span class="rc-src">Oficial EUR</span>
+          </button>
+          <button type="button" class="rate-card active" data-rate="custom">
+            <span class="rc-check" aria-hidden="true">✓</span>
+            <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Personalizada</span>
+            <span class="rc-val" id="rateVal-custom">Bs 100,00 <small>/ $</small></span>
+            <span class="rc-src">Manual</span>
+          </button>
         </div>
-        <div class="legend">
-          <span><i style="background:#334155"></i>Costo <b id="legCosto">73,0%</b></span>
-          <span><i style="background:var(--amber)"></i>Comisiones <b id="legCom">7,0%</b></span>
-          <span><i style="background:var(--green2)"></i>Tu ganancia <b id="legGan">20,0%</b></span>
+
+        <div class="rate-status">
+          <span class="dot" id="rateDot" aria-hidden="true"></span>
+          <span id="rateStatus">Tasas del día — actualizando…</span>
+          <button type="button" class="rate-refresh" id="btnRefreshRates">↻ Actualizar tasas</button>
         </div>
-      </div>
 
-      <div class="alert" id="alertBox">⚠ Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o más. Baja el margen o revisa las comisiones.</div>
+        <label for="tasa">Tasa que entra en el cálculo <span id="tasaFuenteLabel">Personalizada · escrita a mano</span></label>
+        <div class="field"><input type="number" id="tasa" value="100" min="0" step="0.01" inputmode="decimal"><span class="suffix">Bs / $</span></div>
+        <p class="hint">Usa la tasa real con la que repones: BCV, la de tu proveedor o la que pagas al cambiar. Si repones más caro de lo que cobras, pierdes aunque el margen se vea bien. Si tocas este número a mano, la fuente pasa a “Personalizada”.</p>
 
-      <div class="actions">
-        <button class="primary" id="btnCopiarPrecio" type="button">Copiar precio</button>
-        <button class="secondary" id="btnGuardarCalculo" type="button">Guardar cálculo</button>
-        <button class="secondary" id="btnCopiarMensaje" type="button">Copiar mensaje para el cliente</button>
-        <button class="secondary" id="btnCopiarDesglose" type="button">Copiar desglose completo</button>
-      </div>
-    </section>
-  </main>
+        <div class="divider"></div>
 
-  <!-- STEPS -->
-  <section class="section" aria-label="Desglose paso a paso">
-    <div class="section-head">
-      <h2>2 · Desglose paso a paso</h2>
-      <p>Así sale el precio, con tus números en vivo. Si alguien te discute el precio, esto es lo que le muestras.</p>
-    </div>
-    <div class="steps">
-      <article class="step"><div class="num">1</div><b>Pasa el costo a bolívares</b><code id="step1f">Costo $ × Tasa</code><strong id="step1r">Bs 1.000,00</strong></article>
-      <article class="step"><div class="num">2</div><b>Suma todo lo que te quitan</b><code id="step2f">Proveedor + Pasarela + Otra</code><strong id="step2r">7,0% en comisiones</strong></article>
-      <article class="step"><div class="num">3</div><b>Saca lo que queda para ti</b><code>1 − Comisiones − Margen</code><strong id="step3r">1 − 0,07 − 0,20 = 0,73</strong></article>
-      <article class="step"><div class="num">4</div><b>Divide el costo entre eso</b><code id="step4f">(Costo Bs + Gasto fijo) ÷ 0,73</code><strong id="step4r">Bs 1.369,86</strong></article>
-      <article class="step"><div class="num">5</div><b>Verifica que no pierdes</b><code>Precio − Costo − Comisiones</code><strong id="step5r">Ganancia: Bs 273,97</strong></article>
-    </div>
-  </section>
+        <div class="margin-head">
+          <label for="margen" style="margin:0">Margen que quieres ganar</label>
+          <div class="margin-big"><span id="margenBig">20</span>%</div>
+        </div>
+        <input type="range" id="margenRange" min="0" max="60" step="1" value="20" aria-label="Margen deseado">
+        <div class="ticks"><span>0%</span><span>15%</span><span>30%</span><span>45%</span><span>60%</span></div>
+        <div class="input-row" style="margin-top:8px">
+          <div class="field"><input type="number" id="margen" value="20" min="0" max="95" step="0.5" inputmode="decimal"><span class="suffix">% sobre la venta</span></div>
+        </div>
+        <div class="chips" id="marginChips">
+          <button class="chip" data-margen="10" type="button">10% · rotación</button>
+          <button class="chip" data-margen="15" type="button">15%</button>
+          <button class="chip active" data-margen="20" type="button">20% · sano</button>
+          <button class="chip" data-margen="25" type="button">25%</button>
+          <button class="chip" data-margen="30" type="button">30% · premium</button>
+        </div>
 
-  <div class="two section">
-    <!-- TABLE -->
-    <section class="card" aria-label="Comparativa de márgenes" style="overflow:hidden">
-      <div class="panel" style="padding-bottom:10px">
-        <h2>3 · ¿Y si cambias el margen?</h2>
-        <p class="sub" style="margin-bottom:0">Mismo costo y mismas comisiones. Solo cambia lo que quieres ganar.</p>
-      </div>
-      <div style="overflow-x:auto">
-      <table>
-        <thead><tr><th>Margen</th><th>Precio en Bs</th><th>Precio en $</th><th>Ganas por venta</th></tr></thead>
-        <tbody id="tablaBody"></tbody>
-      </table>
-      </div>
-      <p class="hint" style="padding:10px 16px 16px;margin:0">La fila marcada es tu margen actual, ya con el redondeo que elegiste.</p>
-    </section>
+        <div class="divider"></div>
 
-    <!-- REVERSE -->
-    <section class="card panel" aria-label="Calculadora inversa">
-      <h2>4 · Ya tengo un precio, ¿gano o pierdo?</h2>
-      <p class="sub">Pega el precio que estás cobrando hoy, con el mismo costo, tasa y comisiones de la izquierda.</p>
-      <label for="precioActual">Precio que cobras hoy</label>
-      <div class="field"><span class="prefix">Bs</span><input type="number" id="precioActual" value="1300" min="0" step="1" inputmode="decimal"></div>
-      <div class="verdict warn" id="verdictBox">
-        <span class="big" id="verdictBig">Margen real: —</span>
-        <span id="verdictText">Escribe un precio para ver tu margen real.</span>
+        <label style="margin-top:0">Comisiones que te cobran</label>
+        <div class="form-grid">
+          <div><label for="comProveedor" style="font-size:11px">Proveedor</label><div class="field"><input type="number" id="comProveedor" value="2" min="0" max="90" step="0.1" inputmode="decimal"><span class="suffix">%</span></div></div>
+          <div><label for="comPasarela" style="font-size:11px">Pago móvil / pasarela</label><div class="field"><input type="number" id="comPasarela" value="5" min="0" max="90" step="0.1" inputmode="decimal"><span class="suffix">%</span></div></div>
+          <div style="grid-column:1 / -1"><label for="comOtra" style="font-size:11px">Otra comisión (opcional)</label><div class="field"><input type="number" id="comOtra" value="0" min="0" max="90" step="0.1" inputmode="decimal"><span class="suffix">%</span></div></div>
+        </div>
+
+        <label for="gastoFijo">Gasto fijo por venta <span>internet, tiempo, entrega…</span></label>
+        <div class="field"><span class="prefix">Bs</span><input type="number" id="gastoFijo" value="0" min="0" step="1" inputmode="decimal"></div>
+
+        <label for="redondeo">Precio a cobrar</label>
+        <div class="field">
+          <select id="redondeo">
+            <option value="1">Exacto, sin redondear</option>
+            <option value="10" selected>Redondear hacia arriba a Bs 10</option>
+            <option value="50">Redondear hacia arriba a Bs 50</option>
+            <option value="100">Redondear hacia arriba a Bs 100</option>
+          </select>
+        </div>
+        <p class="hint">Redondear <strong>hacia arriba</strong> protege tu margen. Nunca redondees hacia abajo para “quedar bonito”.</p>
+      </section>
+
+      <!-- RESULT -->
+      <section class="card result" aria-label="Resultado">
+        <div class="result-top">
+          <div class="label">Precio de venta a cobrar — <span id="resProducto">Recarga / producto digital</span></div>
+          <div class="price"><small>Bs</small> <span id="precioFinal">1.370</span></div>
+          <div class="price-usd">Equivale a <strong id="precioUsd">$13,70</strong> a la tasa que pusiste · Precio exacto sin redondear: <span id="precioExacto">Bs 1.369,86</span></div>
+          <div><span class="rounded-note" id="roundedNote">↑ Redondeado hacia arriba para no perder por el redondeo</span></div>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><span>Tu ganancia neta</span><strong class="green" id="gananciaBs">Bs 274,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="gananciaUsd">$2,74 por venta</span></div>
+          <div class="stat"><span>Se va en comisiones</span><strong id="comisionesBs">Bs 95,90</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="comisionesPct">7,0% del precio</span></div>
+          <div class="stat"><span>Tu costo total</span><strong id="costoBsLabel">Bs 1.000,00</strong><span style="text-transform:none;letter-spacing:0;font-size:12px;margin-top:2px" id="costoUsdLabel">$10,00 al proveedor</span></div>
+        </div>
+
+        <div class="bar-wrap">
+          <div class="bar" role="img" aria-label="Composición del precio de venta">
+            <div class="bar-costo" id="barCosto" style="width:73%"></div>
+            <div class="bar-com" id="barCom" style="width:7%"></div>
+            <div class="bar-gan" id="barGan" style="width:20%"></div>
+          </div>
+          <div class="legend">
+            <span><i style="background:#334155"></i>Costo <b id="legCosto">73,0%</b></span>
+            <span><i style="background:var(--amber)"></i>Comisiones <b id="legCom">7,0%</b></span>
+            <span><i style="background:var(--green2)"></i>Tu ganancia <b id="legGan">20,0%</b></span>
+          </div>
+        </div>
+
+        <div class="alert" id="alertBox">⚠ Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o más. Baja el margen o revisa las comisiones.</div>
+
+        <div class="actions">
+          <button class="primary" id="btnCopiarPrecio" type="button">Copiar precio</button>
+          <button class="secondary" id="btnGuardarCalculo" type="button">Guardar cálculo</button>
+          <button class="secondary" id="btnCopiarMensaje" type="button">Copiar mensaje para el cliente</button>
+          <button class="secondary" id="btnCopiarDesglose" type="button">Copiar desglose completo</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- STEPS -->
+    <section class="section" aria-label="Desglose paso a paso">
+      <div class="section-head">
+        <h2>2 · Desglose paso a paso</h2>
+        <p>Así sale el precio, con tus números en vivo. Si alguien te discute el precio, esto es lo que le muestras.</p>
       </div>
-      <p class="hint" style="margin-top:12px"><strong>Fórmula inversa:</strong> Margen real = (Precio − Costo Bs − Gasto fijo − Comisiones en Bs) ÷ Precio. Las comisiones se calculan sobre el precio que cobras, no sobre el costo.</p>
+      <div class="steps">
+        <article class="step"><div class="num">1</div><b>Pasa el costo a bolívares</b><code id="step1f">Costo $ × Tasa</code><strong id="step1r">Bs 1.000,00</strong></article>
+        <article class="step"><div class="num">2</div><b>Suma todo lo que te quitan</b><code id="step2f">Proveedor + Pasarela + Otra</code><strong id="step2r">7,0% en comisiones</strong></article>
+        <article class="step"><div class="num">3</div><b>Saca lo que queda para ti</b><code>1 − Comisiones − Margen</code><strong id="step3r">1 − 0,07 − 0,20 = 0,73</strong></article>
+        <article class="step"><div class="num">4</div><b>Divide el costo entre eso</b><code id="step4f">(Costo Bs + Gasto fijo) ÷ 0,73</code><strong id="step4r">Bs 1.369,86</strong></article>
+        <article class="step"><div class="num">5</div><b>Verifica que no pierdes</b><code>Precio − Costo − Comisiones</code><strong id="step5r">Ganancia: Bs 273,97</strong></article>
+      </div>
     </section>
   </div>
 
-  <div class="two section">
-    <!-- PRODUCTS -->
-    <section class="card panel" aria-label="Mis productos">
-      <h2>5 · Mis productos</h2>
-      <p class="sub">Guarda tus productos con su costo y comisiones. Al cargar uno, la calculadora se llena sola.</p>
-      <div class="notice" data-needs-login hidden>Inicia sesión para guardar tus productos. <button type="button" class="chip" data-open-auth>Entrar</button></div>
+  <!-- TAB VIEW 2: PRODUCTOS -->
+  <div class="dash-view" id="tabView-prod">
+    <section class="card panel" aria-label="Mis productos" style="max-width:880px;margin:0 auto">
+      <div class="section-head" style="margin-bottom:16px">
+        <h2>Mis productos</h2>
+        <p class="sub">Guarda tus productos con su costo y comisiones fijas. Toca “Cargar” para llevarlos de inmediato a la calculadora.</p>
+      </div>
+      <div class="notice" data-needs-login hidden>Inicia sesión para guardar tus productos en la nube. <button type="button" class="chip" data-open-auth>Entrar</button></div>
       <div id="prodBox" hidden>
         <form id="prodForm">
           <label for="prodNombre">Nombre del producto</label>
@@ -254,31 +232,89 @@
         <p class="hint" id="prodEmpty">Aún no tienes productos guardados.</p>
       </div>
     </section>
+  </div>
 
-    <!-- HISTORY -->
-    <section class="card panel" aria-label="Historial de cálculos">
-      <h2>6 · Historial de cálculos</h2>
-      <p class="sub">Se guarda solo cuando copias el precio, o con el botón “Guardar cálculo”. Toca uno para cargarlo de nuevo.</p>
-      <div class="notice" data-needs-login hidden>Inicia sesión para ver tu historial. <button type="button" class="chip" data-open-auth>Entrar</button></div>
-      <div id="histBox" hidden>
-        <div class="actions" style="padding:0 0 10px">
-          <button type="button" class="secondary" id="btnLimpiarHist">Limpiar historial</button>
+  <!-- TAB VIEW 3: HISTORIAL -->
+  <div class="dash-view" id="tabView-hist">
+    <section class="card panel" aria-label="Historial de cálculos" style="max-width:880px;margin:0 auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div>
+          <h2 style="margin:0">Historial de cálculos</h2>
+          <p class="sub" style="margin:0">Cálculos guardados en la nube. Toca “Cargar” en cualquiera para abrirlo en la calculadora.</p>
         </div>
+        <button type="button" class="secondary" id="btnLimpiarHist">Limpiar historial</button>
+      </div>
+      <div class="notice" data-needs-login hidden>Inicia sesión para ver tu historial en la nube. <button type="button" class="chip" data-open-auth>Entrar</button></div>
+      <div id="histBox" hidden>
         <div id="histList"></div>
         <p class="hint" id="histEmpty">Aún no tienes cálculos guardados.</p>
       </div>
     </section>
   </div>
 
-  <!-- TIPS -->
-  <section class="section" aria-label="Errores que hacen perder plata">
-    <div class="section-head"><h2>Los 3 errores que te hacen perder</h2><p>Son los que más se ven vendiendo en Bs. La calculadora ya te protege de los tres.</p></div>
-    <div class="tips">
-      <article class="tip"><span class="tag">Error 01</span><h3>Sumar el margen al costo</h3><p>“Costo + 20%” no es 20% de margen: precio Bs 120, comisión del 7% = Bs 8,40, ganancia Bs 11,60 → margen real 11,60 ÷ 120 = 9,7% sobre el precio. El margen correcto se calcula sobre el precio final, dividiendo — como hace esta calculadora.</p></article>
-      <article class="tip"><span class="tag">Error 02</span><h3>Cobrar a una tasa y reponer a otra</h3><p>Cobras con tasa BCV pero repones pagando paralelo y la diferencia se come tu ganancia. Pon en la calculadora la tasa de reposición, no la más bonita.</p></article>
-      <article class="tip"><span class="tag">Error 03</span><h3>Olvidar una comisión “chiquita”</h3><p>2% aquí, 1% allá, el redondeo… sumados son tu margen. Mete <em>todas</em> las comisiones, aunque parezcan mínimas, y redondea siempre hacia arriba.</p></article>
+  <!-- TAB VIEW 4: TASAS Y BRECHA -->
+  <div class="dash-view" id="tabView-tasas">
+    <div style="max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+      <section class="card panel">
+        <h2>Monitor de Tasas y Brecha Cambiaria</h2>
+        <p class="sub">Compara la tasa oficial con el mercado paralelo para protegerte de la diferencia cambiaria al reponer mercancía.</p>
+        
+        <div class="gap-card" id="gapCard">
+          <div class="gap-stat">
+            <span>Brecha cambiaria actual</span>
+            <strong id="gapPct">+20,37%</strong>
+            <small id="gapDiff">Diferencia: +Bs 183,23 por USD</small>
+          </div>
+          <div class="gap-advice">
+            Si cobras en bolívares a tasa oficial BCV pero compras dólares a tasa paralelo / Binance para reponer inventario, tu costo de reposición es mayor. Tu margen de venta debe superar la brecha cambiaria para no perder capital de trabajo.
+          </div>
+        </div>
+      </section>
+
+      <!-- COMPARATIVA DE MÁRGENES -->
+      <section class="card" aria-label="Comparativa de márgenes" style="overflow:hidden">
+        <div class="panel" style="padding-bottom:10px">
+          <h2>¿Y si cambias el margen?</h2>
+          <p class="sub" style="margin-bottom:0">Para tu costo actual y tus comisiones. Compara precios y ganancias:</p>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Margen</th><th>Precio en Bs</th><th>Precio en $</th><th>Ganas por venta</th></tr></thead>
+            <tbody id="tablaBody"></tbody>
+          </table>
+        </div>
+        <p class="hint" style="padding:10px 16px 16px;margin:0">La fila destacada corresponde al margen seleccionado actualmente en la calculadora.</p>
+      </section>
     </div>
-  </section>
+  </div>
+
+  <!-- TAB VIEW 5: GUÍA Y MARGEN REAL -->
+  <div class="dash-view" id="tabView-guia">
+    <div style="max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+      <!-- REVERSE CALCULATOR -->
+      <section class="card panel" aria-label="Calculadora inversa">
+        <h2>Revisa lo que cobras hoy: ¿Ganas o pierdes?</h2>
+        <p class="sub">Escribe el precio que cobras actualmente con tus costos y comisiones para calcular tu margen neto real.</p>
+        <label for="precioActual">Precio que cobras hoy</label>
+        <div class="field"><span class="prefix">Bs</span><input type="number" id="precioActual" value="1300" min="0" step="1" inputmode="decimal"></div>
+        <div class="verdict warn" id="verdictBox">
+          <span class="big" id="verdictBig">Margen real: —</span>
+          <span id="verdictText">Escribe un precio para ver tu margen real.</span>
+        </div>
+        <p class="hint" style="margin-top:12px"><strong>Fórmula inversa:</strong> Margen real = (Precio − Costo Bs − Gasto fijo − Comisiones en Bs) ÷ Precio.</p>
+      </section>
+
+      <!-- TIPS -->
+      <section class="card panel" aria-label="Errores frecuentes">
+        <div class="section-head"><h2>Los 3 errores que te hacen perder</h2><p class="sub">Los errores más comunes al vender en bolívares en Venezuela:</p></div>
+        <div class="tips">
+          <article class="tip"><span class="tag">Error 01</span><h3>Sumar el margen al costo</h3><p>“Costo + 20%” no da 20% de margen: al descontar comisiones del precio final terminas ganando mucho menos. El margen correcto se calcula sobre la venta dividiendo.</p></article>
+          <article class="tip"><span class="tag">Error 02</span><h3>Cobrar a una tasa y reponer a otra</h3><p>Si cobras con tasa BCV pero repones con tasa paralelo/USDT, la brecha cambiaria se come toda tu ganancia.</p></article>
+          <article class="tip"><span class="tag">Error 03</span><h3>Olvidar una comisión “chiquita”</h3><p>2% de proveedor, 1% de pasarela, el redondeo… sumados reducen drásticamente tu ganancia si no los incluyes en la fórmula.</p></article>
+        </div>
+      </section>
+    </div>
+  </div>
 
   <footer>Hecha para vender en Venezuela sin perder por tasa, comisiones ni redondeo. Los valores de arranque son un ejemplo editable — pon siempre tu tasa y tus comisiones reales del día.</footer>
 </div>

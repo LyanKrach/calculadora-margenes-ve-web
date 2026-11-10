@@ -376,6 +376,11 @@
     }, function (e) { console.error(e); toast('No se pudo leer tu historial'); });
   }
   function renderHistory() {
+    var b = $('badgeHist');
+    if (b) {
+      b.textContent = histItems.length;
+      b.hidden = histItems.length === 0;
+    }
     var list = $('histList');
     if (!list) return;
     var empty = $('histEmpty');
@@ -417,6 +422,7 @@
       r.value = String(d.roundStep);
       r.dispatchEvent(new Event('change', { bubbles: true }));
     }
+    if (window.setDashboardTab) window.setDashboardTab('calc');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     toast('Cálculo cargado en la calculadora');
   }
@@ -481,6 +487,11 @@
     }, function (e) { console.error(e); toast('No se pudieron leer tus productos'); });
   }
   function renderProducts() {
+    var b = $('badgeProd');
+    if (b) {
+      b.textContent = prodItems.length;
+      b.hidden = prodItems.length === 0;
+    }
     var list = $('prodList');
     if (!list) return;
     var empty = $('prodEmpty');
@@ -517,6 +528,7 @@
       r.value = String(d.roundStep);
       r.dispatchEvent(new Event('change', { bubbles: true }));
     }
+    if (window.setDashboardTab) window.setDashboardTab('calc');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     toast('Producto cargado en la calculadora');
   }

@@ -6,9 +6,9 @@
      Respaldo guardado: tasas reales consultadas el 09/11/2026, 2:25 p. m. (hora de Caracas).
      BCV dólar y euro BCV: DolarAPI (fuente oficial BCV). Binance USDT: P2P USDT/VES. */
   var RATES = {
-    bcv:     { label:'BCV · Dólar oficial',      value:897.54,   unit:'$',    fecha:'09/11/2026' },
-    binance: { label:'Binance · USDT (P2P)',     value:1045.00,  unit:'USDT', fecha:'09/11/2026' },
-    euro:    { label:'BCV · Euro oficial',       value:1001.19,  unit:'€',    fecha:'09/11/2026' },
+    bcv:     { label:'BCV · Dólar oficial',      value:899.27,   unit:'$',    fecha:'Hoy' },
+    binance: { label:'Binance · USDT (P2P)',     value:1082.50,  unit:'USDT', fecha:'Hoy' },
+    euro:    { label:'BCV · Euro oficial',       value:1006.61,  unit:'€',    fecha:'Hoy' },
     custom:  { label:'Personalizada',            value:100,      unit:'$',    fecha:'' }
   };
   var rateSource = 'custom';
@@ -52,6 +52,19 @@
     });
     var lbl = $('tasaFuenteLabel');
     if (lbl) lbl.textContent = rateSource === 'custom' ? 'Personalizada · escrita a mano' : RATES[rateSource].label + (RATES[rateSource].fecha ? ' · ' + RATES[rateSource].fecha : '');
+    updateGapDisplay();
+  }
+  function updateGapDisplay(){
+    var bcv = RATES.bcv.value;
+    var binance = RATES.binance.value;
+    var elPct = $('gapPct');
+    var elDiff = $('gapDiff');
+    if (!elPct || !elDiff || !bcv || !binance) return;
+    var diff = binance - bcv;
+    var pct = (diff / bcv) * 100;
+    var sign = diff >= 0 ? '+' : '';
+    elPct.textContent = sign + pct.toFixed(2).replace('.', ',') + '%';
+    elDiff.textContent = 'Diferencia: ' + sign + 'Bs ' + fmtBs.format(diff) + ' por USD';
   }
   function setStatus(state, msg){
     var d = $('rateDot');
@@ -112,14 +125,21 @@
     jobs.push(fetchJSON('https://ve.dolarapi.com/v1/euros/oficial')
       .then(function(d){ if (!got.euro) applyRate('euro', d && d.promedio, 'Hoy'); })
       .catch(function(){}));
-    jobs.push(fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
+    jobs.push(
+      fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
         method:'POST', headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify({ fiat:'VES', page:1, rows:10, tradeType:'BUY', asset:'USDT', countries:[], proMerchantAds:false, shieldMerchantAds:false, filterType:'all', periods:[], additionalKycVerifyFilter:0, publisherType:null, payTypes:[], classifies:['mass','profession','fiat_trade'] })
       }).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function(d){
         var prices = ((d && d.data) || []).map(function(x){ return parseFloat(x && x.adv && x.adv.price); }).filter(function(p){ return p > 0; });
         if (prices.length >= 3) applyRate('binance', median(prices), 'Hoy');
-      }).catch(function(){}));
+      }).catch(function(){
+        // Respaldo sin bloqueo de CORS en navegador: DolarAPI paralelo
+        return fetchJSON('https://ve.dolarapi.com/v1/dolares/paralelo').then(function(d){
+          if (!got.binance && d && d.promedio) applyRate('binance', d.promedio, 'Hoy');
+        }).catch(function(){});
+      })
+    );
 
     Promise.all(jobs).then(function(){
       btn.disabled = false; btn.textContent = '↻ Actualizar tasas';
@@ -279,6 +299,26 @@
       + '5) Precio a cobrar (redondeado hacia arriba): Bs ' + fmtBs0.format(last.precioFinal) + ' ($' + fmtBs.format(last.precioUsd) + ')\n'
       + 'Ganancia neta: Bs ' + fmtBs.format(last.gananciaBs) + ' ($' + fmtBs.format(last.gananciaUsd) + ') · Margen real: ' + fmtPct.format(last.margenReal) + '%';
     copiar(txt, 'Desglose completo copiado');
+  });
+
+  /* ===== DASHBOARD TABS ===== */
+  function setDashboardTab(tabId) {
+    if (!tabId) tabId = 'calc';
+    document.querySelectorAll('.dash-tab').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
+    });
+    document.querySelectorAll('.dash-view').forEach(function(v){
+      v.classList.toggle('active', v.id === 'tabView-' + tabId);
+    });
+    if (tabId === 'tasas') updateGapDisplay();
+  }
+  window.setDashboardTab = setDashboardTab;
+
+  document.querySelectorAll('.dash-tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var tid = btn.getAttribute('data-tab');
+      setDashboardTab(tid);
+    });
   });
 
   renderRates();
