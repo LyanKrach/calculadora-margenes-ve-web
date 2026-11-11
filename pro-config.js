@@ -25,7 +25,7 @@ window.PRO_PAYMENT_CONFIG = {
     direccion: ''  // Opcional aquí o en Firestore config/proPayments
   },
   soporte: {
-    email: '',
-    whatsapp: ''
+    email: 'soporterefillstore@gmail.com',
+    whatsapp: '+584161740312'
   }
 };

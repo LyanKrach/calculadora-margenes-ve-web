@@ -411,6 +411,8 @@ test('Planes Pro: precios USD/Bs (4 planes), pago Pabilo/manual, Panel Admin y b
   assert.ok(byId.get('payAutoBadge').textContent.includes('Pabilo'));
   assert.equal(byId.get('btnCreateOrder').hidden, false);
   assert.equal(byId.get('btnSubmitPayment').textContent, 'Verificar pago y activar Pro');
+  assert.ok(byId.get('proSupportCard').innerHTML.includes('https://wa.me/584161740312'));
+  assert.ok(byId.get('proSupportCard').innerHTML.includes('mailto:soporterefillstore@gmail.com'));
   const pmChip = methodChips.find((b) => b.getAttribute('data-pay-method') === 'pago_movil');
   doc.dispatchClick(pmChip);
 

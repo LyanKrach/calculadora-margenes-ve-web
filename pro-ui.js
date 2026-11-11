@@ -270,8 +270,8 @@
         autoVerify: remUsdt.autoVerify !== undefined ? !!remUsdt.autoVerify : true
       },
       soporte: {
-        email: remSup.email || localSup.email || '',
-        whatsapp: remSup.whatsapp || localSup.whatsapp || ''
+        email: remSup.email || localSup.email || 'soporterefillstore@gmail.com',
+        whatsapp: remSup.whatsapp || localSup.whatsapp || '+584161740312'
       }
     };
   }
@@ -434,19 +434,27 @@
     var box = $('proSupportCard');
     if (!box) return;
     var cfg = mergedPaymentConfig().soporte || {};
-    var mail = String(cfg.email || '').trim();
-    var wa = String(cfg.whatsapp || '').replace(/\D/g, '');
-    if (!st.isPro) {
-      box.innerHTML = '<h3>🎧 Soporte prioritario</h3><p class="sub" style="margin:4px 0 0">Disponible al activar el plan Pro para atención directa en dudas de fórmulas, importación de catálogos o pagos.</p>';
-      return;
-    }
+    var mail = String(cfg.email || 'soporterefillstore@gmail.com').trim();
+    var rawWa = String(cfg.whatsapp || '+584161740312').trim();
+    var wa = rawWa.replace(/\D/g, '');
+    var greeting = st.isPro
+      ? 'Hola, soy usuario Pro en Calculadora de Márgenes VE'
+      : 'Hola, necesito soporte en Calculadora de Márgenes VE';
+    var userTag = st.user && st.user.email ? (' (' + st.user.email + ')') : '';
     var actions = [];
-    if (mail) actions.push('<a class="btn-mini accent" href="mailto:' + esc(mail) + '?subject=Soporte%20Prioritario%20Margenes%20Pro">✉ ' + esc(mail) + '</a>');
-    if (wa) actions.push('<a class="btn-mini accent" target="_blank" rel="noopener noreferrer" href="https://wa.me/' + esc(wa) + '?text=' + encodeURIComponent('Hola, soy usuario Pro en Calculadora de Márgenes VE (' + (st.user ? st.user.email : '') + ')') + '">💬 WhatsApp prioritario</a>');
-    box.innerHTML = '<h3>🎧 Soporte prioritario activo</h3>'
-      + (actions.length
-        ? '<p class="sub" style="margin:4px 0 10px">Tu cuenta Pro tiene atención directa por estos canales:</p><div style="display:flex;gap:8px;flex-wrap:wrap">' + actions.join('') + '</div>'
-        : '<p class="sub" style="margin:4px 0 0">Tu cuenta tiene soporte prioritario activo. Configura el correo o WhatsApp de soporte en <code>pro-config.js</code> o <code>config/proPayments</code> para mostrar el botón directo.</p>');
+    if (wa) {
+      actions.push('<a class="btn-mini accent" target="_blank" rel="noopener noreferrer" href="https://wa.me/' + esc(wa) + '?text=' + encodeURIComponent(greeting + userTag) + '">💬 Chat WhatsApp (' + esc(rawWa) + ')</a>');
+    }
+    if (mail) {
+      var subj = encodeURIComponent(st.isPro ? 'Soporte Prioritario Margenes Pro' : 'Soporte Calculadora de Margenes VE');
+      actions.push('<a class="btn-mini accent" href="mailto:' + esc(mail) + '?subject=' + subj + '">✉ ' + esc(mail) + '</a>');
+    }
+    box.innerHTML = '<h3>' + (st.isPro ? '🎧 Soporte prioritario activo' : '🎧 Soporte y atención directa') + '</h3>'
+      + '<p class="sub" style="margin:4px 0 10px">'
+      + (st.isPro
+        ? 'Tu cuenta Pro tiene atención directa por estos canales:'
+        : '¿Tienes dudas con tu pago, suscripción Pro o fórmulas? Escríbenos por WhatsApp o correo (usuarios Pro reciben atención prioritaria):')
+      + '</p><div style="display:flex;gap:8px;flex-wrap:wrap">' + actions.join('') + '</div>';
   }
 
   async function callAuthedJson(url, payload, timeoutMs) {
