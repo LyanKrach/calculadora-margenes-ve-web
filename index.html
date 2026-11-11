@@ -233,14 +233,66 @@
       <div class="notice" data-needs-login hidden>Inicia sesión para guardar tus productos en la nube. <button type="button" class="chip" data-open-auth>Entrar</button></div>
       <div id="prodBox" hidden>
         <form id="prodForm">
-          <label for="prodNombre">Nombre del producto</label>
-          <div class="field"><input type="text" id="prodNombre" placeholder="Ej. 100 diamantes Free Fire" autocomplete="off"></div>
+          <div class="form-grid">
+            <div>
+              <label for="prodNombre">Nombre del producto</label>
+              <div class="field"><input type="text" id="prodNombre" maxlength="120" placeholder="Ej. 100 + 10 Diamantes" autocomplete="off"></div>
+            </div>
+            <div>
+              <label for="prodCatSelect">Categoría</label>
+              <div class="field">
+                <select id="prodCatSelect">
+                  <option value="">Sin categoría</option>
+                  <option value="__new__">+ Crear nueva categoría...</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div id="prodCatNewWrap" hidden style="margin-top:8px">
+            <label for="prodCatNew">Nombre de nueva categoría</label>
+            <div class="field"><input type="text" id="prodCatNew" maxlength="80" placeholder="Ej. Free Fire, Roblox, Víveres" autocomplete="off"></div>
+          </div>
           <div class="form-grid">
             <div><label for="prodCosto">Costo USD</label><div class="field"><span class="prefix">$</span><input type="number" id="prodCosto" min="0" step="0.01" inputmode="decimal"></div></div>
-            <div><label for="prodMargen">Margen sugerido %</label><div class="field"><input type="number" id="prodMargen" min="0" max="95" step="0.5" inputmode="decimal"></div></div>
-            <div><label for="prodComP">Comisión proveedor %</label><div class="field"><input type="number" id="prodComP" min="0" max="90" step="0.1" inputmode="decimal"></div></div>
-            <div><label for="prodComPa">Comisión pasarela %</label><div class="field"><input type="number" id="prodComPa" min="0" max="90" step="0.1" inputmode="decimal"></div></div>
-            <div><label for="prodComO">Otra comisión %</label><div class="field"><input type="number" id="prodComO" min="0" max="90" step="0.1" inputmode="decimal"></div></div>
+            <div><label for="prodMargen">Margen %</label><div class="field"><input type="number" id="prodMargen" min="0" max="99.9" step="0.5" inputmode="decimal"></div></div>
+            <div>
+              <label for="prodMarginMode">Modo de cálculo</label>
+              <div class="field">
+                <select id="prodMarginMode">
+                  <option value="onCost">Sobre costo (Markup)</option>
+                  <option value="onSale">Sobre la venta</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label for="prodRateSource">Tasa de referencia</label>
+              <div class="field">
+                <select id="prodRateSource">
+                  <option value="bcvUsd">BCV dólar</option>
+                  <option value="binanceUsdt">Binance USDT</option>
+                  <option value="euroBcv">BCV Euro</option>
+                  <option value="custom">Personalizada</option>
+                </select>
+              </div>
+            </div>
+            <div id="prodCustomRateWrap" hidden>
+              <label for="prodCustomRate">Tasa personalizada Bs</label>
+              <div class="field"><span class="prefix">Bs</span><input type="number" id="prodCustomRate" min="0" step="0.01" inputmode="decimal" placeholder="Ej. 964.20"></div>
+            </div>
+            <div>
+              <label for="prodRoundStep">Redondeo</label>
+              <div class="field">
+                <select id="prodRoundStep">
+                  <option value="0">Exacto (sin redondear)</option>
+                  <option value="10" selected>Hacia arriba a Bs 10</option>
+                  <option value="50">Hacia arriba a Bs 50</option>
+                  <option value="100">Hacia arriba a Bs 100</option>
+                </select>
+              </div>
+            </div>
+            <div><label for="prodComP">Comisión proveedor %</label><div class="field"><input type="number" id="prodComP" min="0" max="99" step="0.1" inputmode="decimal"></div></div>
+            <div><label for="prodComPa">Comisión pasarela %</label><div class="field"><input type="number" id="prodComPa" min="0" max="99" step="0.1" inputmode="decimal"></div></div>
+            <div><label for="prodComO">Otra comisión %</label><div class="field"><input type="number" id="prodComO" min="0" max="99" step="0.1" inputmode="decimal"></div></div>
             <div><label for="prodGasto">Gasto fijo Bs</label><div class="field"><span class="prefix">Bs</span><input type="number" id="prodGasto" min="0" step="1" inputmode="decimal"></div></div>
           </div>
           <input type="hidden" id="prodEditId" value="">
@@ -250,6 +302,18 @@
           </div>
         </form>
         <div class="divider"></div>
+        <div class="catalog-tools" id="catalogTools" hidden>
+          <div class="catalog-search-row">
+            <div class="field"><span class="prefix">🔍</span><input type="text" id="prodSearch" placeholder="Buscar producto o categoría..." autocomplete="off"></div>
+            <button type="button" class="primary" id="btnOpenShareList">Compartir lista WhatsApp</button>
+          </div>
+          <div class="rate-chips-row" id="prodRateChips">
+            <button type="button" class="chip active" data-rate-override="">Tasa de cada producto</button>
+            <button type="button" class="chip" data-rate-override="bcvUsd">BCV dólar</button>
+            <button type="button" class="chip" data-rate-override="binanceUsdt">Binance USDT</button>
+            <button type="button" class="chip" data-rate-override="euroBcv">BCV Euro</button>
+          </div>
+        </div>
         <div id="prodList"></div>
         <p class="hint" id="prodEmpty">Aún no tienes productos guardados.</p>
       </div>
@@ -371,6 +435,42 @@
       <button type="button" class="primary" id="btnResetSend" style="width:100%;margin-top:12px">Enviar enlace</button>
       <p class="hint" style="text-align:center;margin-top:12px"><a href="#" id="linkVolverLogin">Volver a entrar</a></p>
       <p class="alert" id="resetMsg" style="margin:12px 0 0"></p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="shareListModal" hidden>
+  <div class="modal modal-wide card" role="dialog" aria-modal="true" aria-label="Compartir lista de precios">
+    <div class="modal-head">
+      <h2>Compartir lista de precios</h2>
+      <button type="button" class="rate-refresh" id="btnCloseShareModal">✕</button>
+    </div>
+    <p class="sub" style="margin:6px 0 8px">Selecciona una o varias categorías para generar tu lista ordenada lista para WhatsApp.</p>
+    <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+      <strong style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Categorías</strong>
+      <div style="display:flex;gap:6px">
+        <button type="button" class="btn-mini" id="btnShareAll">Todas</button>
+        <button type="button" class="btn-mini" id="btnShareNone">Ninguna</button>
+      </div>
+    </div>
+    <div class="share-cats" id="shareCatChips"></div>
+    <label for="shareRateOverride">Tasa para calcular la lista</label>
+    <div class="field">
+      <select id="shareRateOverride">
+        <option value="">Usar la tasa de cada producto</option>
+        <option value="bcvUsd">BCV dólar</option>
+        <option value="binanceUsdt">Binance USDT</option>
+        <option value="euroBcv">BCV Euro</option>
+      </select>
+    </div>
+    <label for="sharePreview">
+      <span>Vista previa (editable)</span>
+      <button type="button" class="btn-mini" id="btnShareRegen">Regenerar</button>
+    </label>
+    <textarea id="sharePreview" class="share-textarea" rows="9"></textarea>
+    <div class="actions" style="padding:14px 0 0">
+      <button type="button" class="secondary" id="btnCopyShareList">Copiar lista</button>
+      <button type="button" class="primary" id="btnSendShareWa">Enviar por WhatsApp</button>
     </div>
   </div>
 </div>

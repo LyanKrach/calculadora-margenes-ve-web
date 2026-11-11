@@ -310,6 +310,11 @@ select {
   padding: 11px 10px
 }
 
+select option {
+  background: var(--card);
+  color: var(--ink);
+}
+
 .hint {
   font-size: 12.5px;
   color: var(--muted);
@@ -1494,6 +1499,115 @@ input[type="password"] {
   padding-left: 14px;
 }
 
+/* ===== CATÁLOGO DE PRODUCTOS Y LISTA WHATSAPP ===== */
+.catalog-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.catalog-search-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.catalog-search-row .field {
+  flex: 1 1 240px;
+}
+.rate-chips-row {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.cat-pill {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green2);
+  font-size: 11px;
+  font-weight: 800;
+  vertical-align: middle;
+}
+.prod-card {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.prod-card:last-child {
+  border-bottom: 0;
+}
+.prod-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.prod-price-col {
+  text-align: right;
+  min-width: 130px;
+}
+.prod-price-col strong {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 17px;
+  color: var(--green2);
+}
+.prod-price-col span {
+  display: block;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.prod-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-top: 2px;
+}
+.btn-mini.accent {
+  border-color: var(--green2);
+  color: var(--green2);
+}
+.modal.modal-wide {
+  max-width: 560px;
+}
+.share-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 10px 0 12px;
+}
+.share-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--card2);
+  color: var(--ink);
+  font-family: "Archivo", sans-serif;
+  font-size: 13.5px;
+  line-height: 1.45;
+  padding: 12px;
+  resize: vertical;
+  outline: none;
+}
+.share-textarea:focus {
+  border-color: var(--green2);
+  box-shadow: 0 0 0 3px var(--green-soft);
+}
+@media (max-width: 600px) {
+  .prod-price-col {
+    text-align: left;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1718,14 +1832,66 @@ input[type="password"] {
       <div class="notice" data-needs-login hidden>Inicia sesión para guardar tus productos en la nube. <button type="button" class="chip" data-open-auth>Entrar</button></div>
       <div id="prodBox" hidden>
         <form id="prodForm">
-          <label for="prodNombre">Nombre del producto</label>
-          <div class="field"><input type="text" id="prodNombre" placeholder="Ej. 100 diamantes Free Fire" autocomplete="off"></div>
+          <div class="form-grid">
+            <div>
+              <label for="prodNombre">Nombre del producto</label>
+              <div class="field"><input type="text" id="prodNombre" maxlength="120" placeholder="Ej. 100 + 10 Diamantes" autocomplete="off"></div>
+            </div>
+            <div>
+              <label for="prodCatSelect">Categoría</label>
+              <div class="field">
+                <select id="prodCatSelect">
+                  <option value="">Sin categoría</option>
+                  <option value="__new__">+ Crear nueva categoría...</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div id="prodCatNewWrap" hidden style="margin-top:8px">
+            <label for="prodCatNew">Nombre de nueva categoría</label>
+            <div class="field"><input type="text" id="prodCatNew" maxlength="80" placeholder="Ej. Free Fire, Roblox, Víveres" autocomplete="off"></div>
+          </div>
           <div class="form-grid">
             <div><label for="prodCosto">Costo USD</label><div class="field"><span class="prefix">$</span><input type="number" id="prodCosto" min="0" step="0.01" inputmode="decimal"></div></div>
-            <div><label for="prodMargen">Margen sugerido %</label><div class="field"><input type="number" id="prodMargen" min="0" max="95" step="0.5" inputmode="decimal"></div></div>
-            <div><label for="prodComP">Comisión proveedor %</label><div class="field"><input type="number" id="prodComP" min="0" max="90" step="0.1" inputmode="decimal"></div></div>
-            <div><label for="prodComPa">Comisión pasarela %</label><div class="field"><input type="number" id="prodComPa" min="0" max="90" step="0.1" inputmode="decimal"></div></div>
-            <div><label for="prodComO">Otra comisión %</label><div class="field"><input type="number" id="prodComO" min="0" max="90" step="0.1" inputmode="decimal"></div></div>
+            <div><label for="prodMargen">Margen %</label><div class="field"><input type="number" id="prodMargen" min="0" max="99.9" step="0.5" inputmode="decimal"></div></div>
+            <div>
+              <label for="prodMarginMode">Modo de cálculo</label>
+              <div class="field">
+                <select id="prodMarginMode">
+                  <option value="onCost">Sobre costo (Markup)</option>
+                  <option value="onSale">Sobre la venta</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label for="prodRateSource">Tasa de referencia</label>
+              <div class="field">
+                <select id="prodRateSource">
+                  <option value="bcvUsd">BCV dólar</option>
+                  <option value="binanceUsdt">Binance USDT</option>
+                  <option value="euroBcv">BCV Euro</option>
+                  <option value="custom">Personalizada</option>
+                </select>
+              </div>
+            </div>
+            <div id="prodCustomRateWrap" hidden>
+              <label for="prodCustomRate">Tasa personalizada Bs</label>
+              <div class="field"><span class="prefix">Bs</span><input type="number" id="prodCustomRate" min="0" step="0.01" inputmode="decimal" placeholder="Ej. 964.20"></div>
+            </div>
+            <div>
+              <label for="prodRoundStep">Redondeo</label>
+              <div class="field">
+                <select id="prodRoundStep">
+                  <option value="0">Exacto (sin redondear)</option>
+                  <option value="10" selected>Hacia arriba a Bs 10</option>
+                  <option value="50">Hacia arriba a Bs 50</option>
+                  <option value="100">Hacia arriba a Bs 100</option>
+                </select>
+              </div>
+            </div>
+            <div><label for="prodComP">Comisión proveedor %</label><div class="field"><input type="number" id="prodComP" min="0" max="99" step="0.1" inputmode="decimal"></div></div>
+            <div><label for="prodComPa">Comisión pasarela %</label><div class="field"><input type="number" id="prodComPa" min="0" max="99" step="0.1" inputmode="decimal"></div></div>
+            <div><label for="prodComO">Otra comisión %</label><div class="field"><input type="number" id="prodComO" min="0" max="99" step="0.1" inputmode="decimal"></div></div>
             <div><label for="prodGasto">Gasto fijo Bs</label><div class="field"><span class="prefix">Bs</span><input type="number" id="prodGasto" min="0" step="1" inputmode="decimal"></div></div>
           </div>
           <input type="hidden" id="prodEditId" value="">
@@ -1735,6 +1901,18 @@ input[type="password"] {
           </div>
         </form>
         <div class="divider"></div>
+        <div class="catalog-tools" id="catalogTools" hidden>
+          <div class="catalog-search-row">
+            <div class="field"><span class="prefix">🔍</span><input type="text" id="prodSearch" placeholder="Buscar producto o categoría..." autocomplete="off"></div>
+            <button type="button" class="primary" id="btnOpenShareList">Compartir lista WhatsApp</button>
+          </div>
+          <div class="rate-chips-row" id="prodRateChips">
+            <button type="button" class="chip active" data-rate-override="">Tasa de cada producto</button>
+            <button type="button" class="chip" data-rate-override="bcvUsd">BCV dólar</button>
+            <button type="button" class="chip" data-rate-override="binanceUsdt">Binance USDT</button>
+            <button type="button" class="chip" data-rate-override="euroBcv">BCV Euro</button>
+          </div>
+        </div>
         <div id="prodList"></div>
         <p class="hint" id="prodEmpty">Aún no tienes productos guardados.</p>
       </div>
@@ -1860,6 +2038,42 @@ input[type="password"] {
   </div>
 </div>
 
+<div class="modal-backdrop" id="shareListModal" hidden>
+  <div class="modal modal-wide card" role="dialog" aria-modal="true" aria-label="Compartir lista de precios">
+    <div class="modal-head">
+      <h2>Compartir lista de precios</h2>
+      <button type="button" class="rate-refresh" id="btnCloseShareModal">✕</button>
+    </div>
+    <p class="sub" style="margin:6px 0 8px">Selecciona una o varias categorías para generar tu lista ordenada lista para WhatsApp.</p>
+    <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+      <strong style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Categorías</strong>
+      <div style="display:flex;gap:6px">
+        <button type="button" class="btn-mini" id="btnShareAll">Todas</button>
+        <button type="button" class="btn-mini" id="btnShareNone">Ninguna</button>
+      </div>
+    </div>
+    <div class="share-cats" id="shareCatChips"></div>
+    <label for="shareRateOverride">Tasa para calcular la lista</label>
+    <div class="field">
+      <select id="shareRateOverride">
+        <option value="">Usar la tasa de cada producto</option>
+        <option value="bcvUsd">BCV dólar</option>
+        <option value="binanceUsdt">Binance USDT</option>
+        <option value="euroBcv">BCV Euro</option>
+      </select>
+    </div>
+    <label for="sharePreview">
+      <span>Vista previa (editable)</span>
+      <button type="button" class="btn-mini" id="btnShareRegen">Regenerar</button>
+    </label>
+    <textarea id="sharePreview" class="share-textarea" rows="9"></textarea>
+    <div class="actions" style="padding:14px 0 0">
+      <button type="button" class="secondary" id="btnCopyShareList">Copiar lista</button>
+      <button type="button" class="primary" id="btnSendShareWa">Enviar por WhatsApp</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status">Copiado</div>
 
 <script>
@@ -1960,6 +2174,54 @@ window.FIREBASE_CONFIG = {
   }
   function roundUp(v, step){ return step <= 1 ? v : Math.ceil(v / step) * step; }
 
+  function computeSaleMetrics(opts) {
+    var costUsd = opts.costUsd || 0;
+    var rate = opts.rate || 0;
+    var marginFrac = (opts.marginPercent || 0) / 100;
+    var comFrac = opts.comFraction || 0;
+    var gasto = opts.fixedExpenseBs || 0;
+    var step = opts.roundStep != null ? opts.roundStep : 10;
+    var mode = opts.mode || 'onCost';
+    var costBs = costUsd * rate;
+
+    if (rate <= 0 || costUsd <= 0) return { error: 'rate_or_cost' };
+    var denom = (mode === 'onCost') ? (1 - comFrac) : (1 - comFrac - marginFrac);
+    if (denom <= 0) return { error: mode === 'onCost' ? 'comm' : 'sum' };
+
+    var precioExacto = (mode === 'onCost')
+      ? ((costBs * (1 + marginFrac)) + gasto) / denom
+      : (costBs + gasto) / denom;
+    var precioFinal = roundUp(precioExacto, step);
+    var comisionesBs = precioFinal * comFrac;
+    var gananciaBs = precioFinal - costBs - gasto - comisionesBs;
+    return {
+      error: null,
+      rate: rate,
+      costBs: costBs,
+      precioExacto: precioExacto,
+      precioFinal: precioFinal,
+      precioUsd: precioFinal / rate,
+      comisionesBs: comisionesBs,
+      gananciaBs: gananciaBs,
+      gananciaUsd: gananciaBs / rate,
+      margenRealSale: precioFinal > 0 ? (gananciaBs / precioFinal) * 100 : 0,
+      margenRealCost: costBs > 0 ? (gananciaBs / costBs) * 100 : 0
+    };
+  }
+
+  function mapFirestoreRateKey(name) {
+    if (name === 'binanceUsdt') return 'binance';
+    if (name === 'euroBcv') return 'euro';
+    if (name === 'custom') return 'custom';
+    return 'bcv';
+  }
+
+  function notifyRatesUpdated() {
+    if (typeof window.__margenesOnRatesUpdated === 'function') {
+      try { window.__margenesOnRatesUpdated(); } catch (e) {}
+    }
+  }
+
   var last = null;
 
   /* ===== LÓGICA DE TASAS ===== */
@@ -2009,6 +2271,7 @@ window.FIREBASE_CONFIG = {
     }
     renderRates();
     calc();
+    notifyRatesUpdated();
     if (fromUser && key !== 'custom') toast('Tasa activa: ' + RATES[key].label + ' — Bs ' + fmtBs.format(RATES[key].value));
   }
   function horaAhora(){
@@ -2110,6 +2373,7 @@ window.FIREBASE_CONFIG = {
       if (n === 3) setStatus('ok', 'Tasas en vivo · actualizadas hoy a las ' + horaAhora());
       else if (n > 0) setStatus('ok', 'Tasas actualizadas · ' + horaAhora());
       else setStatus('err', 'Sin conexión: se usan las tasas guardadas.');
+      notifyRatesUpdated();
     }).catch(function(err){
       if (btn) { btn.disabled = false; btn.textContent = '↻ Actualizar tasas'; }
       setStatus('err', 'Sin conexión: se usan las tasas guardadas.');
@@ -2167,6 +2431,45 @@ window.FIREBASE_CONFIG = {
   }
   window.getMarginMode = function(){ return marginMode; };
   window.setMarginMode = function(m){ setMarginMode(m); };
+  window.getRatesSnapshot = function(){
+    return {
+      bcvUsd: RATES.bcv.value,
+      binanceUsdt: RATES.binance.value,
+      euroBcv: RATES.euro.value,
+      custom: RATES.custom.value,
+      fmtBs: function(v){ return fmtBs.format(v); }
+    };
+  };
+  window.selectRateSource = function(rateSourceName, customVal){
+    var key = mapFirestoreRateKey(rateSourceName);
+    if (key === 'custom' && customVal && customVal > 0) {
+      RATES.custom.value = customVal;
+      var elTasa = $('tasa');
+      if (elTasa) elTasa.value = customVal;
+    }
+    selectRate(key, false);
+  };
+  window.calcProductMetrics = function(prod, overrideRateSourceName){
+    var srcName = overrideRateSourceName || (prod && prod.rateSourceName) || 'bcvUsd';
+    var key = mapFirestoreRateKey(srcName);
+    var rate = (key === 'custom')
+      ? ((prod && prod.customRateValue > 0) ? prod.customRateValue : (RATES.custom.value || RATES.bcv.value))
+      : ((RATES[key] && RATES[key].value) || 0);
+    var comFrac = ((prod && prod.commissionPlatform) || 0)
+      + ((prod && prod.commissionPaymentMethod) || 0)
+      + ((prod && prod.commissionOther) || 0);
+    var m = computeSaleMetrics({
+      costUsd: prod ? prod.costUsd : 0,
+      rate: rate,
+      marginPercent: prod ? prod.marginPercent : 0,
+      comFraction: comFrac,
+      fixedExpenseBs: prod ? prod.fixedExpenseBs : 0,
+      roundStep: (prod && prod.roundStep != null) ? prod.roundStep : 10,
+      mode: (prod && prod.marginMode) || 'onCost'
+    });
+    m.rateSourceName = srcName;
+    return m;
+  };
 
   /* ===== UNIFICACIÓN GUÍA EN PC & MÓVIL ===== */
   function syncGuideSlot(){
@@ -2206,48 +2509,42 @@ window.FIREBASE_CONFIG = {
     setTxt('comTotalLabel', fmtPct.format(comTotal) + '%');
     setTxt('resProducto', producto);
 
-    var costoBs = costoUsd * tasa;
     var comFraction = comTotal / 100;
-    var margenFraction = margen / 100;
-    var denom;
-    var precioExacto;
     var alertBox = $('alertBox');
+    var metrics = computeSaleMetrics({
+      costUsd: costoUsd,
+      rate: tasa,
+      marginPercent: margen,
+      comFraction: comFraction,
+      fixedExpenseBs: gasto,
+      roundStep: step,
+      mode: marginMode
+    });
 
-    if (marginMode === 'onCost') {
-      denom = 1 - comFraction;
-      if (denom <= 0 || tasa <= 0) {
-        if (alertBox) {
-          alertBox.classList.add('show');
-          alertBox.textContent = '⚠ Comisiones (' + fmtPct.format(comTotal) + '%) >= 100%. Baja las comisiones para poder calcular el precio.';
-        }
-        last = null;
-        window.__margenesLast = null;
-        return;
+    if (metrics.error) {
+      if (alertBox) {
+        alertBox.classList.add('show');
+        alertBox.textContent = (metrics.error === 'comm')
+          ? '⚠ Comisiones (' + fmtPct.format(comTotal) + '%) >= 100%. Baja las comisiones para poder calcular el precio.'
+          : (metrics.error === 'sum')
+            ? '⚠ Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o más. Baja el margen o revisa las comisiones.'
+            : '⚠ Escribe un costo y una tasa mayores a 0 para calcular.';
       }
-      if (alertBox) alertBox.classList.remove('show');
-      precioExacto = ((costoBs * (1 + margenFraction)) + gasto) / denom;
-    } else {
-      denom = 1 - comFraction - margenFraction;
-      if (denom <= 0 || tasa <= 0) {
-        if (alertBox) {
-          alertBox.classList.add('show');
-          alertBox.textContent = '⚠ Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o más. Baja el margen o revisa las comisiones.';
-        }
-        last = null;
-        window.__margenesLast = null;
-        return;
-      }
-      if (alertBox) alertBox.classList.remove('show');
-      precioExacto = (costoBs + gasto) / denom;
+      last = null;
+      window.__margenesLast = null;
+      return;
     }
+    if (alertBox) alertBox.classList.remove('show');
 
-    var precioFinal = roundUp(precioExacto, step);
-    var precioUsd = tasa > 0 ? precioFinal / tasa : 0;
-    var comisionesBs = precioFinal * comFraction;
-    var gananciaBs = precioFinal - costoBs - gasto - comisionesBs;
-    var gananciaUsd = tasa > 0 ? gananciaBs / tasa : 0;
-    var margenRealSale = precioFinal > 0 ? (gananciaBs / precioFinal) * 100 : 0;
-    var margenRealCost = costoBs > 0 ? (gananciaBs / costoBs) * 100 : 0;
+    var costoBs = metrics.costBs;
+    var precioExacto = metrics.precioExacto;
+    var precioFinal = metrics.precioFinal;
+    var precioUsd = metrics.precioUsd;
+    var comisionesBs = metrics.comisionesBs;
+    var gananciaBs = metrics.gananciaBs;
+    var gananciaUsd = metrics.gananciaUsd;
+    var margenRealSale = metrics.margenRealSale;
+    var margenRealCost = metrics.margenRealCost;
 
     setTxt('precioFinal', fmtBs0.format(precioFinal));
     setTxt('precioExacto', 'Bs ' + fmtBs.format(precioExacto));
@@ -2634,8 +2931,10 @@ window.FIREBASE_CONFIG = {
     var comP = (d.commissionPlatform != null) ? d.commissionPlatform : pctToFrac(d.comProveedor);
     var comPa = (d.commissionPaymentMethod != null) ? d.commissionPaymentMethod : pctToFrac(d.comPasarela);
     var comO = (d.commissionOther != null) ? d.commissionOther : pctToFrac(d.comOtra);
+    var rawCat = (d.category != null) ? d.category : (d.categoria != null ? d.categoria : '');
     return {
       name: (d.name != null ? d.name : d.nombre || '').toString().trim(),
+      category: String(rawCat).trim(),
       costUsd: d.costUsd || 0,
       marginPercent: (d.marginPercent != null) ? d.marginPercent : (d.margenSugerido || 0),
       fixedExpenseBs: d.fixedExpenseBs || d.gastoFijo || 0,
@@ -2644,12 +2943,147 @@ window.FIREBASE_CONFIG = {
       commissionOther: comO,
       roundStep: (d.roundStep != null) ? d.roundStep : 10,
       rateSourceName: d.rateSourceName || 'bcvUsd',
-      marginMode: d.marginMode || 'onSale',
+      marginMode: d.marginMode || 'onCost',
       customRateValue: (typeof d.customRateValue === 'number') ? d.customRateValue : null,
       createdAt: isoDate(d.createdAt),
       updatedAt: isoDate(d.updatedAt)
     };
   }
+
+  function extractUniqueCategories(items) {
+    var byLower = {};
+    var list = [];
+    (items || []).forEach(function (entry) {
+      var raw = entry && entry.data ? normalizeProduct(entry.data) : normalizeProduct(entry);
+      var cat = (raw.category || '').trim();
+      if (!cat) return;
+      var low = cat.toLowerCase();
+      if (!byLower[low]) {
+        byLower[low] = cat;
+        list.push(cat);
+      }
+    });
+    list.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+    return list;
+  }
+
+  function compareNaturalProductNames(a, b) {
+    var tokRe = /\d+|\D+/g;
+    var ta = String(a || '').trim().match(tokRe) || [];
+    var tb = String(b || '').trim().match(tokRe) || [];
+    var n = Math.min(ta.length, tb.length);
+    for (var i = 0; i < n; i++) {
+      var sa = ta[i], sb = tb[i];
+      var isNumA = /^\d+$/.test(sa), isNumB = /^\d+$/.test(sb);
+      if (isNumA && isNumB) {
+        var diff = parseInt(sa, 10) - parseInt(sb, 10);
+        if (diff !== 0) return diff;
+        if (sa.length !== sb.length) return sa.length - sb.length;
+        continue;
+      }
+      if (isNumA && !isNumB) return -1;
+      if (!isNumA && isNumB) return 1;
+      var cmp = sa.trim().toLowerCase().localeCompare(sb.trim().toLowerCase());
+      if (cmp !== 0) return cmp;
+    }
+    return ta.length - tb.length;
+  }
+
+  function prefixIconForProduct(name, category) {
+    var t = String(name || '').trim();
+    if (!t) return '• ';
+    if (!/^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ]/.test(t)) return '';
+    var low = (t + ' ' + String(category || '')).toLowerCase();
+    if (/diamant|diamond|robux|gema|\buc\b|\bcp\b|moneda|coin/.test(low)) return '💎 ';
+    if (/\bpase\b|booyah|\bvip\b|elite|promo|oferta/.test(low)) return '🔥 ';
+    if (/tarjeta|card|gift|\bpin\b|c[oó]digo|vale/.test(low)) return '💳 ';
+    if (/paquete|combo|\bpack\b|\bkit\b|nivel/.test(low)) return '📦 ';
+    return '• ';
+  }
+
+  function formatRateLabel(rateSourceName, customRateValue) {
+    var snap = window.getRatesSnapshot ? window.getRatesSnapshot() : null;
+    if (rateSourceName === 'binanceUsdt') {
+      return 'Binance USDT' + (snap && snap.binanceUsdt ? ' (' + fmtBs.format(snap.binanceUsdt) + ')' : '');
+    }
+    if (rateSourceName === 'euroBcv') {
+      return 'BCV Euro' + (snap && snap.euroBcv ? ' (' + fmtBs.format(snap.euroBcv) + ')' : '');
+    }
+    if (rateSourceName === 'custom') {
+      var rv = customRateValue || (snap && snap.custom) || 0;
+      return 'Personalizada' + (rv > 0 ? ' (' + fmtBs.format(rv) + ')' : '');
+    }
+    return 'BCV dólar' + (snap && snap.bcvUsd ? ' (' + fmtBs.format(snap.bcvUsd) + ')' : '');
+  }
+
+  function buildWhatsAppPriceList(opts) {
+    var items = opts.items || [];
+    var selectedCats = opts.selectedCategories || {};
+    var includeUncat = !!opts.includeUncategorized;
+    var overrideRate = opts.overrideRate || '';
+    var metricFn = opts.calcMetricsFn || window.calcProductMetrics;
+
+    var grouped = {};
+    var labels = {};
+    items.forEach(function (entry) {
+      var d = entry && entry.data ? normalizeProduct(entry.data) : normalizeProduct(entry);
+      var cat = (d.category || '').trim();
+      var low = cat.toLowerCase();
+      var isInc = cat ? !!selectedCats[low] : includeUncat;
+      if (!isInc) return;
+      var key = cat ? low : '';
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(d);
+      if (cat && !labels[key]) labels[key] = cat;
+    });
+
+    var nonEmptyKeys = [];
+    Object.keys(grouped).forEach(function (k) {
+      grouped[k].sort(function (a, b) { return compareNaturalProductNames(a.name, b.name); });
+      var priced = [];
+      grouped[k].forEach(function (d) {
+        var m = metricFn ? metricFn(d, overrideRate) : null;
+        if (m && !m.error && m.precioFinal > 0) priced.push({ item: d, price: m.precioFinal });
+      });
+      grouped[k] = priced;
+      if (priced.length) nonEmptyKeys.push(k);
+    });
+    if (!nonEmptyKeys.length) return '';
+
+    nonEmptyKeys.sort(function (a, b) {
+      if (a === '') return 1;
+      if (b === '') return -1;
+      return (labels[a] || a).toLowerCase().localeCompare((labels[b] || b).toLowerCase());
+    });
+
+    var namedCount = nonEmptyKeys.filter(function (k) { return k !== ''; }).length;
+    var singleNamedOnly = nonEmptyKeys.length === 1 && namedCount === 1;
+    var lines = [];
+    if (singleNamedOnly) {
+      lines.push('¡Hola! 🔥 Aquí tienes los precios de *' + labels[nonEmptyKeys[0]] + '*:');
+    } else {
+      lines.push('¡Hola! 🔥 Aquí tienes nuestra lista de precios:');
+    }
+
+    nonEmptyKeys.forEach(function (k) {
+      lines.push('');
+      if (!singleNamedOnly && nonEmptyKeys.length > 1) {
+        lines.push('*' + (k === '' ? 'Otros productos' : labels[k]) + ':*');
+      }
+      grouped[k].forEach(function (row) {
+        var icon = prefixIconForProduct(row.item.name, row.item.category);
+        lines.push(icon + row.item.name + ' = ' + fmtBs.format(row.price) + ' Bs');
+      });
+    });
+    return lines.join('\n').trim();
+  }
+
+  window.__margenesCatalogHelpers = {
+    normalizeProduct: normalizeProduct,
+    extractUniqueCategories: extractUniqueCategories,
+    compareNaturalProductNames: compareNaturalProductNames,
+    buildWhatsAppPriceList: buildWhatsAppPriceList
+  };
 
   /* ===== Config y arranque ===== */
   function configLista() {
@@ -2720,6 +3154,7 @@ window.FIREBASE_CONFIG = {
       var hb = $('histBox'); if (hb) hb.hidden = false;
       subscribeHistory();
       subscribeProducts();
+      resetProdForm();
     } else {
       if (btnEntrar) btnEntrar.hidden = false;
       if (chip) chip.hidden = true;
@@ -2992,6 +3427,64 @@ window.FIREBASE_CONFIG = {
   // Migración única de productos viejos de la web al esquema de la app: les
   // pone el campo 'id', convierte las fechas a strings ISO y deja las
   // comisiones en fracción, para que la app también pueda leerlos.
+  var catalogOverrideRate = '';
+  var shareSelectedCats = {};
+  var shareIncludeUncat = false;
+
+  function currentProdRateSource() {
+    var el = $('prodRateSource');
+    return (el && el.value) ? el.value : currentRateSourceName();
+  }
+
+  function currentProdRoundStep() {
+    var el = $('prodRoundStep');
+    var v = parseInt((el && el.value) || '10', 10);
+    return [0, 1, 10, 50, 100].indexOf(v) !== -1 ? v : 10;
+  }
+
+  function toggleNewCatWrap(show) {
+    var w = $('prodCatNewWrap');
+    if (w) w.hidden = !show;
+  }
+
+  function toggleCustomRateWrap(show) {
+    var w = $('prodCustomRateWrap');
+    if (w) w.hidden = !show;
+  }
+
+  function populateProdCategorySelect(preferredValue) {
+    var sel = $('prodCatSelect');
+    if (!sel) return;
+    var cats = extractUniqueCategories(prodItems);
+    var prev = preferredValue !== undefined ? preferredValue : sel.value;
+
+    // Si estaba escribiendo una nueva categoría no cancelamos su edición al llegar un snapshot.
+    if (preferredValue === undefined && prev === '__new__') {
+      return;
+    }
+
+    if (prev && prev !== '__new__') {
+      var found = cats.some(function (c) { return c.toLowerCase() === prev.toLowerCase(); });
+      if (!found) {
+        cats.push(prev);
+        cats.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+      } else {
+        for (var i = 0; i < cats.length; i++) {
+          if (cats[i].toLowerCase() === prev.toLowerCase()) { prev = cats[i]; break; }
+        }
+      }
+    }
+
+    var html = '<option value="">Sin categoría</option>';
+    cats.forEach(function (c) {
+      html += '<option value="' + esc(c) + '">' + esc(c) + '</option>';
+    });
+    html += '<option value="__new__">+ Crear nueva categoría...</option>';
+    sel.innerHTML = html;
+    sel.value = prev || '';
+    toggleNewCatWrap(sel.value === '__new__');
+  }
+
   function maybeBackfillProduct(docSnap) {
     var d = docSnap.data();
     var legacy = !d.id || d.nombre != null || d.margenSugerido != null ||
@@ -2999,6 +3492,7 @@ window.FIREBASE_CONFIG = {
     if (!legacy || backfilledProds[docSnap.id]) return;
     backfilledProds[docSnap.id] = true;
     var n = normalizeProduct(d);
+    if (!n.name || n.costUsd <= 0 || n.marginPercent >= 100) return;
     var full = {
       v: 1, id: docSnap.id, name: n.name, costUsd: n.costUsd,
       marginPercent: n.marginPercent, fixedExpenseBs: n.fixedExpenseBs,
@@ -3006,27 +3500,30 @@ window.FIREBASE_CONFIG = {
       commissionPaymentMethod: n.commissionPaymentMethod,
       commissionOther: n.commissionOther,
       roundStep: n.roundStep, rateSourceName: n.rateSourceName,
-      marginMode: 'onSale',
+      marginMode: n.marginMode || 'onCost',
       createdAt: n.createdAt || new Date().toISOString(),
       updatedAt: n.updatedAt || new Date().toISOString()
     };
-    if (n.customRateValue != null) full.customRateValue = n.customRateValue;
+    if (n.category) full.category = n.category;
+    if (n.customRateValue != null && n.customRateValue >= 0) full.customRateValue = n.customRateValue;
     F.fs.setDoc(docSnap.ref, full, { merge: true }).catch(function (e) { console.error(e); });
   }
   function subscribeProducts() {
     if (unsubProd) { unsubProd(); unsubProd = null; }
     if (!user || !db) return;
-    var q = F.fs.query(
-      F.fs.collection(db, 'users', user.uid, 'products'),
-      F.fs.orderBy('updatedAt', 'desc'),
-      F.fs.limit(100)
-    );
+    var q = F.fs.collection(db, 'users', user.uid, 'products');
     unsubProd = F.fs.onSnapshot(q, function (snap) {
       prodItems = [];
       snap.forEach(function (d) {
-        prodItems.push({ id: d.id, data: d.data() });
+        var raw = d.data() || {};
+        if (!raw.id) raw.id = d.id;
+        prodItems.push({ id: d.id, data: raw });
         maybeBackfillProduct(d);
       });
+      prodItems.sort(function (a, b) {
+        return compareNaturalProductNames(normalizeProduct(a.data).name, normalizeProduct(b.data).name);
+      });
+      populateProdCategorySelect();
       renderProducts();
     }, function (e) { console.error(e); toast('No se pudieron leer tus productos'); });
   }
@@ -3036,20 +3533,59 @@ window.FIREBASE_CONFIG = {
       b.textContent = prodItems.length;
       b.hidden = prodItems.length === 0;
     }
+    var tools = $('catalogTools');
+    if (tools) tools.hidden = prodItems.length === 0;
+
     var list = $('prodList');
     if (!list) return;
     var empty = $('prodEmpty');
-    if (empty) empty.style.display = prodItems.length ? 'none' : '';
+    var qEl = $('prodSearch');
+    var q = (qEl && qEl.value || '').trim().toLowerCase();
+
+    var filtered = prodItems.filter(function (it) {
+      if (!q) return true;
+      var d = normalizeProduct(it.data);
+      return d.name.toLowerCase().indexOf(q) !== -1 ||
+        d.category.toLowerCase().indexOf(q) !== -1;
+    });
+
+    if (empty) {
+      if (prodItems.length === 0) {
+        empty.textContent = 'Aún no tienes productos guardados.';
+        empty.style.display = '';
+      } else if (filtered.length === 0) {
+        empty.textContent = 'Ningún producto coincide con tu búsqueda.';
+        empty.style.display = '';
+      } else {
+        empty.style.display = 'none';
+      }
+    }
+
     var html = '';
-    prodItems.forEach(function (it) {
+    filtered.forEach(function (it) {
       var d = normalizeProduct(it.data);
       var modeLabel = (d.marginMode === 'onCost') ? 's/costo' : 's/venta';
-      html += '<div class="item-row">'
-        + '<div class="item-meta"><b>' + esc(d.name || 'Producto') + '</b>'
-        + '<span>Costo $' + fmtBs.format(d.costUsd || 0) + ' · Margen ' + fmtBs.format(d.marginPercent || 0) + '% (' + modeLabel + ')</span></div>'
-        + '<div class="item-actions"><button type="button" class="btn-mini" data-load-prod="' + it.id + '">Cargar</button>'
+      var activeRateSrc = catalogOverrideRate || d.rateSourceName;
+      var m = window.calcProductMetrics ? window.calcProductMetrics(d, catalogOverrideRate) : null;
+      var priceTxt = (m && !m.error) ? (fmtBs.format(m.precioFinal) + ' Bs') : '—';
+      var rateTxt = formatRateLabel(activeRateSrc, d.customRateValue);
+      var comPct = (d.commissionPlatform + d.commissionPaymentMethod + d.commissionOther) * 100;
+      var gainTxt = (m && !m.error) ? (' · Ganancia ' + fmtBs.format(m.gananciaBs) + ' Bs') : '';
+      var catBadge = d.category ? ('<span class="cat-pill">' + esc(d.category) + '</span>') : '';
+
+      html += '<div class="prod-card">'
+        + '<div class="item-meta"><div class="prod-head"><b>' + esc(d.name || 'Producto') + '</b>' + catBadge + '</div>'
+        + '<span>Costo $' + fmtBs.format(d.costUsd || 0)
+        + ' · Margen ' + fmtBs.format(d.marginPercent || 0) + '% (' + modeLabel + ')'
+        + ' · Comisiones ' + fmtBs.format(comPct) + '%' + gainTxt + '</span></div>'
+        + '<div class="prod-price-col"><strong>' + esc(priceTxt) + '</strong><span>' + esc(rateTxt) + '</span></div>'
+        + '<div class="prod-actions">'
+        + '<button type="button" class="btn-mini accent" data-copy-bs="' + it.id + '">Copiar Bs</button>'
+        + '<button type="button" class="btn-mini" data-wa-prod="' + it.id + '">WhatsApp</button>'
+        + '<button type="button" class="btn-mini" data-load-prod="' + it.id + '">Cargar</button>'
         + '<button type="button" class="btn-mini" data-edit-prod="' + it.id + '">Editar</button>'
-        + '<button type="button" class="btn-mini danger" data-del-prod="' + it.id + '">✕</button></div></div>';
+        + '<button type="button" class="btn-mini danger" data-del-prod="' + it.id + '">✕</button>'
+        + '</div></div>';
     });
     list.innerHTML = html;
   }
@@ -3057,10 +3593,42 @@ window.FIREBASE_CONFIG = {
     for (var i = 0; i < prodItems.length; i++) { if (prodItems[i].id === id) return prodItems[i]; }
     return null;
   }
+  function copyText(txt, msgOk) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function () { toast(msgOk); })
+        .catch(function () { toast('No se pudo copiar'); });
+    } else {
+      toast(msgOk);
+    }
+  }
+  function openWhatsAppText(msg) {
+    if (!msg) return;
+    var url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+    var w = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!w) copyText(msg, 'Lista copiada (abre WhatsApp para pegar)');
+  }
+  function copyProdBs(id) {
+    var it = findProd(id);
+    if (!it) return;
+    var d = normalizeProduct(it.data);
+    var m = window.calcProductMetrics ? window.calcProductMetrics(d, catalogOverrideRate) : null;
+    if (!m || m.error) { toast('Tasa no disponible para copiar el precio'); return; }
+    copyText(fmtBs.format(m.precioFinal) + ' Bs', 'Copiado: ' + fmtBs.format(m.precioFinal) + ' Bs');
+  }
+  function shareSingleProdWa(id) {
+    var it = findProd(id);
+    if (!it) return;
+    var d = normalizeProduct(it.data);
+    var m = window.calcProductMetrics ? window.calcProductMetrics(d, catalogOverrideRate) : null;
+    if (!m || m.error) { toast('Tasa no disponible para compartir'); return; }
+    var icon = prefixIconForProduct(d.name, d.category);
+    openWhatsAppText(icon + d.name + ' = ' + fmtBs.format(m.precioFinal) + ' Bs');
+  }
   function loadProduct(id) {
     var it = findProd(id);
     if (!it) return;
     var d = normalizeProduct(it.data);
+    if (window.selectRateSource) window.selectRateSource(d.rateSourceName || 'bcvUsd', d.customRateValue);
     setInput('producto', d.name || '');
     setInput('costoUsd', d.costUsd || 0);
     setInput('margen', d.marginPercent || 0);
@@ -3070,8 +3638,9 @@ window.FIREBASE_CONFIG = {
     setInput('gastoFijo', d.fixedExpenseBs || 0);
     if (window.setMarginMode) window.setMarginMode(d.marginMode || 'onCost');
     var r = $('redondeo');
-    if (r && d.roundStep && r.querySelector('option[value="' + d.roundStep + '"]')) {
-      r.value = String(d.roundStep);
+    var mappedStep = (d.roundStep != null && d.roundStep <= 1) ? '1' : String(d.roundStep || 10);
+    if (r && r.querySelector('option[value="' + mappedStep + '"]')) {
+      r.value = mappedStep;
       r.dispatchEvent(new Event('change', { bubbles: true }));
     }
     if (window.setDashboardTab) window.setDashboardTab('calc');
@@ -3083,8 +3652,16 @@ window.FIREBASE_CONFIG = {
     if (!it) return;
     var d = normalizeProduct(it.data);
     $('prodNombre').value = d.name || '';
+    populateProdCategorySelect(d.category || '');
+    $('prodCatNew').value = '';
     $('prodCosto').value = d.costUsd || 0;
     $('prodMargen').value = d.marginPercent || 0;
+    $('prodMarginMode').value = d.marginMode || 'onCost';
+    $('prodRateSource').value = d.rateSourceName || 'bcvUsd';
+    var isCustom = $('prodRateSource').value === 'custom';
+    toggleCustomRateWrap(isCustom);
+    $('prodCustomRate').value = (isCustom && d.customRateValue) ? d.customRateValue : '';
+    $('prodRoundStep').value = (d.roundStep != null && d.roundStep <= 1) ? '0' : String(d.roundStep || 10);
     $('prodComP').value = fracToPct(d.commissionPlatform);
     $('prodComPa').value = fracToPct(d.commissionPaymentMethod);
     $('prodComO').value = fracToPct(d.commissionOther);
@@ -3093,11 +3670,22 @@ window.FIREBASE_CONFIG = {
     var btn = $('btnProdGuardar'); if (btn) btn.textContent = 'Guardar cambios';
     var cancel = $('btnProdCancelar'); if (cancel) cancel.hidden = false;
     $('prodNombre').focus();
+    $('prodForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   function resetProdForm() {
     var form = $('prodForm');
     if (form) form.reset();
     $('prodEditId').value = '';
+    populateProdCategorySelect('');
+    if ($('prodCatNew')) $('prodCatNew').value = '';
+    toggleNewCatWrap(false);
+    if ($('prodMarginMode') && window.getMarginMode) $('prodMarginMode').value = window.getMarginMode() || 'onCost';
+    if ($('prodRateSource')) $('prodRateSource').value = currentRateSourceName();
+    toggleCustomRateWrap($('prodRateSource') && $('prodRateSource').value === 'custom');
+    if ($('prodRoundStep')) {
+      var st = currentRoundStep();
+      $('prodRoundStep').value = st <= 1 ? '0' : String(st);
+    }
     var btn = $('btnProdGuardar'); if (btn) btn.textContent = 'Agregar producto';
     var cancel = $('btnProdCancelar'); if (cancel) cancel.hidden = true;
   }
@@ -3106,37 +3694,77 @@ window.FIREBASE_CONFIG = {
     if (!user) { toast('Inicia sesión para guardar productos'); return; }
     var nombre = ($('prodNombre').value || '').trim();
     if (!nombre) { toast('Ponle un nombre al producto'); $('prodNombre').focus(); return; }
-    // La app descarta productos con costo <= 0.
-    if (numVal('prodCosto', 0) <= 0) { toast('El costo debe ser mayor que 0'); $('prodCosto').focus(); return; }
+    if (nombre.length > 120) { toast('El nombre no puede superar 120 caracteres'); $('prodNombre').focus(); return; }
+
+    var catSel = $('prodCatSelect') ? $('prodCatSelect').value : '';
+    var categoria = (catSel === '__new__' ? ($('prodCatNew').value || '') : catSel).trim();
+    if (catSel === '__new__' && !categoria) {
+      toast('Escribe el nombre de la nueva categoría o elige "Sin categoría"');
+      if ($('prodCatNew')) $('prodCatNew').focus();
+      return;
+    }
+    if (categoria.length > 80) { toast('La categoría no puede superar 80 caracteres'); return; }
+
+    var costo = numVal('prodCosto', 0);
+    if (costo <= 0) { toast('El costo debe ser mayor que 0'); $('prodCosto').focus(); return; }
+
+    var margen = numVal('prodMargen', 20);
+    if (margen < 0 || margen >= 100) {
+      toast('El margen debe estar entre 0% y 99,9%');
+      $('prodMargen').focus();
+      return;
+    }
+
+    var comP = pctToFrac(numVal('prodComP', 0));
+    var comPa = pctToFrac(numVal('prodComPa', 0));
+    var comO = pctToFrac(numVal('prodComO', 0));
+    var mode = ($('prodMarginMode') && $('prodMarginMode').value) || 'onCost';
+    if (comP + comPa + comO >= 1) {
+      toast('Las comisiones deben sumar menos de 100%');
+      return;
+    }
+    if (mode === 'onSale' && (comP + comPa + comO + (margen / 100)) >= 1) {
+      toast('En cálculo sobre venta, comisiones + margen deben sumar menos de 100%');
+      return;
+    }
+
+    var rateName = currentProdRateSource();
+    var cr = 0;
+    if (rateName === 'custom') {
+      cr = numVal('prodCustomRate', 0) || numVal('tasa', 0);
+      if (cr <= 0) {
+        toast('Escribe una tasa personalizada mayor que 0');
+        if ($('prodCustomRate')) $('prodCustomRate').focus();
+        return;
+      }
+    }
+
     var now = new Date().toISOString();
     var editId = $('prodEditId').value;
     var stored = editId ? normalizeProduct((findProd(editId) || { data: {} }).data) : null;
-    // Al editar se conservan la fuente de tasa, el redondeo y la tasa
-    // personalizada que ya tenía el producto; al crear se usan los valores
-    // actuales de la calculadora como predeterminados.
-    var rateName = (stored && stored.rateSourceName) || currentRateSourceName();
     var data = {
       v: 1,
       name: nombre,
-      costUsd: numVal('prodCosto', 0),
-      marginPercent: numVal('prodMargen', 20),
+      costUsd: costo,
+      marginPercent: margen,
       fixedExpenseBs: numVal('prodGasto', 0),
-      commissionPlatform: pctToFrac(numVal('prodComP', 0)),
-      commissionPaymentMethod: pctToFrac(numVal('prodComPa', 0)),
-      commissionOther: pctToFrac(numVal('prodComO', 0)),
-      roundStep: (stored && stored.roundStep) || currentRoundStep(),
+      commissionPlatform: comP,
+      commissionPaymentMethod: comPa,
+      commissionOther: comO,
+      roundStep: currentProdRoundStep(),
       rateSourceName: rateName,
-      marginMode: (stored && stored.marginMode) || (window.getMarginMode ? window.getMarginMode() : 'onCost'),
+      marginMode: mode,
       updatedAt: now
     };
-    if (rateName === 'custom') {
-      var cr = (stored && stored.customRateValue) || numVal('tasa', 0);
-      if (cr > 0) data.customRateValue = cr;
-    }
+    if (categoria) data.category = categoria;
+    if (rateName === 'custom') data.customRateValue = cr;
+
     try {
       if (editId) {
         data.id = editId;
         data.createdAt = (stored && stored.createdAt) || now;
+        if (!categoria) data.category = F.fs.deleteField();
+        if (rateName !== 'custom') data.customRateValue = F.fs.deleteField();
         // Limpia los campos del esquema viejo, si los tenía el documento.
         data.nombre = F.fs.deleteField();
         data.margenSugerido = F.fs.deleteField();
@@ -3156,7 +3784,7 @@ window.FIREBASE_CONFIG = {
       resetProdForm();
     } catch (e) {
       console.error(e);
-      toast('No se pudo guardar el producto');
+      toast('No se pudo guardar: ' + (e && (e.code || e.message) ? (e.code || e.message) : 'revisa tu conexión'));
     }
   }
   async function deleteProduct(id) {
@@ -3164,6 +3792,70 @@ window.FIREBASE_CONFIG = {
     if (!window.confirm('¿Eliminar este producto?')) return;
     try { await F.fs.deleteDoc(F.fs.doc(db, 'users', user.uid, 'products', id)); }
     catch (e) { toast('No se pudo eliminar el producto'); }
+  }
+
+  /* ===== Compartir lista WhatsApp por categorías ===== */
+  function openShareModal() {
+    if (!prodItems.length) { toast('Agrega productos primero para armar una lista'); return; }
+    var cats = extractUniqueCategories(prodItems);
+    var hasUncat = prodItems.some(function (it) { return !normalizeProduct(it.data).category; });
+    var q = ($('prodSearch') && $('prodSearch').value || '').trim().toLowerCase();
+    var matched = q ? cats.filter(function (c) { return c.toLowerCase().indexOf(q) !== -1; }) : [];
+
+    shareSelectedCats = {};
+    if (matched.length) {
+      matched.forEach(function (c) { shareSelectedCats[c.toLowerCase()] = true; });
+      shareIncludeUncat = false;
+    } else {
+      cats.forEach(function (c) { shareSelectedCats[c.toLowerCase()] = true; });
+      shareIncludeUncat = hasUncat;
+    }
+
+    var rateSel = $('shareRateOverride');
+    if (rateSel) rateSel.value = catalogOverrideRate || '';
+    renderShareCategoryChips(cats, hasUncat);
+    regenerateSharePreview();
+    var m = $('shareListModal');
+    if (m) m.hidden = false;
+  }
+  function closeShareModal() {
+    var m = $('shareListModal');
+    if (m) m.hidden = true;
+  }
+  function renderShareCategoryChips(cats, hasUncat) {
+    var wrap = $('shareCatChips');
+    if (!wrap) return;
+    var counts = {};
+    var uncatCount = 0;
+    prodItems.forEach(function (it) {
+      var c = normalizeProduct(it.data).category;
+      if (!c) { uncatCount++; return; }
+      var k = c.toLowerCase();
+      counts[k] = (counts[k] || 0) + 1;
+    });
+    var html = '';
+    cats.forEach(function (c) {
+      var low = c.toLowerCase();
+      var active = !!shareSelectedCats[low];
+      html += '<button type="button" class="chip' + (active ? ' active' : '') + '" data-share-cat="' + esc(low) + '">'
+        + esc(c) + ' (' + (counts[low] || 0) + ')</button>';
+    });
+    if (hasUncat) {
+      html += '<button type="button" class="chip' + (shareIncludeUncat ? ' active' : '') + '" data-share-cat="__uncat__">'
+        + 'Sin categoría (' + uncatCount + ')</button>';
+    }
+    wrap.innerHTML = html;
+  }
+  function regenerateSharePreview() {
+    var area = $('sharePreview');
+    if (!area) return;
+    var overrideRate = ($('shareRateOverride') && $('shareRateOverride').value) || '';
+    area.value = buildWhatsAppPriceList({
+      items: prodItems,
+      selectedCategories: shareSelectedCats,
+      includeUncategorized: shareIncludeUncat,
+      overrideRate: overrideRate
+    });
   }
 
   /* ===== Cableado de la UI ===== */
@@ -3191,7 +3883,7 @@ window.FIREBASE_CONFIG = {
       });
     }
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') closeAuth();
+      if (e.key === 'Escape') { closeAuth(); closeShareModal(); }
     });
     var tabLogin = $('tabLogin');
     if (tabLogin) tabLogin.addEventListener('click', function () { setAuthMode('login'); });
@@ -3233,22 +3925,138 @@ window.FIREBASE_CONFIG = {
     if (prodForm) prodForm.addEventListener('submit', saveProduct);
     var btnCancel = $('btnProdCancelar');
     if (btnCancel) btnCancel.addEventListener('click', resetProdForm);
+
+    var catSel = $('prodCatSelect');
+    if (catSel) {
+      catSel.addEventListener('change', function () {
+        var isNew = catSel.value === '__new__';
+        toggleNewCatWrap(isNew);
+        if (isNew && $('prodCatNew')) $('prodCatNew').focus();
+      });
+    }
+    var prodRateSel = $('prodRateSource');
+    if (prodRateSel) {
+      prodRateSel.addEventListener('change', function () {
+        var isCust = prodRateSel.value === 'custom';
+        toggleCustomRateWrap(isCust);
+        if (isCust && $('prodCustomRate') && !$('prodCustomRate').value && $('tasa')) {
+          $('prodCustomRate').value = $('tasa').value || '';
+        }
+      });
+    }
+    var prodSearch = $('prodSearch');
+    if (prodSearch) prodSearch.addEventListener('input', renderProducts);
+
+    var rateChips = $('prodRateChips');
+    if (rateChips) {
+      rateChips.addEventListener('click', function (e) {
+        var btn = e.target.closest ? e.target.closest('[data-rate-override]') : null;
+        if (!btn) return;
+        catalogOverrideRate = btn.getAttribute('data-rate-override') || '';
+        rateChips.querySelectorAll('[data-rate-override]').forEach(function (c) {
+          c.classList.toggle('active', c === btn);
+        });
+        renderProducts();
+      });
+    }
+
     var prodList = $('prodList');
     if (prodList) prodList.addEventListener('click', function (e) {
-      var t = e.target;
-      if (!t.getAttribute) return;
+      var t = e.target.closest ? e.target.closest('button') : e.target;
+      if (!t || !t.getAttribute) return;
+      var copyId = t.getAttribute('data-copy-bs');
+      var waId = t.getAttribute('data-wa-prod');
       var loadId = t.getAttribute('data-load-prod');
       var editId = t.getAttribute('data-edit-prod');
       var delId = t.getAttribute('data-del-prod');
-      if (loadId) loadProduct(loadId);
+      if (copyId) copyProdBs(copyId);
+      else if (waId) shareSingleProdWa(waId);
+      else if (loadId) loadProduct(loadId);
       else if (editId) editProduct(editId);
       else if (delId) deleteProduct(delId);
     });
+
+    var btnShare = $('btnOpenShareList');
+    if (btnShare) btnShare.addEventListener('click', openShareModal);
+    var btnCloseShare = $('btnCloseShareModal');
+    if (btnCloseShare) btnCloseShare.addEventListener('click', closeShareModal);
+    var shareModal = $('shareListModal');
+    if (shareModal) {
+      shareModal.addEventListener('click', function (e) {
+        if (e.target === shareModal) closeShareModal();
+      });
+    }
+    var shareCatsWrap = $('shareCatChips');
+    if (shareCatsWrap) {
+      shareCatsWrap.addEventListener('click', function (e) {
+        var btn = e.target.closest ? e.target.closest('[data-share-cat]') : null;
+        if (!btn) return;
+        var key = btn.getAttribute('data-share-cat');
+        if (key === '__uncat__') {
+          shareIncludeUncat = !shareIncludeUncat;
+          btn.classList.toggle('active', shareIncludeUncat);
+        } else {
+          shareSelectedCats[key] = !shareSelectedCats[key];
+          btn.classList.toggle('active', !!shareSelectedCats[key]);
+        }
+        regenerateSharePreview();
+      });
+    }
+    var btnShareAll = $('btnShareAll');
+    if (btnShareAll) {
+      btnShareAll.addEventListener('click', function () {
+        var cats = extractUniqueCategories(prodItems);
+        var hasUncat = prodItems.some(function (it) { return !normalizeProduct(it.data).category; });
+        shareSelectedCats = {};
+        cats.forEach(function (c) { shareSelectedCats[c.toLowerCase()] = true; });
+        shareIncludeUncat = hasUncat;
+        renderShareCategoryChips(cats, hasUncat);
+        regenerateSharePreview();
+      });
+    }
+    var btnShareNone = $('btnShareNone');
+    if (btnShareNone) {
+      btnShareNone.addEventListener('click', function () {
+        var cats = extractUniqueCategories(prodItems);
+        var hasUncat = prodItems.some(function (it) { return !normalizeProduct(it.data).category; });
+        shareSelectedCats = {};
+        shareIncludeUncat = false;
+        renderShareCategoryChips(cats, hasUncat);
+        regenerateSharePreview();
+      });
+    }
+    var shareRateSel = $('shareRateOverride');
+    if (shareRateSel) shareRateSel.addEventListener('change', regenerateSharePreview);
+    var btnShareRegen = $('btnShareRegen');
+    if (btnShareRegen) btnShareRegen.addEventListener('click', regenerateSharePreview);
+    var btnCopyShare = $('btnCopyShareList');
+    if (btnCopyShare) {
+      btnCopyShare.addEventListener('click', function () {
+        var txt = ($('sharePreview') && $('sharePreview').value || '').trim();
+        if (!txt) { toast('Selecciona al menos una categoría con productos'); return; }
+        copyText(txt, 'Lista de precios copiada');
+      });
+    }
+    var btnSendWa = $('btnSendShareWa');
+    if (btnSendWa) {
+      btnSendWa.addEventListener('click', function () {
+        var txt = ($('sharePreview') && $('sharePreview').value || '').trim();
+        if (!txt) { toast('Selecciona al menos una categoría con productos'); return; }
+        openWhatsAppText(txt);
+      });
+    }
+
+    window.__margenesOnRatesUpdated = function () {
+      renderProducts();
+      var sm = $('shareListModal');
+      if (sm && !sm.hidden) regenerateSharePreview();
+    };
   }
 
   wire();
   setAuthMode('login');
   closeAuth();
+  closeShareModal();
   initFirebase();
 })();
 

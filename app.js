@@ -75,6 +75,54 @@
   }
   function roundUp(v, step){ return step <= 1 ? v : Math.ceil(v / step) * step; }
 
+  function computeSaleMetrics(opts) {
+    var costUsd = opts.costUsd || 0;
+    var rate = opts.rate || 0;
+    var marginFrac = (opts.marginPercent || 0) / 100;
+    var comFrac = opts.comFraction || 0;
+    var gasto = opts.fixedExpenseBs || 0;
+    var step = opts.roundStep != null ? opts.roundStep : 10;
+    var mode = opts.mode || 'onCost';
+    var costBs = costUsd * rate;
+
+    if (rate <= 0 || costUsd <= 0) return { error: 'rate_or_cost' };
+    var denom = (mode === 'onCost') ? (1 - comFrac) : (1 - comFrac - marginFrac);
+    if (denom <= 0) return { error: mode === 'onCost' ? 'comm' : 'sum' };
+
+    var precioExacto = (mode === 'onCost')
+      ? ((costBs * (1 + marginFrac)) + gasto) / denom
+      : (costBs + gasto) / denom;
+    var precioFinal = roundUp(precioExacto, step);
+    var comisionesBs = precioFinal * comFrac;
+    var gananciaBs = precioFinal - costBs - gasto - comisionesBs;
+    return {
+      error: null,
+      rate: rate,
+      costBs: costBs,
+      precioExacto: precioExacto,
+      precioFinal: precioFinal,
+      precioUsd: precioFinal / rate,
+      comisionesBs: comisionesBs,
+      gananciaBs: gananciaBs,
+      gananciaUsd: gananciaBs / rate,
+      margenRealSale: precioFinal > 0 ? (gananciaBs / precioFinal) * 100 : 0,
+      margenRealCost: costBs > 0 ? (gananciaBs / costBs) * 100 : 0
+    };
+  }
+
+  function mapFirestoreRateKey(name) {
+    if (name === 'binanceUsdt') return 'binance';
+    if (name === 'euroBcv') return 'euro';
+    if (name === 'custom') return 'custom';
+    return 'bcv';
+  }
+
+  function notifyRatesUpdated() {
+    if (typeof window.__margenesOnRatesUpdated === 'function') {
+      try { window.__margenesOnRatesUpdated(); } catch (e) {}
+    }
+  }
+
   var last = null;
 
   /* ===== LÓGICA DE TASAS ===== */
@@ -124,6 +172,7 @@
     }
     renderRates();
     calc();
+    notifyRatesUpdated();
     if (fromUser && key !== 'custom') toast('Tasa activa: ' + RATES[key].label + ' — Bs ' + fmtBs.format(RATES[key].value));
   }
   function horaAhora(){
@@ -225,6 +274,7 @@
       if (n === 3) setStatus('ok', 'Tasas en vivo · actualizadas hoy a las ' + horaAhora());
       else if (n > 0) setStatus('ok', 'Tasas actualizadas · ' + horaAhora());
       else setStatus('err', 'Sin conexión: se usan las tasas guardadas.');
+      notifyRatesUpdated();
     }).catch(function(err){
       if (btn) { btn.disabled = false; btn.textContent = '↻ Actualizar tasas'; }
       setStatus('err', 'Sin conexión: se usan las tasas guardadas.');
@@ -282,6 +332,45 @@
   }
   window.getMarginMode = function(){ return marginMode; };
   window.setMarginMode = function(m){ setMarginMode(m); };
+  window.getRatesSnapshot = function(){
+    return {
+      bcvUsd: RATES.bcv.value,
+      binanceUsdt: RATES.binance.value,
+      euroBcv: RATES.euro.value,
+      custom: RATES.custom.value,
+      fmtBs: function(v){ return fmtBs.format(v); }
+    };
+  };
+  window.selectRateSource = function(rateSourceName, customVal){
+    var key = mapFirestoreRateKey(rateSourceName);
+    if (key === 'custom' && customVal && customVal > 0) {
+      RATES.custom.value = customVal;
+      var elTasa = $('tasa');
+      if (elTasa) elTasa.value = customVal;
+    }
+    selectRate(key, false);
+  };
+  window.calcProductMetrics = function(prod, overrideRateSourceName){
+    var srcName = overrideRateSourceName || (prod && prod.rateSourceName) || 'bcvUsd';
+    var key = mapFirestoreRateKey(srcName);
+    var rate = (key === 'custom')
+      ? ((prod && prod.customRateValue > 0) ? prod.customRateValue : (RATES.custom.value || RATES.bcv.value))
+      : ((RATES[key] && RATES[key].value) || 0);
+    var comFrac = ((prod && prod.commissionPlatform) || 0)
+      + ((prod && prod.commissionPaymentMethod) || 0)
+      + ((prod && prod.commissionOther) || 0);
+    var m = computeSaleMetrics({
+      costUsd: prod ? prod.costUsd : 0,
+      rate: rate,
+      marginPercent: prod ? prod.marginPercent : 0,
+      comFraction: comFrac,
+      fixedExpenseBs: prod ? prod.fixedExpenseBs : 0,
+      roundStep: (prod && prod.roundStep != null) ? prod.roundStep : 10,
+      mode: (prod && prod.marginMode) || 'onCost'
+    });
+    m.rateSourceName = srcName;
+    return m;
+  };
 
   /* ===== UNIFICACIÓN GUÍA EN PC & MÓVIL ===== */
   function syncGuideSlot(){
@@ -321,48 +410,42 @@
     setTxt('comTotalLabel', fmtPct.format(comTotal) + '%');
     setTxt('resProducto', producto);
 
-    var costoBs = costoUsd * tasa;
     var comFraction = comTotal / 100;
-    var margenFraction = margen / 100;
-    var denom;
-    var precioExacto;
     var alertBox = $('alertBox');
+    var metrics = computeSaleMetrics({
+      costUsd: costoUsd,
+      rate: tasa,
+      marginPercent: margen,
+      comFraction: comFraction,
+      fixedExpenseBs: gasto,
+      roundStep: step,
+      mode: marginMode
+    });
 
-    if (marginMode === 'onCost') {
-      denom = 1 - comFraction;
-      if (denom <= 0 || tasa <= 0) {
-        if (alertBox) {
-          alertBox.classList.add('show');
-          alertBox.textContent = '⚠ Comisiones (' + fmtPct.format(comTotal) + '%) >= 100%. Baja las comisiones para poder calcular el precio.';
-        }
-        last = null;
-        window.__margenesLast = null;
-        return;
+    if (metrics.error) {
+      if (alertBox) {
+        alertBox.classList.add('show');
+        alertBox.textContent = (metrics.error === 'comm')
+          ? '⚠ Comisiones (' + fmtPct.format(comTotal) + '%) >= 100%. Baja las comisiones para poder calcular el precio.'
+          : (metrics.error === 'sum')
+            ? '⚠ Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o más. Baja el margen o revisa las comisiones.'
+            : '⚠ Escribe un costo y una tasa mayores a 0 para calcular.';
       }
-      if (alertBox) alertBox.classList.remove('show');
-      precioExacto = ((costoBs * (1 + margenFraction)) + gasto) / denom;
-    } else {
-      denom = 1 - comFraction - margenFraction;
-      if (denom <= 0 || tasa <= 0) {
-        if (alertBox) {
-          alertBox.classList.add('show');
-          alertBox.textContent = '⚠ Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o más. Baja el margen o revisa las comisiones.';
-        }
-        last = null;
-        window.__margenesLast = null;
-        return;
-      }
-      if (alertBox) alertBox.classList.remove('show');
-      precioExacto = (costoBs + gasto) / denom;
+      last = null;
+      window.__margenesLast = null;
+      return;
     }
+    if (alertBox) alertBox.classList.remove('show');
 
-    var precioFinal = roundUp(precioExacto, step);
-    var precioUsd = tasa > 0 ? precioFinal / tasa : 0;
-    var comisionesBs = precioFinal * comFraction;
-    var gananciaBs = precioFinal - costoBs - gasto - comisionesBs;
-    var gananciaUsd = tasa > 0 ? gananciaBs / tasa : 0;
-    var margenRealSale = precioFinal > 0 ? (gananciaBs / precioFinal) * 100 : 0;
-    var margenRealCost = costoBs > 0 ? (gananciaBs / costoBs) * 100 : 0;
+    var costoBs = metrics.costBs;
+    var precioExacto = metrics.precioExacto;
+    var precioFinal = metrics.precioFinal;
+    var precioUsd = metrics.precioUsd;
+    var comisionesBs = metrics.comisionesBs;
+    var gananciaBs = metrics.gananciaBs;
+    var gananciaUsd = metrics.gananciaUsd;
+    var margenRealSale = metrics.margenRealSale;
+    var margenRealCost = metrics.margenRealCost;
 
     setTxt('precioFinal', fmtBs0.format(precioFinal));
     setTxt('precioExacto', 'Bs ' + fmtBs.format(precioExacto));
