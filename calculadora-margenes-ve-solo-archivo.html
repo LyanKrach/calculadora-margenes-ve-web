@@ -3051,10 +3051,10 @@ footer {
             <h3>Pro Anual</h3>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <span class="plan-rec-badge">Recomendado</span>
-              <span class="plan-save-badge" id="planAnnualSavings">Ahorra 33%</span>
+              <span class="plan-save-badge" id="planAnnualSavings">Ahorra 37%</span>
             </div>
           </div>
-          <div class="plan-price"><strong id="planAnnualUsd">$15,99</strong> <small>/ año en USDT</small></div>
+          <div class="plan-price"><strong id="planAnnualUsd">$14,99</strong> <small>/ año en USDT</small></div>
           <div class="plan-compare">Frente a 12 × $1,99 = $23,88 al año</div>
           <div class="plan-bs" id="planAnnualBs">Según BCV del día</div>
           <ul class="plan-features">
@@ -3064,7 +3064,7 @@ footer {
             <li>✓ Revalorización masiva, alertas BCV, catálogo PNG/PDF y lote</li>
             <li>✓ Histórico 30 días, tasa de reposición y soporte prioritario todo el año</li>
           </ul>
-          <button type="button" class="primary" style="width:100%" data-choose-plan="annual">Elegir Plan Anual ($15,99)</button>
+          <button type="button" class="primary" style="width:100%" data-choose-plan="annual">Elegir Plan Anual ($14,99)</button>
         </article>
       </section>
 
@@ -3083,7 +3083,7 @@ footer {
               <button type="button" class="chip" data-pay-plan="monthly">Mensual · $1,99</button>
               <button type="button" class="chip" data-pay-plan="quarterly">Trimestral · $4,99 (-16%)</button>
               <button type="button" class="chip" data-pay-plan="semiannual">6 meses · $7,99 (-33%)</button>
-              <button type="button" class="chip active" data-pay-plan="annual">Anual · $15,99 (-33%)</button>
+              <button type="button" class="chip active" data-pay-plan="annual">Anual · $14,99 (-37%)</button>
             </div>
           </div>
           <div>
@@ -3140,7 +3140,7 @@ footer {
                 <option value="monthly">Mensual · 30 días ($1,99 / regalo 1 mes)</option>
                 <option value="quarterly">Trimestral · 90 días ($4,99)</option>
                 <option value="semiannual">6 Meses · 180 días ($7,99)</option>
-                <option value="annual">Anual · 365 días ($15,99)</option>
+                <option value="annual">Anual · 365 días ($14,99)</option>
               </select>
             </div>
           </div>
@@ -3261,7 +3261,7 @@ footer {
     </div>
     <p class="sub" id="proGateMsg" style="margin:10px 0 16px">Esta función forma parte de Calculadora Pro.</p>
     <div class="actions" style="padding:0">
-      <button type="button" class="primary" style="width:100%" data-go-pro="annual">Ver Planes Pro ($1,99/mes · $4,99/3m · $7,99/6m · $15,99/año)</button>
+      <button type="button" class="primary" style="width:100%" data-go-pro="annual">Ver Planes Pro ($1,99/mes · $4,99/3m · $7,99/6m · $14,99/año)</button>
     </div>
   </div>
 </div>
@@ -3400,7 +3400,7 @@ window.PRO_PAYMENT_CONFIG = {
     monthly: Object.freeze({ id: 'monthly', name: 'Mensual', label: 'Pro Mensual', usd: 1.99, months: 1, days: 30, savePct: 0 }),
     quarterly: Object.freeze({ id: 'quarterly', name: 'Trimestral', label: 'Pro Trimestral', usd: 4.99, months: 3, days: 90, savePct: 16 }),
     semiannual: Object.freeze({ id: 'semiannual', name: '6 meses', label: 'Pro 6 Meses', usd: 7.99, months: 6, days: 180, savePct: 33 }),
-    annual: Object.freeze({ id: 'annual', name: 'Anual', label: 'Pro Anual', usd: 15.99, months: 12, days: 365, savePct: 33 })
+    annual: Object.freeze({ id: 'annual', name: 'Anual', label: 'Pro Anual', usd: 14.99, months: 12, days: 365, savePct: 37 })
   });
 
   /* ===== Utilidades ===== */
@@ -5173,7 +5173,7 @@ window.PRO_PAYMENT_CONFIG = {
  *  - Lista de precios Imagen PNG (Canvas) y PDF con nombre del negocio
  *  - Reportes de ganancia (día/semana/mes/producto + Excel/PDF)
  *  - Gráfico 30 días BCV vs Paralelo + tasa de reposición + alertas
- *  - Página de Planes Pro ($1,99 mensual · $4,99 trimestral · $7,99 6 meses · $15,99 anual) + Admin
+ *  - Página de Planes Pro ($1,99 mensual · $4,99 trimestral · $7,99 6 meses · $14,99 anual) + Admin
  */
 (function (root) {
   'use strict';
@@ -5306,7 +5306,7 @@ window.PRO_PAYMENT_CONFIG = {
       monthly: 'Pro Mensual ($1,99 / 1 mes)',
       quarterly: 'Pro Trimestral ($4,99 / 3 meses · ahorra 16%)',
       semiannual: 'Pro 6 Meses ($7,99 / 6 meses · ahorra 33%)',
-      annual: 'Pro Anual ($15,99 / 12 meses · ahorra 33%)'
+      annual: 'Pro Anual ($14,99 / 12 meses · ahorra 37%)'
     };
     return map[planId] || map.monthly;
   }
@@ -5315,7 +5315,7 @@ window.PRO_PAYMENT_CONFIG = {
       monthly: 'Mensual ($1,99)',
       quarterly: 'Trimestral ($4,99)',
       semiannual: '6 Meses ($7,99)',
-      annual: 'Anual ($15,99)'
+      annual: 'Anual ($14,99)'
     };
     return map[planId] || map.monthly;
   }
@@ -8066,7 +8066,7 @@ window.PRO_PAYMENT_CONFIG = {
       var refTxt = String((payload && payload.reference) || '').trim();
       if (refTxt.length < 4 || refTxt.length > 60) throw new Error('La referencia debe tener entre 4 y 60 caracteres.');
       var rawPlan = payload && payload.plan;
-      var planPrices = { monthly: 1.99, quarterly: 4.99, semiannual: 7.99, annual: 15.99 };
+      var planPrices = { monthly: 1.99, quarterly: 4.99, semiannual: 7.99, annual: 14.99 };
       var planId = Object.prototype.hasOwnProperty.call(planPrices, rawPlan) ? rawPlan : 'monthly';
       var method = (payload && payload.method) === 'usdt' ? 'usdt' : 'pago_movil';
       var amountUsd = (window.ProCore && window.ProCore.PLANS && window.ProCore.PLANS[planId])

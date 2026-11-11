@@ -24,7 +24,7 @@
     monthly: Object.freeze({ id: 'monthly', name: 'Mensual', label: 'Pro Mensual', usd: 1.99, months: 1, days: 30, savePct: 0 }),
     quarterly: Object.freeze({ id: 'quarterly', name: 'Trimestral', label: 'Pro Trimestral', usd: 4.99, months: 3, days: 90, savePct: 16 }),
     semiannual: Object.freeze({ id: 'semiannual', name: '6 meses', label: 'Pro 6 Meses', usd: 7.99, months: 6, days: 180, savePct: 33 }),
-    annual: Object.freeze({ id: 'annual', name: 'Anual', label: 'Pro Anual', usd: 15.99, months: 12, days: 365, savePct: 33 })
+    annual: Object.freeze({ id: 'annual', name: 'Anual', label: 'Pro Anual', usd: 14.99, months: 12, days: 365, savePct: 37 })
   });
 
   /* ===== Utilidades ===== */

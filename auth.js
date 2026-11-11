@@ -1427,7 +1427,7 @@
       var refTxt = String((payload && payload.reference) || '').trim();
       if (refTxt.length < 4 || refTxt.length > 60) throw new Error('La referencia debe tener entre 4 y 60 caracteres.');
       var rawPlan = payload && payload.plan;
-      var planPrices = { monthly: 1.99, quarterly: 4.99, semiannual: 7.99, annual: 15.99 };
+      var planPrices = { monthly: 1.99, quarterly: 4.99, semiannual: 7.99, annual: 14.99 };
       var planId = Object.prototype.hasOwnProperty.call(planPrices, rawPlan) ? rawPlan : 'monthly';
       var method = (payload && payload.method) === 'usdt' ? 'usdt' : 'pago_movil';
       var amountUsd = (window.ProCore && window.ProCore.PLANS && window.ProCore.PLANS[planId])

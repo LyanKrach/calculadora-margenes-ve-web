@@ -6,7 +6,7 @@
  *  - Lista de precios Imagen PNG (Canvas) y PDF con nombre del negocio
  *  - Reportes de ganancia (día/semana/mes/producto + Excel/PDF)
  *  - Gráfico 30 días BCV vs Paralelo + tasa de reposición + alertas
- *  - Página de Planes Pro ($1,99 mensual · $4,99 trimestral · $7,99 6 meses · $15,99 anual) + Admin
+ *  - Página de Planes Pro ($1,99 mensual · $4,99 trimestral · $7,99 6 meses · $14,99 anual) + Admin
  */
 (function (root) {
   'use strict';
@@ -139,7 +139,7 @@
       monthly: 'Pro Mensual ($1,99 / 1 mes)',
       quarterly: 'Pro Trimestral ($4,99 / 3 meses · ahorra 16%)',
       semiannual: 'Pro 6 Meses ($7,99 / 6 meses · ahorra 33%)',
-      annual: 'Pro Anual ($15,99 / 12 meses · ahorra 33%)'
+      annual: 'Pro Anual ($14,99 / 12 meses · ahorra 37%)'
     };
     return map[planId] || map.monthly;
   }
@@ -148,7 +148,7 @@
       monthly: 'Mensual ($1,99)',
       quarterly: 'Trimestral ($4,99)',
       semiannual: '6 Meses ($7,99)',
-      annual: 'Anual ($15,99)'
+      annual: 'Anual ($14,99)'
     };
     return map[planId] || map.monthly;
   }

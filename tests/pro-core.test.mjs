@@ -5,15 +5,15 @@ import '../pro-core.js';
 const C = globalThis.ProCore;
 const NOW = new Date('2026-11-11T16:00:00Z'); // 12:00 en Caracas
 
-test('planes Mensual $1,99, Trimestral $4,99, 6 Meses $7,99 y Anual $15,99 + admins', () => {
+test('planes Mensual $1,99, Trimestral $4,99, 6 Meses $7,99 y Anual $14,99 + admins', () => {
   assert.equal(C.PLANS.monthly.usd, 1.99);
   assert.equal(C.PLANS.quarterly.usd, 4.99);
   assert.equal(C.PLANS.semiannual.usd, 7.99);
-  assert.equal(C.PLANS.annual.usd, 15.99);
+  assert.equal(C.PLANS.annual.usd, 14.99);
   assert.equal(Math.round(12 * C.PLANS.monthly.usd * 100) / 100, 23.88);
   assert.equal(C.planSavingsPct('quarterly'), 16);
   assert.equal(C.planSavingsPct('semiannual'), 33);
-  assert.equal(C.annualSavingsPct(), 33);
+  assert.equal(C.annualSavingsPct(), 37);
   assert.equal(C.isAdminEmail('LAYANKRACH@GMAIL.COM'), true);
   assert.equal(C.isAdminEmail('soporterefillstore@gmail.com'), true);
   assert.equal(C.isAdminEmail('cliente@gmail.com'), false);
@@ -28,7 +28,7 @@ test('precios de plan en Bs al cambio del día', () => {
   assert.equal(m.bs, 1794.22);   // 1,99 × 901,62
   assert.equal(q.bs, 4499.08);   // 4,99 × 901,62
   assert.equal(s.bs, 7203.94);   // 7,99 × 901,62
-  assert.equal(a.bs, 14416.9);   // 15,99 × 901,62
+  assert.equal(a.bs, 13515.28);  // 14,99 × 901,62
   assert.equal(C.planPrice('monthly', 0).bs, null);
 });
 

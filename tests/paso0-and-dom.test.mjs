@@ -303,7 +303,7 @@ test('páginas Términos y Privacidad existen con contenido mínimo requerido', 
   const term = read('terminos.html');
   assert.ok(/no son reembolsables/i.test(term));
   assert.ok(/salvo/i.test(term));
-  assert.ok(/1,99/.test(term) && /15/.test(term));
+  assert.ok(/1,99/.test(term) && /14,99/.test(term));
 
   const priv = read('privacidad.html');
   assert.ok(/correo/i.test(priv) && /productos/i.test(priv) && /historial/i.test(priv));
@@ -359,14 +359,14 @@ test('Planes Pro: precios USD/Bs (4 planes), pago Pabilo/manual, Panel Admin y b
   assert.equal(byId.get('planMonthlyUsd').textContent, '$1,99');
   assert.equal(byId.get('planQuarterlyUsd').textContent, '$4,99');
   assert.equal(byId.get('planSemiannualUsd').textContent, '$7,99');
-  assert.equal(byId.get('planAnnualUsd').textContent, '$15,99');
+  assert.equal(byId.get('planAnnualUsd').textContent, '$14,99');
   assert.equal(byId.get('planQuarterlySavings').textContent, 'Ahorra 16%');
   assert.equal(byId.get('planSemiannualSavings').textContent, 'Ahorra 33%');
-  assert.equal(byId.get('planAnnualSavings').textContent, 'Ahorra 33%');
+  assert.equal(byId.get('planAnnualSavings').textContent, 'Ahorra 37%');
   assert.ok(byId.get('planMonthlyBs').textContent.includes('Bs 1.794,22'));
   assert.ok(byId.get('planQuarterlyBs').textContent.includes('Bs 4.499,08'));
   assert.ok(byId.get('planSemiannualBs').textContent.includes('Bs 7.203,94'));
-  assert.ok(byId.get('planAnnualBs').textContent.includes('Bs 14.416,90'));
+  assert.ok(byId.get('planAnnualBs').textContent.includes('Bs 13.515,28'));
   assert.equal(byId.get('adminPanelSection').hidden, true);
   assert.ok(byId.get('payInstructions').innerHTML.includes('31955598'));
   assert.ok(byId.get('payInstructions').innerHTML.includes('04220336568'));
@@ -437,11 +437,11 @@ test('Planes Pro: precios USD/Bs (4 planes), pago Pabilo/manual, Panel Admin y b
             plan: 'annual',
             method: 'pago_movil',
             currency: 'BS',
-            expectedAmountUsd: 15.99,
-            expectedAmountBs: 14416.9,
-            expectedTotal: 14416.9,
+            expectedAmountUsd: 14.99,
+            expectedAmountBs: 13515.28,
+            expectedTotal: 13515.28,
             paidAmount: 0,
-            remainingAmount: 14416.9,
+            remainingAmount: 13515.28,
             rateBs: 901.62,
             expiresAt: new Date(Date.now() + 1800000).toISOString(),
           },
@@ -462,9 +462,9 @@ test('Planes Pro: precios USD/Bs (4 planes), pago Pabilo/manual, Panel Admin y b
             ok: false,
             code: 'PARTIAL_PAYMENT',
             paidAmount: 10000,
-            remainingAmount: 4416.9,
+            remainingAmount: 3515.28,
             expiresAt: new Date(Date.now() + 1800000).toISOString(),
-            message: 'Recibimos Bs 10000.00. Faltan Bs 4416.90.',
+            message: 'Recibimos Bs 10000.00. Faltan Bs 3515.28.',
           }),
         };
       }
@@ -534,14 +534,14 @@ test('Planes Pro: precios USD/Bs (4 planes), pago Pabilo/manual, Panel Admin y b
   await flush();
   assert.equal(byId.get('payOrderBox').hidden, false);
   assert.ok(byId.get('payOrderBox').innerHTML.includes('ord_web_1'));
-  assert.ok(byId.get('payOrderBox').innerHTML.includes('14.416,90'));
+  assert.ok(byId.get('payOrderBox').innerHTML.includes('13.515,28'));
 
   byId.get('payReference').value = '00112233';
   byId.get('btnSubmitPayment').click();
   await flush();
   assert.equal(byId.get('payStatusBanner').hidden, false);
   assert.ok(byId.get('payStatusBanner').innerHTML.includes('Pago parcial acreditado'));
-  assert.ok(byId.get('payOrderBox').innerHTML.includes('4.416,90'));
+  assert.ok(byId.get('payOrderBox').innerHTML.includes('3.515,28'));
 
   byId.get('payReference').value = '44556677';
   byId.get('btnSubmitPayment').click();
