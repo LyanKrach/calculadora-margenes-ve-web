@@ -209,7 +209,7 @@
       pendBox.hidden = !showPend;
       if (showPend) {
         var pl = planLabelShort(pend.plan);
-        var met = pend.method === 'usdt' ? 'USDT' : 'Pago Móvil (BDV)';
+        var met = pend.method === 'usdt' ? 'Binance Pay (USDT)' : 'Pago Móvil (BDV)';
         pendBox.innerHTML = '⏳ <b>Pago pendiente de verificación manual:</b> ' + esc(pl) + ' vía ' + esc(met) + ' · Referencia: <code>' + esc(pend.reference) + '</code> · Enviado: ' + esc(fmtDateShort(pend.requestedAt)) + '. El administrador activará tu Pro al verificar la referencia.';
       }
     }
@@ -255,16 +255,16 @@
     return {
       pagoMovil: {
         banco: remPm.bank || remPm.banco || localPm.banco || 'Banco de Venezuela (BDV · 0102)',
-        cedulaRif: remPm.cedulaRif || localPm.cedulaRif || '',
-        telefono: remPm.phone || remPm.telefono || localPm.telefono || '',
+        cedulaRif: remPm.cedulaRif || localPm.cedulaRif || '31955598',
+        telefono: remPm.phone || remPm.telefono || localPm.telefono || '04220336568',
         titular: remPm.holder || remPm.titular || localPm.titular || '',
         autoVerify: remPm.autoVerify !== undefined ? !!remPm.autoVerify : true
       },
       usdt: {
-        red: remUsdt.network || remUsdt.red || localU.red || 'Binance Pay / USDT (TRC20 o BEP20)',
-        binanceId: remUsdt.binanceId || localU.binanceId || '',
+        red: remUsdt.network || remUsdt.red || localU.red || 'Binance Pay (USDT)',
+        binanceId: remUsdt.binanceId || localU.binanceId || '916942742',
         direccion: remUsdt.address || remUsdt.direccion || localU.direccion || '',
-        autoVerify: remUsdt.autoVerify !== undefined ? !!remUsdt.autoVerify : false
+        autoVerify: remUsdt.autoVerify !== undefined ? !!remUsdt.autoVerify : true
       },
       soporte: {
         email: remSup.email || localSup.email || '',
@@ -361,6 +361,18 @@
     if (btnManual && mInfo.autoVerify) {
       btnManual.hidden = true;
     }
+    var refLabel = $('payRefLabel');
+    var refInput = $('payReference');
+    if (refLabel) {
+      refLabel.textContent = selectedMethod === 'pago_movil'
+        ? '3. Número de referencia bancaria'
+        : '3. ID de orden de Binance Pay';
+    }
+    if (refInput) {
+      refInput.placeholder = selectedMethod === 'pago_movil'
+        ? 'Ej. últimos 6-8 dígitos o referencia completa BDV'
+        : 'Ej. ID de orden de Binance Pay (verificado por Pabilo)';
+    }
     var box = $('payInstructions');
     if (!box) return;
     if (selectedMethod === 'pago_movil') {
@@ -369,15 +381,15 @@
         + configRow('Banco', pm.banco || 'Banco de Venezuela (BDV · 0102)', 'banco')
         + configRow('Cédula / RIF', pm.cedulaRif, 'cédula o RIF')
         + configRow('Teléfono', pm.telefono, 'teléfono')
-        + configRow('Titular', pm.titular, 'titular')
+        + (String(pm.titular || '').trim() ? configRow('Titular', pm.titular, 'titular') : '')
         + '<p class="hint" style="margin:8px 0 0">Transfiere el monto exacto en bolívares indicado arriba y pega el número de referencia abajo para validar automáticamente con Pabilo.</p>';
     } else {
       var u = cfg.usdt || {};
-      box.innerHTML = '<h4>Instrucciones · USDT</h4>'
-        + configRow('Red / Canal', u.red || 'Binance Pay / USDT (TRC20 o BEP20)', 'red')
+      box.innerHTML = '<h4>Instrucciones · Binance Pay (USDT)</h4>'
+        + configRow('Canal / Red', u.red || 'Binance Pay (USDT)', 'red')
         + configRow('Binance Pay ID', u.binanceId, 'Binance ID')
-        + configRow('Dirección USDT', u.direccion, 'dirección USDT')
-        + '<p class="hint" style="margin:8px 0 0">Envía el monto exacto en USDT y pega el ID de orden o hash (TxID) de la transacción abajo.</p>';
+        + (String(u.direccion || '').trim() ? configRow('Dirección USDT', u.direccion, 'dirección USDT') : '')
+        + '<p class="hint" style="margin:8px 0 0">Envía el monto exacto en USDT a nuestro Binance Pay ID y pega abajo el ID de orden de Binance para verificar automáticamente con Pabilo.</p>';
     }
     renderPayOrderBox();
     renderPayStatusBanner();
@@ -534,7 +546,9 @@
     if (btn) { btn.disabled = true; btn.textContent = 'Verificando con Pabilo…'; }
     payStatusMsg = {
       tone: 'info',
-      html: '⏳ <b>Verificando tu referencia automáticamente con Pabilo…</b> Si pagaste vía BDV puede tardar 15 a 35 segundos, no cierres esta ventana.'
+      html: selectedMethod === 'pago_movil'
+        ? '⏳ <b>Verificando tu referencia automáticamente con Pabilo…</b> Si pagaste vía BDV puede tardar 15 a 35 segundos, no cierres esta ventana.'
+        : '⏳ <b>Verificando tu orden de Binance Pay automáticamente con Pabilo…</b> Un momento por favor, no cierres esta ventana.'
     };
     renderPayStatusBanner();
 

@@ -15,14 +15,14 @@ window.PRO_PAYMENT_CONFIG = {
   },
   pagoMovil: {
     banco: 'Banco de Venezuela (BDV · 0102)',
-    cedulaRif: '', // A configurar aquí o en Firestore config/proPayments
-    telefono: '',  // A configurar aquí o en Firestore config/proPayments
-    titular: ''    // A configurar aquí o en Firestore config/proPayments
+    cedulaRif: '31955598',
+    telefono: '04220336568',
+    titular: ''    // Opcional aquí o en Firestore config/proPayments
   },
   usdt: {
-    red: 'Binance Pay / USDT (TRC20 o BEP20)',
-    binanceId: '', // A configurar aquí o en Firestore config/proPayments
-    direccion: ''  // A configurar aquí o en Firestore config/proPayments
+    red: 'Binance Pay (USDT)',
+    binanceId: '916942742',
+    direccion: ''  // Opcional aquí o en Firestore config/proPayments
   },
   soporte: {
     email: '',

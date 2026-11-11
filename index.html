@@ -718,7 +718,7 @@
             <span class="pay-lbl">2. Método de pago</span>
             <div class="rate-chips-row">
               <button type="button" class="chip active" data-pay-method="pago_movil">Pago Móvil (BDV)</button>
-              <button type="button" class="chip" data-pay-method="usdt">USDT / Binance Pay</button>
+              <button type="button" class="chip" data-pay-method="usdt">Binance Pay (USDT)</button>
             </div>
           </div>
         </div>
@@ -728,7 +728,7 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
           <button type="button" class="secondary" id="btnCreateOrder">Generar orden con monto exacto (congelar 30 min)</button>
         </div>
-        <label for="payReference" style="margin-top:14px">3. Número de referencia bancaria o ID de orden</label>
+        <label for="payReference" id="payRefLabel" style="margin-top:14px">3. Número de referencia bancaria</label>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
           <div class="field" style="flex:1;min-width:220px"><input type="text" id="payReference" maxlength="64" placeholder="Ej. últimos 6-8 dígitos o referencia completa" autocomplete="off"></div>
           <button type="button" class="primary" id="btnSubmitPayment">Verificar pago y activar Pro</button>

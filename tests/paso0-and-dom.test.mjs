@@ -355,7 +355,7 @@ test('vigencia de tasas idéntica entre tarjetas de calculadora y pestaña Tasas
 });
 
 test('Planes Pro: precios USD/Bs (4 planes), pago Pabilo/manual, Panel Admin y bloqueo Gratis vs Pro', async () => {
-  const { byId, sandbox, setAuthState } = createHarness();
+  const { byId, doc, sandbox, setAuthState } = createHarness();
   assert.equal(byId.get('planMonthlyUsd').textContent, '$1,99');
   assert.equal(byId.get('planQuarterlyUsd').textContent, '$4,99');
   assert.equal(byId.get('planSemiannualUsd').textContent, '$7,99');
@@ -368,8 +368,9 @@ test('Planes Pro: precios USD/Bs (4 planes), pago Pabilo/manual, Panel Admin y b
   assert.ok(byId.get('planSemiannualBs').textContent.includes('Bs 7.203,94'));
   assert.ok(byId.get('planAnnualBs').textContent.includes('Bs 14.416,90'));
   assert.equal(byId.get('adminPanelSection').hidden, true);
-  assert.ok(byId.get('payInstructions').innerHTML.includes('Valor por configurar'));
-  assert.ok(!/041[246]|042[46]/.test(byId.get('payInstructions').innerHTML));
+  assert.ok(byId.get('payInstructions').innerHTML.includes('31955598'));
+  assert.ok(byId.get('payInstructions').innerHTML.includes('04220336568'));
+  assert.equal(byId.get('payInstructions').innerHTML.includes('Valor por configurar'), false);
 
   // Usuario Gratis: funciones Pro muestran proGateModal, Panel Admin oculto y secciones Pro quedan bloqueadas
   setAuthState({
@@ -396,6 +397,21 @@ test('Planes Pro: precios USD/Bs (4 planes), pago Pabilo/manual, Panel Admin y b
   assert.equal(byId.get('proGateModal').hidden, false, 'Gratis al tocar Revalorizar debe abrir proGateModal');
   byId.get('btnCloseGateModal').click();
   assert.equal(byId.get('proGateModal').hidden, true);
+
+  // Verifica datos de Pago Móvil BDV y Binance Pay automáticos con Pabilo
+  const methodChips = doc.querySelectorAll('[data-pay-method]');
+  assert.ok(byId.get('payInstructions').innerHTML.includes('31955598'));
+  assert.ok(byId.get('payInstructions').innerHTML.includes('04220336568'));
+  assert.equal(byId.get('btnCreateOrder').hidden, false);
+  const binChip = methodChips.find((b) => b.getAttribute('data-pay-method') === 'usdt');
+  assert.ok(binChip);
+  doc.dispatchClick(binChip);
+  assert.ok(byId.get('payInstructions').innerHTML.includes('916942742'));
+  assert.ok(byId.get('payAutoBadge').textContent.includes('Pabilo'));
+  assert.equal(byId.get('btnCreateOrder').hidden, false);
+  assert.equal(byId.get('btnSubmitPayment').textContent, 'Verificar pago y activar Pro');
+  const pmChip = methodChips.find((b) => b.getAttribute('data-pay-method') === 'pago_movil');
+  doc.dispatchClick(pmChip);
 
   // Respaldo manual cuando se solicita manualmente
   byId.get('payReference').value = 'REF998877';
@@ -430,8 +446,8 @@ test('Planes Pro: precios USD/Bs (4 planes), pago Pabilo/manual, Panel Admin y b
             expiresAt: new Date(Date.now() + 1800000).toISOString(),
           },
           paymentConfig: {
-            pago_movil: { banco: 'BDV', telefono: '', cedulaRif: '', titular: '', autoVerify: true },
-            usdt: { red: 'Binance Pay', binanceId: '', direccion: '', autoVerify: false },
+            pago_movil: { bank: 'Banco de Venezuela (BDV · 0102)', phone: '04220336568', cedulaRif: '31955598', holder: '', autoVerify: true },
+            usdt: { network: 'Binance Pay (USDT)', binanceId: '916942742', address: '', autoVerify: true },
           },
         }),
       };
