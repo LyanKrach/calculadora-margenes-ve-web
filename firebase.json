@@ -25,6 +25,13 @@
     "trailingSlash": false,
     "rewrites": [
       {
+        "source": "/webhook/pabilo",
+        "function": {
+          "functionId": "pabiloWebhook",
+          "region": "us-central1"
+        }
+      },
+      {
         "source": "/gracias",
         "destination": "/index.html"
       }
