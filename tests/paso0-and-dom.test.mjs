@@ -72,6 +72,8 @@ function makeMockElement(id, tag = 'div', value = '') {
       if (sel === '[data-pay-method]' && 'data-pay-method' in el.attributes) return el;
       if (sel === '[data-choose-plan]' && 'data-choose-plan' in el.attributes) return el;
       if (sel === '[data-rep-period]' && 'data-rep-period' in el.attributes) return el;
+      if (sel === '[data-admin-act]' && 'data-admin-act' in el.attributes) return el;
+      if (sel === '[data-admin-deact]' && 'data-admin-deact' in el.attributes) return el;
       return null;
     },
     focus() {},
@@ -126,7 +128,7 @@ function createHarness(authMockState = null) {
     return el;
   });
   const dashViews = ['calc', 'prod', 'hist', 'tasas', 'lote', 'guia', 'pro'].map((k) => byId.get('tabView-' + k));
-  const payPlanBtns = ['monthly', 'annual'].map((k) => {
+  const payPlanBtns = ['monthly', 'quarterly', 'semiannual', 'annual'].map((k) => {
     const el = makeMockElement('pp-' + k, 'button');
     el.setAttribute('data-pay-plan', k);
     return el;
@@ -352,17 +354,24 @@ test('vigencia de tasas idéntica entre tarjetas de calculadora y pestaña Tasas
   assert.ok(!/\?\?\?/.test(byId.get('rateSrc-bcv').textContent));
 });
 
-test('Planes Pro: precios USD/Bs, flujo de pago manual y bloqueo Gratis vs acceso Pro', async () => {
+test('Planes Pro: precios USD/Bs (4 planes), pago Pabilo/manual, Panel Admin y bloqueo Gratis vs Pro', async () => {
   const { byId, sandbox, setAuthState } = createHarness();
   assert.equal(byId.get('planMonthlyUsd').textContent, '$1,99');
-  assert.equal(byId.get('planAnnualUsd').textContent, '$15');
-  assert.equal(byId.get('planAnnualSavings').textContent, 'Ahorra 37%');
+  assert.equal(byId.get('planQuarterlyUsd').textContent, '$4,99');
+  assert.equal(byId.get('planSemiannualUsd').textContent, '$7,99');
+  assert.equal(byId.get('planAnnualUsd').textContent, '$15,99');
+  assert.equal(byId.get('planQuarterlySavings').textContent, 'Ahorra 16%');
+  assert.equal(byId.get('planSemiannualSavings').textContent, 'Ahorra 33%');
+  assert.equal(byId.get('planAnnualSavings').textContent, 'Ahorra 33%');
   assert.ok(byId.get('planMonthlyBs').textContent.includes('Bs 1.794,22'));
-  assert.ok(byId.get('planAnnualBs').textContent.includes('Bs 13.524,30'));
+  assert.ok(byId.get('planQuarterlyBs').textContent.includes('Bs 4.499,08'));
+  assert.ok(byId.get('planSemiannualBs').textContent.includes('Bs 7.203,94'));
+  assert.ok(byId.get('planAnnualBs').textContent.includes('Bs 14.416,90'));
+  assert.equal(byId.get('adminPanelSection').hidden, true);
   assert.ok(byId.get('payInstructions').innerHTML.includes('Valor por configurar'));
   assert.ok(!/041[246]|042[46]/.test(byId.get('payInstructions').innerHTML));
 
-  // Usuario Gratis: funciones Pro muestran proGateModal y secciones Pro quedan bloqueadas
+  // Usuario Gratis: funciones Pro muestran proGateModal, Panel Admin oculto y secciones Pro quedan bloqueadas
   setAuthState({
     firebaseOn: true,
     user: { uid: 'u1', email: 'vendedor@ejemplo.com', displayName: 'Vendedor' },
@@ -378,6 +387,7 @@ test('Planes Pro: precios USD/Bs, flujo de pago manual y bloqueo Gratis vs acces
     profileSettings: { businessName: '' },
     alertSettings: {},
   });
+  assert.equal(byId.get('adminPanelSection').hidden, true);
   assert.equal(sandbox.ProCore.canAddProduct(10, false), false);
   assert.equal(byId.get('reportsProLock').hidden, false);
   assert.equal(byId.get('reportsProBody').hidden, true);
@@ -396,10 +406,10 @@ test('Planes Pro: precios USD/Bs, flujo de pago manual y bloqueo Gratis vs acces
   assert.equal(sandbox.__submittedPayments[0].method, 'pago_movil');
 
   // Flujo automático Pabilo: generar orden (tasa congelada) -> abono parcial -> completar pago y activar Pro al instante
-  const flush = async () => { for (let i = 0; i < 10; i++) await Promise.resolve(); };
+  const flush = async () => { for (let i = 0; i < 32; i++) await Promise.resolve(); };
   const futureActivatedEnd = new Date(Date.now() + 365 * 86400000).toISOString();
   let verifyStep = 0;
-  sandbox.__fetchImpl = async (url) => {
+  sandbox.__fetchImpl = async (url, init) => {
     if (String(url).includes('checkout')) {
       return {
         ok: true,
@@ -411,11 +421,11 @@ test('Planes Pro: precios USD/Bs, flujo de pago manual y bloqueo Gratis vs acces
             plan: 'annual',
             method: 'pago_movil',
             currency: 'BS',
-            expectedAmountUsd: 15,
-            expectedAmountBs: 13524.3,
-            expectedTotal: 13524.3,
+            expectedAmountUsd: 15.99,
+            expectedAmountBs: 14416.9,
+            expectedTotal: 14416.9,
             paidAmount: 0,
-            remainingAmount: 13524.3,
+            remainingAmount: 14416.9,
             rateBs: 901.62,
             expiresAt: new Date(Date.now() + 1800000).toISOString(),
           },
@@ -436,9 +446,9 @@ test('Planes Pro: precios USD/Bs, flujo de pago manual y bloqueo Gratis vs acces
             ok: false,
             code: 'PARTIAL_PAYMENT',
             paidAmount: 10000,
-            remainingAmount: 3524.3,
+            remainingAmount: 4416.9,
             expiresAt: new Date(Date.now() + 1800000).toISOString(),
-            message: 'Recibimos Bs 10000.00. Faltan Bs 3524.30.',
+            message: 'Recibimos Bs 10000.00. Faltan Bs 4416.90.',
           }),
         };
       }
@@ -460,6 +470,47 @@ test('Planes Pro: precios USD/Bs, flujo de pago manual y bloqueo Gratis vs acces
         }),
       };
     }
+    if (String(url).includes('adminmanagepro')) {
+      const reqBody = JSON.parse((init && init.body) || '{}');
+      if (reqBody.action === 'overview') {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            ok: true,
+            stats: { totalUsers: 2, activePro: 1, pendingManual: 0 },
+            users: [
+              { uid: 'adm1', email: 'layankrach@gmail.com', displayName: 'Layan', isOwner: true, isPro: true, status: 'active', plan: 'annual', daysLeft: 3650, endDate: futureActivatedEnd },
+              { uid: 'c1', email: 'amigo@gmail.com', displayName: 'Amigo', isOwner: false, isPro: false, status: 'free', daysLeft: 0, endDate: null },
+            ],
+          }),
+        };
+      }
+      if (reqBody.action === 'activate') {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            ok: true,
+            code: 'PRO_ACTIVATED',
+            user: { uid: 'c1', email: reqBody.email, displayName: 'Amigo', isOwner: false, isPro: true, status: 'active', plan: reqBody.plan || 'monthly', daysLeft: reqBody.days || 30, endDate: futureActivatedEnd },
+            message: 'Pro activado para ' + reqBody.email,
+          }),
+        };
+      }
+      if (reqBody.action === 'deactivate') {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            ok: true,
+            code: 'PRO_DEACTIVATED',
+            user: { uid: 'c1', email: reqBody.email, displayName: 'Amigo', isOwner: false, isPro: false, status: 'canceled', plan: 'monthly', daysLeft: 0 },
+            message: 'Suscripción Pro desactivada para ' + reqBody.email,
+          }),
+        };
+      }
+    }
     return { ok: false, status: 404, json: async () => ({}) };
   };
 
@@ -467,14 +518,14 @@ test('Planes Pro: precios USD/Bs, flujo de pago manual y bloqueo Gratis vs acces
   await flush();
   assert.equal(byId.get('payOrderBox').hidden, false);
   assert.ok(byId.get('payOrderBox').innerHTML.includes('ord_web_1'));
-  assert.ok(byId.get('payOrderBox').innerHTML.includes('13.524,30'));
+  assert.ok(byId.get('payOrderBox').innerHTML.includes('14.416,90'));
 
   byId.get('payReference').value = '00112233';
   byId.get('btnSubmitPayment').click();
   await flush();
   assert.equal(byId.get('payStatusBanner').hidden, false);
   assert.ok(byId.get('payStatusBanner').innerHTML.includes('Pago parcial acreditado'));
-  assert.ok(byId.get('payOrderBox').innerHTML.includes('3.524,30'));
+  assert.ok(byId.get('payOrderBox').innerHTML.includes('4.416,90'));
 
   byId.get('payReference').value = '44556677';
   byId.get('btnSubmitPayment').click();
@@ -482,6 +533,34 @@ test('Planes Pro: precios USD/Bs, flujo de pago manual y bloqueo Gratis vs acces
   assert.equal(sandbox.__margenesAuthBridge.getState().isPro, true);
   assert.equal(byId.get('reportsProLock').hidden, true);
   assert.ok(byId.get('payStatusBanner').innerHTML.includes('Suscripción Pro activada'));
+
+  // Administrador autorizado ve #adminPanelSection y puede regalar/activar y desactivar Pro
+  setAuthState({
+    firebaseOn: true,
+    user: { uid: 'adm1', email: 'layankrach@gmail.com', displayName: 'Layan', emailVerified: true },
+    isPro: true,
+    subState: { isPro: true, status: 'pro', plan: 'annual', daysLeft: 3650, startDate: new Date().toISOString(), endDate: futureActivatedEnd },
+    subCurrent: { plan: 'annual', status: 'active', provider: 'admin_owner', endDate: futureActivatedEnd },
+    subPending: null,
+    prodItems: [],
+    histItems: [],
+    profileSettings: { businessName: '' },
+    alertSettings: {},
+  });
+  assert.equal(byId.get('adminPanelSection').hidden, false);
+  byId.get('btnAdminRefresh').click();
+  await flush();
+  assert.ok(byId.get('adminUsersList').innerHTML.includes('amigo@gmail.com'));
+  byId.get('adminSearchEmail').value = 'amigo@gmail.com';
+  byId.get('adminPlanSelect').value = 'monthly';
+  byId.get('adminCustomDays').value = '30';
+  byId.get('btnAdminActivate').click();
+  await flush();
+  assert.equal(byId.get('adminLookupPreview').hidden, false);
+  assert.ok(byId.get('adminLookupPreview').innerHTML.includes('PRO'));
+  byId.get('btnAdminDeactivate').click();
+  await flush();
+  assert.ok(byId.get('adminNoticeBox').textContent.includes('desactivada'));
 
   // Usuario Pro activo: desbloquea reportes, alertas, lote y revalorización
   const futureEnd = new Date(Date.now() + 20 * 86400000).toISOString();

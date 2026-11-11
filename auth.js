@@ -50,7 +50,7 @@
   function getBridgeState() {
     return {
       firebaseOn: firebaseOn,
-      user: user ? { uid: user.uid, email: user.email || '', displayName: user.displayName || '' } : null,
+      user: user ? { uid: user.uid, email: user.email || '', displayName: user.displayName || '', emailVerified: !!user.emailVerified } : null,
       isPro: isProUser(),
       subState: currentSubState(),
       subCurrent: subCurrent,
@@ -1426,9 +1426,13 @@
       if (!user || !db) throw new Error('Inicia sesión primero para registrar tu referencia de pago.');
       var refTxt = String((payload && payload.reference) || '').trim();
       if (refTxt.length < 4 || refTxt.length > 60) throw new Error('La referencia debe tener entre 4 y 60 caracteres.');
-      var planId = (payload && payload.plan) === 'annual' ? 'annual' : 'monthly';
+      var rawPlan = payload && payload.plan;
+      var planPrices = { monthly: 1.99, quarterly: 4.99, semiannual: 7.99, annual: 15.99 };
+      var planId = Object.prototype.hasOwnProperty.call(planPrices, rawPlan) ? rawPlan : 'monthly';
       var method = (payload && payload.method) === 'usdt' ? 'usdt' : 'pago_movil';
-      var amountUsd = planId === 'annual' ? 15 : 1.99;
+      var amountUsd = (window.ProCore && window.ProCore.PLANS && window.ProCore.PLANS[planId])
+        ? window.ProCore.PLANS[planId].usd
+        : planPrices[planId];
       var docData = {
         v: 1,
         plan: planId,

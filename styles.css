@@ -2288,11 +2288,76 @@ footer {
   border-color: rgba(59, 130, 246, 0.4);
 }
 
+.admin-panel {
+  border: 1px solid rgba(0, 229, 153, 0.35);
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.admin-lookup-preview {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.admin-users-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.admin-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.admin-pill.pro {
+  background: rgba(0, 229, 153, 0.16);
+  color: var(--green);
+}
+
+.admin-pill.free {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--muted);
+}
+
+.admin-pill.pend {
+  background: rgba(245, 158, 11, 0.16);
+  color: #f59e0b;
+}
+
 @media (max-width: 760px) {
   .tasas-live-grid,
   .plans-grid,
-  .pay-selectors {
+  .pay-selectors,
+  .admin-form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-form-grid > [style*="grid-column"] {
+    grid-column: span 1 !important;
   }
 
   .rep-summary-grid {

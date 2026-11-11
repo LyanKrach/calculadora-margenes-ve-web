@@ -13,11 +13,18 @@
   var TZ = 'America/Caracas';
 
   /* ===== Esquema Gratis vs Pro ===== */
+  var ADMIN_EMAILS = Object.freeze(['layankrach@gmail.com', 'soporterefillstore@gmail.com']);
+  function isAdminEmail(email) {
+    var clean = String(email || '').trim().toLowerCase();
+    return ADMIN_EMAILS.indexOf(clean) !== -1;
+  }
   var FREE_LIMITS = Object.freeze({ products: 10, historyDays: 30, historyItems: 50 });
   var PRO_HISTORY_READ_CAP = 1000; // tope técnico de lectura del historial Pro
   var PLANS = Object.freeze({
-    monthly: Object.freeze({ id: 'monthly', name: 'Mensual', usd: 1.99, months: 1 }),
-    annual: Object.freeze({ id: 'annual', name: 'Anual', usd: 15, months: 12 })
+    monthly: Object.freeze({ id: 'monthly', name: 'Mensual', label: 'Pro Mensual', usd: 1.99, months: 1, days: 30, savePct: 0 }),
+    quarterly: Object.freeze({ id: 'quarterly', name: 'Trimestral', label: 'Pro Trimestral', usd: 4.99, months: 3, days: 90, savePct: 16 }),
+    semiannual: Object.freeze({ id: 'semiannual', name: '6 meses', label: 'Pro 6 Meses', usd: 7.99, months: 6, days: 180, savePct: 33 }),
+    annual: Object.freeze({ id: 'annual', name: 'Anual', label: 'Pro Anual', usd: 15.99, months: 12, days: 365, savePct: 33 })
   });
 
   /* ===== Utilidades ===== */
@@ -82,7 +89,7 @@
     var t = toDate(now).getTime();
     var none = { isPro: false, status: 'free', plan: null, endDate: '', startDate: '', daysLeft: 0 };
     if (!sub || typeof sub !== 'object') return none;
-    var plan = (sub.plan === 'monthly' || sub.plan === 'annual') ? sub.plan : null;
+    var plan = (sub.plan && Object.prototype.hasOwnProperty.call(PLANS, sub.plan)) ? sub.plan : null;
     var end = parseEnd(sub.endDate);
     var out = { isPro: false, status: 'free', plan: plan, endDate: sub.endDate || '', startDate: sub.startDate || '', daysLeft: 0 };
     if (sub.status === 'active' && plan && isFinite(end)) {
@@ -117,9 +124,14 @@
     var p = PLANS[planId];
     return p ? addMonthsIso(startIso, p.months) : '';
   }
+  function planSavingsPct(planId) {
+    var p = PLANS[planId];
+    if (!p || p.months <= 1) return 0;
+    var full = p.months * PLANS.monthly.usd;
+    return Math.round((1 - p.usd / full) * 100);
+  }
   function annualSavingsPct() {
-    var full = 12 * PLANS.monthly.usd;
-    return Math.round((1 - PLANS.annual.usd / full) * 100);
+    return planSavingsPct('annual');
   }
   function planPrice(planId, bcvRate) {
     var p = PLANS[planId];
@@ -643,11 +655,12 @@
   }
 
   var api = {
+    ADMIN_EMAILS: ADMIN_EMAILS, isAdminEmail: isAdminEmail,
     FREE_LIMITS: FREE_LIMITS, PRO_HISTORY_READ_CAP: PRO_HISTORY_READ_CAP, PLANS: PLANS, TZ: TZ,
     fmt0: fmt0, fmt1: fmt1, fmt2: fmt2, round2: round2, toNum: toNum,
     dayKey: dayKey, todayKey: todayKey, dayNumber: dayNumber, shortDate: shortDate, vigenciaText: vigenciaText,
     subscriptionState: subscriptionState, msUntilExpiry: msUntilExpiry, computeEndDate: computeEndDate,
-    annualSavingsPct: annualSavingsPct, planPrice: planPrice,
+    planSavingsPct: planSavingsPct, annualSavingsPct: annualSavingsPct, planPrice: planPrice,
     canAddProduct: canAddProduct, historyCutoffIso: historyCutoffIso, applyHistoryPolicy: applyHistoryPolicy,
     buildBreakdown: buildBreakdown, marginTableRows: marginTableRows,
     entryProfit: entryProfit, buildPeriodReport: buildPeriodReport, buildProductReport: buildProductReport,

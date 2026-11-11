@@ -2312,11 +2312,76 @@ footer {
   border-color: rgba(59, 130, 246, 0.4);
 }
 
+.admin-panel {
+  border: 1px solid rgba(0, 229, 153, 0.35);
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.admin-lookup-preview {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.admin-users-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.admin-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.admin-pill.pro {
+  background: rgba(0, 229, 153, 0.16);
+  color: var(--green);
+}
+
+.admin-pill.free {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--muted);
+}
+
+.admin-pill.pend {
+  background: rgba(245, 158, 11, 0.16);
+  color: #f59e0b;
+}
+
 @media (max-width: 760px) {
   .tasas-live-grid,
   .plans-grid,
-  .pay-selectors {
+  .pay-selectors,
+  .admin-form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-form-grid > [style*="grid-column"] {
+    grid-column: span 1 !important;
   }
 
   .rep-summary-grid {
@@ -2925,7 +2990,7 @@ footer {
         <article class="card panel plan-card">
           <div class="plan-head">
             <h3>Pro Mensual</h3>
-            <span class="plan-tag">Flexible</span>
+            <span class="plan-tag">30 días · Flexible</span>
           </div>
           <div class="plan-price"><strong id="planMonthlyUsd">$1,99</strong> <small>/ mes en USDT</small></div>
           <div class="plan-bs" id="planMonthlyBs">Según BCV del día</div>
@@ -2936,12 +3001,49 @@ footer {
             <li>✓ Revalorización masiva en 1 toque con la tasa de hoy</li>
             <li>✓ Alertas de brecha cambiaria y de nueva tasa BCV</li>
             <li>✓ Lista de precios en Imagen (WhatsApp/IG) y PDF con tu negocio</li>
-            <li>✓ Calculadora por lote para múltiples productos</li>
-            <li>✓ Gráfico histórico 30 días BCV vs paralelo + tasa de reposición</li>
-            <li>✓ Importar catálogo masivo por Excel (.xlsx) o CSV</li>
-            <li>✓ Soporte prioritario</li>
+            <li>✓ Calculadora por lote, histórico 30 días, importar Excel/CSV y soporte prioritario</li>
           </ul>
-          <button type="button" class="secondary" style="width:100%" data-choose-plan="monthly">Elegir Plan Mensual</button>
+          <button type="button" class="secondary" style="width:100%" data-choose-plan="monthly">Elegir Plan Mensual ($1,99)</button>
+        </article>
+
+        <article class="card panel plan-card">
+          <div class="plan-head">
+            <h3>Pro Trimestral</h3>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span class="plan-tag">90 días</span>
+              <span class="plan-save-badge" id="planQuarterlySavings">Ahorra 16%</span>
+            </div>
+          </div>
+          <div class="plan-price"><strong id="planQuarterlyUsd">$4,99</strong> <small>/ 3 meses en USDT</small></div>
+          <div class="plan-compare">Frente a 3 × $1,99 = $5,97</div>
+          <div class="plan-bs" id="planQuarterlyBs">Según BCV del día</div>
+          <ul class="plan-features">
+            <li>✓ Todas las herramientas Pro durante 3 meses continuos</li>
+            <li>✓ Productos, categorías e historial ilimitado</li>
+            <li>✓ Reportes de ganancia, revalorización masiva y alertas BCV</li>
+            <li>✓ Lista de precios PNG/PDF, lote, Excel/CSV y soporte prioritario</li>
+          </ul>
+          <button type="button" class="secondary" style="width:100%" data-choose-plan="quarterly">Elegir Trimestral ($4,99)</button>
+        </article>
+
+        <article class="card panel plan-card">
+          <div class="plan-head">
+            <h3>Pro 6 Meses</h3>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span class="plan-tag">180 días</span>
+              <span class="plan-save-badge" id="planSemiannualSavings">Ahorra 33%</span>
+            </div>
+          </div>
+          <div class="plan-price"><strong id="planSemiannualUsd">$7,99</strong> <small>/ 6 meses en USDT</small></div>
+          <div class="plan-compare">Frente a 6 × $1,99 = $11,94</div>
+          <div class="plan-bs" id="planSemiannualBs">Según BCV del día</div>
+          <ul class="plan-features">
+            <li>✓ Todas las herramientas Pro durante 6 meses continuos</li>
+            <li>✓ Ahorro equivalente a pagar ~$1,33/mes</li>
+            <li>✓ Reportes Excel/PDF, revalorización masiva, lote e importación</li>
+            <li>✓ Alertas automáticas, histórico 30 días y soporte prioritario</li>
+          </ul>
+          <button type="button" class="secondary" style="width:100%" data-choose-plan="semiannual">Elegir 6 Meses ($7,99)</button>
         </article>
 
         <article class="card panel plan-card recommended">
@@ -2949,25 +3051,20 @@ footer {
             <h3>Pro Anual</h3>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <span class="plan-rec-badge">Recomendado</span>
-              <span class="plan-save-badge" id="planAnnualSavings">Ahorra 37%</span>
+              <span class="plan-save-badge" id="planAnnualSavings">Ahorra 33%</span>
             </div>
           </div>
-          <div class="plan-price"><strong id="planAnnualUsd">$15</strong> <small>/ año en USDT</small></div>
+          <div class="plan-price"><strong id="planAnnualUsd">$15,99</strong> <small>/ año en USDT</small></div>
           <div class="plan-compare">Frente a 12 × $1,99 = $23,88 al año</div>
           <div class="plan-bs" id="planAnnualBs">Según BCV del día</div>
           <ul class="plan-features">
-            <li>✓ Todo lo del plan Mensual durante 12 meses</li>
-            <li>✓ Productos y categorías ilimitadas</li>
-            <li>✓ Historial ilimitado en la nube</li>
+            <li>✓ Todo lo del plan Mensual durante 12 meses (365 días)</li>
+            <li>✓ Productos, categorías e historial ilimitado en la nube</li>
             <li>✓ Reportes de ganancia con exportación Excel y PDF</li>
-            <li>✓ Actualización masiva de precios con tasa de hoy</li>
-            <li>✓ Alertas automáticas de brecha y nueva tasa BCV</li>
-            <li>✓ Catálogo en Imagen PNG (WhatsApp/IG) y PDF profesional</li>
-            <li>✓ Calculadora por lote e importación Excel / CSV</li>
-            <li>✓ Histórico 30 días y tasa de reposición recomendada</li>
-            <li>✓ Soporte prioritario durante todo el año</li>
+            <li>✓ Revalorización masiva, alertas BCV, catálogo PNG/PDF y lote</li>
+            <li>✓ Histórico 30 días, tasa de reposición y soporte prioritario todo el año</li>
           </ul>
-          <button type="button" class="primary" style="width:100%" data-choose-plan="annual">Elegir Plan Anual ($15)</button>
+          <button type="button" class="primary" style="width:100%" data-choose-plan="annual">Elegir Plan Anual ($15,99)</button>
         </article>
       </section>
 
@@ -2984,7 +3081,9 @@ footer {
             <span class="pay-lbl">1. Elige el plan</span>
             <div class="rate-chips-row">
               <button type="button" class="chip" data-pay-plan="monthly">Mensual · $1,99</button>
-              <button type="button" class="chip active" data-pay-plan="annual">Anual · $15 (Ahorra 37%)</button>
+              <button type="button" class="chip" data-pay-plan="quarterly">Trimestral · $4,99 (-16%)</button>
+              <button type="button" class="chip" data-pay-plan="semiannual">6 meses · $7,99 (-33%)</button>
+              <button type="button" class="chip active" data-pay-plan="annual">Anual · $15,99 (-33%)</button>
             </div>
           </div>
           <div>
@@ -3012,6 +3111,62 @@ footer {
       </section>
 
       <section class="card panel" id="proSupportCard" aria-label="Soporte prioritario"></section>
+
+      <section class="card panel admin-panel" id="adminPanelSection" hidden aria-label="Panel administrador de suscripciones">
+        <div class="pay-box-head">
+          <div>
+            <h2>🛡 Panel Administrador Pro <span class="pro-inline-tag">PROPIETARIO</span></h2>
+            <p class="sub" style="margin:4px 0 0">Activa, regala o desactiva suscripciones Pro en cualquier cuenta registrada (web o app) por correo electrónico.</p>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span class="hint" id="adminStatsBadge">—</span>
+            <button type="button" class="secondary" id="btnAdminRefresh">Actualizar lista</button>
+          </div>
+        </div>
+        <div class="pay-status-banner" id="adminNoticeBox" hidden aria-live="polite"></div>
+
+        <div class="admin-form-grid">
+          <div class="field-wrap" style="grid-column:span 2">
+            <label for="adminSearchEmail">Correo de la cuenta</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <div class="field" style="flex:1;min-width:220px"><input type="email" id="adminSearchEmail" placeholder="usuario@gmail.com" autocomplete="off"></div>
+              <button type="button" class="secondary" id="btnAdminLookup">Buscar</button>
+            </div>
+          </div>
+          <div class="field-wrap">
+            <label for="adminPlanSelect">Plan / regalo</label>
+            <div class="field">
+              <select id="adminPlanSelect">
+                <option value="monthly">Mensual · 30 días ($1,99 / regalo 1 mes)</option>
+                <option value="quarterly">Trimestral · 90 días ($4,99)</option>
+                <option value="semiannual">6 Meses · 180 días ($7,99)</option>
+                <option value="annual">Anual · 365 días ($15,99)</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-wrap">
+            <label for="adminCustomDays">Días exactos (opcional)</label>
+            <div class="field"><input type="number" id="adminCustomDays" min="1" max="3650" placeholder="Por defecto según plan (ej. 30)"></div>
+          </div>
+          <div class="field-wrap" style="grid-column:span 2">
+            <label for="adminNote">Nota o motivo (opcional)</label>
+            <div class="field"><input type="text" id="adminNote" maxlength="120" placeholder="Ej. Regalo 1 mes · Pago manual verificado"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+          <button type="button" class="primary" id="btnAdminActivate">Activar / Regalar Pro</button>
+          <button type="button" class="secondary" id="btnAdminDeactivate">Desactivar Pro</button>
+        </div>
+
+        <div class="admin-lookup-preview" id="adminLookupPreview" hidden></div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px;margin-bottom:8px">
+          <strong style="font-size:14px">Cuentas registradas y pagos pendientes</strong>
+          <div class="field" style="max-width:260px"><input type="search" id="adminTableFilter" placeholder="Filtrar por correo o nombre…"></div>
+        </div>
+        <div class="admin-users-list" id="adminUsersList"></div>
+      </section>
     </div>
   </div>
 
@@ -3106,7 +3261,7 @@ footer {
     </div>
     <p class="sub" id="proGateMsg" style="margin:10px 0 16px">Esta función forma parte de Calculadora Pro.</p>
     <div class="actions" style="padding:0">
-      <button type="button" class="primary" style="width:100%" data-go-pro="annual">Ver Planes Pro ($1,99/mes o $15/año)</button>
+      <button type="button" class="primary" style="width:100%" data-go-pro="annual">Ver Planes Pro ($1,99/mes · $4,99/3m · $7,99/6m · $15,99/año)</button>
     </div>
   </div>
 </div>
@@ -3195,7 +3350,8 @@ window.PRO_PAYMENT_CONFIG = {
     endpoints: {
       config: 'https://getpropaymentconfig-yqgkyclg5a-uc.a.run.app',
       checkout: 'https://createprocheckout-yqgkyclg5a-uc.a.run.app',
-      verify: 'https://verifypropayment-yqgkyclg5a-uc.a.run.app'
+      verify: 'https://verifypropayment-yqgkyclg5a-uc.a.run.app',
+      admin: 'https://adminmanagepro-yqgkyclg5a-uc.a.run.app'
     }
   },
   pagoMovil: {
@@ -3233,11 +3389,18 @@ window.PRO_PAYMENT_CONFIG = {
   var TZ = 'America/Caracas';
 
   /* ===== Esquema Gratis vs Pro ===== */
+  var ADMIN_EMAILS = Object.freeze(['layankrach@gmail.com', 'soporterefillstore@gmail.com']);
+  function isAdminEmail(email) {
+    var clean = String(email || '').trim().toLowerCase();
+    return ADMIN_EMAILS.indexOf(clean) !== -1;
+  }
   var FREE_LIMITS = Object.freeze({ products: 10, historyDays: 30, historyItems: 50 });
   var PRO_HISTORY_READ_CAP = 1000; // tope técnico de lectura del historial Pro
   var PLANS = Object.freeze({
-    monthly: Object.freeze({ id: 'monthly', name: 'Mensual', usd: 1.99, months: 1 }),
-    annual: Object.freeze({ id: 'annual', name: 'Anual', usd: 15, months: 12 })
+    monthly: Object.freeze({ id: 'monthly', name: 'Mensual', label: 'Pro Mensual', usd: 1.99, months: 1, days: 30, savePct: 0 }),
+    quarterly: Object.freeze({ id: 'quarterly', name: 'Trimestral', label: 'Pro Trimestral', usd: 4.99, months: 3, days: 90, savePct: 16 }),
+    semiannual: Object.freeze({ id: 'semiannual', name: '6 meses', label: 'Pro 6 Meses', usd: 7.99, months: 6, days: 180, savePct: 33 }),
+    annual: Object.freeze({ id: 'annual', name: 'Anual', label: 'Pro Anual', usd: 15.99, months: 12, days: 365, savePct: 33 })
   });
 
   /* ===== Utilidades ===== */
@@ -3302,7 +3465,7 @@ window.PRO_PAYMENT_CONFIG = {
     var t = toDate(now).getTime();
     var none = { isPro: false, status: 'free', plan: null, endDate: '', startDate: '', daysLeft: 0 };
     if (!sub || typeof sub !== 'object') return none;
-    var plan = (sub.plan === 'monthly' || sub.plan === 'annual') ? sub.plan : null;
+    var plan = (sub.plan && Object.prototype.hasOwnProperty.call(PLANS, sub.plan)) ? sub.plan : null;
     var end = parseEnd(sub.endDate);
     var out = { isPro: false, status: 'free', plan: plan, endDate: sub.endDate || '', startDate: sub.startDate || '', daysLeft: 0 };
     if (sub.status === 'active' && plan && isFinite(end)) {
@@ -3337,9 +3500,14 @@ window.PRO_PAYMENT_CONFIG = {
     var p = PLANS[planId];
     return p ? addMonthsIso(startIso, p.months) : '';
   }
+  function planSavingsPct(planId) {
+    var p = PLANS[planId];
+    if (!p || p.months <= 1) return 0;
+    var full = p.months * PLANS.monthly.usd;
+    return Math.round((1 - p.usd / full) * 100);
+  }
   function annualSavingsPct() {
-    var full = 12 * PLANS.monthly.usd;
-    return Math.round((1 - PLANS.annual.usd / full) * 100);
+    return planSavingsPct('annual');
   }
   function planPrice(planId, bcvRate) {
     var p = PLANS[planId];
@@ -3863,11 +4031,12 @@ window.PRO_PAYMENT_CONFIG = {
   }
 
   var api = {
+    ADMIN_EMAILS: ADMIN_EMAILS, isAdminEmail: isAdminEmail,
     FREE_LIMITS: FREE_LIMITS, PRO_HISTORY_READ_CAP: PRO_HISTORY_READ_CAP, PLANS: PLANS, TZ: TZ,
     fmt0: fmt0, fmt1: fmt1, fmt2: fmt2, round2: round2, toNum: toNum,
     dayKey: dayKey, todayKey: todayKey, dayNumber: dayNumber, shortDate: shortDate, vigenciaText: vigenciaText,
     subscriptionState: subscriptionState, msUntilExpiry: msUntilExpiry, computeEndDate: computeEndDate,
-    annualSavingsPct: annualSavingsPct, planPrice: planPrice,
+    planSavingsPct: planSavingsPct, annualSavingsPct: annualSavingsPct, planPrice: planPrice,
     canAddProduct: canAddProduct, historyCutoffIso: historyCutoffIso, applyHistoryPolicy: applyHistoryPolicy,
     buildBreakdown: buildBreakdown, marginTableRows: marginTableRows,
     entryProfit: entryProfit, buildPeriodReport: buildPeriodReport, buildProductReport: buildProductReport,
@@ -5004,7 +5173,7 @@ window.PRO_PAYMENT_CONFIG = {
  *  - Lista de precios Imagen PNG (Canvas) y PDF con nombre del negocio
  *  - Reportes de ganancia (día/semana/mes/producto + Excel/PDF)
  *  - Gráfico 30 días BCV vs Paralelo + tasa de reposición + alertas
- *  - Página de Planes Pro ($1,99 mensual / $15 anual -37%) + Pago manual
+ *  - Página de Planes Pro ($1,99 mensual · $4,99 trimestral · $7,99 6 meses · $15,99 anual) + Admin
  */
 (function (root) {
   'use strict';
@@ -5028,6 +5197,11 @@ window.PRO_PAYMENT_CONFIG = {
   var activeOrder = null;
   var payStatusMsg = null;
   var payVerifying = false;
+  var adminOverview = null;
+  var adminLookupUser = null;
+  var adminNotice = null;
+  var adminBusy = false;
+  var adminLoadedUid = '';
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (ch) {
@@ -5067,7 +5241,7 @@ window.PRO_PAYMENT_CONFIG = {
     setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
   }
   function goToPlans(planOpt) {
-    if (planOpt === 'monthly' || planOpt === 'annual') {
+    if (planOpt && C.PLANS && Object.prototype.hasOwnProperty.call(C.PLANS, planOpt)) {
       selectedPlan = planOpt;
       renderPlansPage();
     }
@@ -5093,7 +5267,7 @@ window.PRO_PAYMENT_CONFIG = {
     if (!st.user) {
       promptUpgrade((msg ? msg + ' ' : '') + 'Inicia sesión y activa un plan Pro para usar esta función.');
     } else {
-      promptUpgrade(msg || 'Desbloquea esta función activando el plan Pro ($1,99/mes o $15/año).');
+      promptUpgrade(msg || 'Desbloquea esta función activando un plan Pro (desde $1,99/mes).');
     }
     return false;
   }
@@ -5127,19 +5301,51 @@ window.PRO_PAYMENT_CONFIG = {
     if (repBody) repBody.hidden = !st.isPro;
   }
 
+  function planLabelLong(planId) {
+    var map = {
+      monthly: 'Pro Mensual ($1,99 / 1 mes)',
+      quarterly: 'Pro Trimestral ($4,99 / 3 meses · ahorra 16%)',
+      semiannual: 'Pro 6 Meses ($7,99 / 6 meses · ahorra 33%)',
+      annual: 'Pro Anual ($15,99 / 12 meses · ahorra 33%)'
+    };
+    return map[planId] || map.monthly;
+  }
+  function planLabelShort(planId) {
+    var map = {
+      monthly: 'Mensual ($1,99)',
+      quarterly: 'Trimestral ($4,99)',
+      semiannual: '6 Meses ($7,99)',
+      annual: 'Anual ($15,99)'
+    };
+    return map[planId] || map.monthly;
+  }
+
   /* ===== Página de Planes Pro y Pago Manual ===== */
   function renderPlansPage() {
     var st = authState();
     var r = rates();
     var pMon = C.planPrice('monthly', r.bcvUsd);
+    var pQrt = C.planPrice('quarterly', r.bcvUsd);
+    var pSem = C.planPrice('semiannual', r.bcvUsd);
     var pAnn = C.planPrice('annual', r.bcvUsd);
-    var savePct = C.annualSavingsPct();
+    var saveQrt = C.planSavingsPct ? C.planSavingsPct('quarterly') : 16;
+    var saveSem = C.planSavingsPct ? C.planSavingsPct('semiannual') : 33;
+    var saveAnn = C.annualSavingsPct();
 
-    var mUsd = $('planMonthlyUsd'); if (mUsd) mUsd.textContent = '$' + C.fmt2(pMon.usd);
-    var mBs = $('planMonthlyBs'); if (mBs) mBs.textContent = pMon.bs ? ('≈ Bs ' + C.fmt2(pMon.bs) + ' al BCV (' + C.fmt2(pMon.rate) + ')') : 'Según BCV del día';
-    var aUsd = $('planAnnualUsd'); if (aUsd) aUsd.textContent = '$' + C.fmt0(pAnn.usd);
-    var aBs = $('planAnnualBs'); if (aBs) aBs.textContent = pAnn.bs ? ('≈ Bs ' + C.fmt2(pAnn.bs) + ' al BCV (' + C.fmt2(pAnn.rate) + ')') : 'Según BCV del día';
-    var badgeSave = $('planAnnualSavings'); if (badgeSave) badgeSave.textContent = 'Ahorra ' + savePct + '%';
+    var mUsd = $('planMonthlyUsd'); if (mUsd && pMon) mUsd.textContent = '$' + C.fmt2(pMon.usd);
+    var mBs = $('planMonthlyBs'); if (mBs && pMon) mBs.textContent = pMon.bs ? ('≈ Bs ' + C.fmt2(pMon.bs) + ' al BCV (' + C.fmt2(pMon.rate) + ')') : 'Según BCV del día';
+
+    var qUsd = $('planQuarterlyUsd'); if (qUsd && pQrt) qUsd.textContent = '$' + C.fmt2(pQrt.usd);
+    var qBs = $('planQuarterlyBs'); if (qBs && pQrt) qBs.textContent = pQrt.bs ? ('≈ Bs ' + C.fmt2(pQrt.bs) + ' al BCV (' + C.fmt2(pQrt.rate) + ')') : 'Según BCV del día';
+    var qSav = $('planQuarterlySavings'); if (qSav) qSav.textContent = 'Ahorra ' + saveQrt + '%';
+
+    var sUsd = $('planSemiannualUsd'); if (sUsd && pSem) sUsd.textContent = '$' + C.fmt2(pSem.usd);
+    var sBs = $('planSemiannualBs'); if (sBs && pSem) sBs.textContent = pSem.bs ? ('≈ Bs ' + C.fmt2(pSem.bs) + ' al BCV (' + C.fmt2(pSem.rate) + ')') : 'Según BCV del día';
+    var sSav = $('planSemiannualSavings'); if (sSav) sSav.textContent = 'Ahorra ' + saveSem + '%';
+
+    var aUsd = $('planAnnualUsd'); if (aUsd && pAnn) aUsd.textContent = '$' + C.fmt2(pAnn.usd);
+    var aBs = $('planAnnualBs'); if (aBs && pAnn) aBs.textContent = pAnn.bs ? ('≈ Bs ' + C.fmt2(pAnn.bs) + ' al BCV (' + C.fmt2(pAnn.rate) + ')') : 'Según BCV del día';
+    var badgeSave = $('planAnnualSavings'); if (badgeSave) badgeSave.textContent = 'Ahorra ' + saveAnn + '%';
 
     // Estado actual de cuenta/suscripción
     var statusCard = $('proAccountStatusCard');
@@ -5149,8 +5355,11 @@ window.PRO_PAYMENT_CONFIG = {
         var bl = $('btnProLoginNow');
         if (bl) bl.addEventListener('click', function () { var b = bridge(); if (b) b.openAuth(); });
       } else if (st.isPro) {
-        var planLbl = st.subState.plan === 'annual' ? 'Pro Anual ($15/año)' : 'Pro Mensual ($1,99/mes)';
-        statusCard.innerHTML = '<div><span class="pro-inline-tag">ACTIVO</span> <b>' + esc(planLbl) + '</b><p class="sub" style="margin:6px 0 0">Inicio: <b>' + esc(fmtDateShort(st.subState.startDate)) + '</b> · Vence: <b>' + esc(fmtDateShort(st.subState.endDate)) + '</b> (' + st.subState.daysLeft + ' días restantes). Al vencer vuelve automáticamente a Gratis si no se renueva.</p></div>';
+        var planLbl = planLabelShort(st.subState.plan);
+        var provLbl = (st.subCurrent && st.subCurrent.provider === 'admin_owner')
+          ? ' · Cuenta propietaria'
+          : (st.subCurrent && st.subCurrent.note ? (' · ' + esc(st.subCurrent.note)) : '');
+        statusCard.innerHTML = '<div><span class="pro-inline-tag">ACTIVO</span> <b>Pro ' + esc(planLbl) + '</b><span class="hint">' + provLbl + '</span><p class="sub" style="margin:6px 0 0">Inicio: <b>' + esc(fmtDateShort(st.subState.startDate)) + '</b> · Vence: <b>' + esc(fmtDateShort(st.subState.endDate)) + '</b> (' + st.subState.daysLeft + ' días restantes). Al vencer vuelve automáticamente a Gratis si no se renueva.</p></div>';
       } else if (st.subState.status === 'expired') {
         statusCard.innerHTML = '<div><span class="pro-warn-tag">VENCIDO</span> <b>Tu suscripción Pro venció el ' + esc(fmtDateShort(st.subState.endDate)) + '</b><p class="sub" style="margin:4px 0 0">Tu cuenta volvió al plan Gratis (tus datos se conservan, pero aplican los límites de 10 productos y 30 días de historial). Renueva abajo cuando quieras.</p></div>';
       } else {
@@ -5166,7 +5375,7 @@ window.PRO_PAYMENT_CONFIG = {
       var showPend = pend && pend.status === 'pending' && (!st.isPro || String(pend.requestedAt || '') > String(curAt));
       pendBox.hidden = !showPend;
       if (showPend) {
-        var pl = pend.plan === 'annual' ? 'Anual ($15,00)' : 'Mensual ($1,99)';
+        var pl = planLabelShort(pend.plan);
         var met = pend.method === 'usdt' ? 'USDT' : 'Pago Móvil (BDV)';
         pendBox.innerHTML = '⏳ <b>Pago pendiente de verificación manual:</b> ' + esc(pl) + ' vía ' + esc(met) + ' · Referencia: <code>' + esc(pend.reference) + '</code> · Enviado: ' + esc(fmtDateShort(pend.requestedAt)) + '. El administrador activará tu Pro al verificar la referencia.';
       }
@@ -5183,12 +5392,12 @@ window.PRO_PAYMENT_CONFIG = {
     var price = C.planPrice(selectedPlan, r.bcvUsd);
     var sum = $('payTotalSummary');
     if (sum && price) {
-      var pName = selectedPlan === 'annual' ? 'Plan Pro Anual (12 meses · ahorra 37%)' : 'Plan Pro Mensual (1 mes)';
-      sum.innerHTML = '<b>' + pName + ':</b> $' + C.fmt2(price.usdt) + ' USDT' + (price.bs ? ' · ≈ <b>Bs ' + C.fmt2(price.bs) + '</b> (tasa BCV ' + C.fmt2(price.rate) + ')' : '');
+      sum.innerHTML = '<b>' + esc(planLabelLong(selectedPlan)) + ':</b> $' + C.fmt2(price.usdt) + ' USDT' + (price.bs ? ' · ≈ <b>Bs ' + C.fmt2(price.bs) + '</b> (tasa BCV ' + C.fmt2(price.rate) + ')' : '');
     }
 
     renderPaymentInstructions();
     renderSupportBox(st);
+    renderAdminSection(st);
   }
 
   function apiEndpoints() {
@@ -5197,7 +5406,8 @@ window.PRO_PAYMENT_CONFIG = {
     return {
       config: ep.config || 'https://getpropaymentconfig-yqgkyclg5a-uc.a.run.app',
       checkout: ep.checkout || 'https://createprocheckout-yqgkyclg5a-uc.a.run.app',
-      verify: ep.verify || 'https://verifypropayment-yqgkyclg5a-uc.a.run.app'
+      verify: ep.verify || 'https://verifypropayment-yqgkyclg5a-uc.a.run.app',
+      admin: ep.admin || 'https://adminmanagepro-yqgkyclg5a-uc.a.run.app'
     };
   }
   function mergedPaymentConfig() {
@@ -5566,6 +5776,157 @@ window.PRO_PAYMENT_CONFIG = {
         btn.textContent = mInfo.autoVerify ? 'Verificar pago y activar Pro' : 'Enviar referencia para validación manual';
       }
       renderPlansPage();
+    }
+  }
+
+  /* ===== Panel Administrador Pro (solo owners autorizados) ===== */
+  function isAdminUser(st) {
+    return !!(st && st.user && typeof C.isAdminEmail === 'function' && C.isAdminEmail(st.user.email));
+  }
+  function renderAdminNotice() {
+    var box = $('adminNoticeBox');
+    if (!box) return;
+    if (!adminNotice || !adminNotice.text) {
+      box.hidden = true;
+      box.className = 'pay-status-banner';
+      box.textContent = '';
+      return;
+    }
+    box.hidden = false;
+    box.className = 'pay-status-banner ' + (adminNotice.tone || 'info');
+    box.textContent = adminNotice.text;
+  }
+  function renderAdminUserHtml(u) {
+    var pillCls = u.isPro ? 'pro' : 'free';
+    var pillTxt = u.isPro ? ('PRO ' + planLabelShort(u.plan) + ' · ' + u.daysLeft + 'd') : 'GRATIS';
+    var pendHtml = u.pending
+      ? ' <span class="admin-pill pend">Pendiente: ' + esc(u.pending.reference || u.pending.method) + '</span>'
+      : '';
+    var ownerHtml = u.isOwner ? ' <span class="admin-pill pro">PROPIETARIO</span>' : '';
+    var metaParts = [];
+    if (u.endDate && u.isPro) metaParts.push('Vence: ' + fmtDateShort(u.endDate));
+    if (u.note) metaParts.push('Nota: ' + u.note);
+    if (u.activatedBy) metaParts.push('Por: ' + u.activatedBy);
+    return '<div class="admin-user-row">'
+      + '<div>'
+      + '<div><b>' + esc(u.email || u.uid) + '</b> ' + (u.displayName ? '<span class="hint">(' + esc(u.displayName) + ')</span>' : '') + ' <span class="admin-pill ' + pillCls + '">' + esc(pillTxt) + '</span>' + ownerHtml + pendHtml + '</div>'
+      + '<div class="hint" style="margin-top:4px">' + esc(metaParts.join(' · ') || ('UID: ' + u.uid)) + '</div>'
+      + '</div>'
+      + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+      + '<button type="button" class="btn-mini accent" data-admin-act="monthly" data-admin-days="30" data-admin-uid="' + esc(u.uid) + '" data-admin-email="' + esc(u.email || '') + '">Regalar 1 mes</button>'
+      + '<button type="button" class="btn-mini" data-admin-act="annual" data-admin-uid="' + esc(u.uid) + '" data-admin-email="' + esc(u.email || '') + '">Activar 1 año</button>'
+      + (u.isPro ? '<button type="button" class="btn-mini" data-admin-deact="1" data-admin-uid="' + esc(u.uid) + '" data-admin-email="' + esc(u.email || '') + '">Desactivar</button>' : '')
+      + '</div>'
+      + '</div>';
+  }
+  function renderAdminSection(st) {
+    var sec = $('adminPanelSection');
+    if (!sec) return;
+    var ok = isAdminUser(st);
+    sec.hidden = !ok;
+    if (!ok) {
+      adminOverview = null;
+      adminLookupUser = null;
+      adminNotice = null;
+      adminLoadedUid = '';
+      return;
+    }
+    var statsBadge = $('adminStatsBadge');
+    if (statsBadge) {
+      if (adminOverview && adminOverview.stats) {
+        statsBadge.textContent = adminOverview.stats.totalUsers + ' cuentas · ' + adminOverview.stats.activePro + ' Pro · ' + adminOverview.stats.pendingManual + ' pendientes';
+      } else {
+        statsBadge.textContent = adminBusy ? 'Cargando…' : 'Listo';
+      }
+    }
+    renderAdminNotice();
+    var preview = $('adminLookupPreview');
+    if (preview) {
+      if (adminLookupUser) {
+        preview.hidden = false;
+        preview.innerHTML = renderAdminUserHtml(adminLookupUser);
+      } else {
+        preview.hidden = true;
+        preview.innerHTML = '';
+      }
+    }
+    var listEl = $('adminUsersList');
+    if (listEl) {
+      var filter = String(($('adminTableFilter') && $('adminTableFilter').value) || '').trim().toLowerCase();
+      var rows = (adminOverview && Array.isArray(adminOverview.users)) ? adminOverview.users : [];
+      if (filter) {
+        rows = rows.filter(function (u) {
+          return String(u.email || '').toLowerCase().indexOf(filter) !== -1
+            || String(u.displayName || '').toLowerCase().indexOf(filter) !== -1;
+        });
+      }
+      if (!rows.length) {
+        listEl.innerHTML = '<p class="hint">' + (adminOverview ? 'No hay cuentas que coincidan con el filtro.' : 'Pulsa «Actualizar lista» para cargar las cuentas registradas.') + '</p>';
+      } else {
+        listEl.innerHTML = rows.slice(0, 60).map(renderAdminUserHtml).join('');
+      }
+    }
+  }
+  async function callAdminApi(payload) {
+    var out = await callAuthedJson(apiEndpoints().admin, payload, 25000);
+    if (!out.data || !out.data.ok) {
+      throw new Error((out.data && out.data.message) || ('Error del panel admin (HTTP ' + out.status + ')'));
+    }
+    return out.data;
+  }
+  async function loadAdminOverview(quiet) {
+    var st = authState();
+    if (!isAdminUser(st) || adminBusy) return;
+    adminBusy = true;
+    adminLoadedUid = st.user ? st.user.uid : '';
+    renderAdminSection(st);
+    try {
+      var data = await callAdminApi({ action: 'overview' });
+      adminOverview = data;
+      if (!quiet) adminNotice = null;
+    } catch (e) {
+      adminNotice = { tone: 'err', text: (e && e.message) || 'No se pudo cargar el panel administrador.' };
+    } finally {
+      adminBusy = false;
+      renderAdminSection(authState());
+    }
+  }
+  async function adminLookupFlow() {
+    var email = String(($('adminSearchEmail') && $('adminSearchEmail').value) || '').trim();
+    if (!email || email.indexOf('@') === -1) { toast('Escribe un correo válido para buscar'); return; }
+    adminBusy = true;
+    adminNotice = null;
+    renderAdminSection(authState());
+    try {
+      var data = await callAdminApi({ action: 'lookup', email: email });
+      adminLookupUser = data.user || null;
+      adminNotice = adminLookupUser ? { tone: 'info', text: 'Cuenta encontrada: ' + adminLookupUser.email } : null;
+    } catch (e) {
+      adminLookupUser = null;
+      adminNotice = { tone: 'err', text: (e && e.message) || 'No se encontró ese usuario.' };
+    } finally {
+      adminBusy = false;
+      renderAdminSection(authState());
+    }
+  }
+  async function adminExecuteChange(payload) {
+    adminBusy = true;
+    adminNotice = null;
+    renderAdminSection(authState());
+    try {
+      var data = await callAdminApi(payload);
+      adminLookupUser = data.user || adminLookupUser;
+      adminNotice = { tone: 'ok', text: data.message || 'Cambios aplicados.' };
+      toast(data.message || 'Actualizado');
+      renderAdminSection(authState());
+      var ov = await callAdminApi({ action: 'overview' }).catch(function () { return null; });
+      if (ov) adminOverview = ov;
+    } catch (e) {
+      adminNotice = { tone: 'err', text: (e && e.message) || 'No se pudo actualizar la suscripción.' };
+      toast(adminNotice.text);
+    } finally {
+      adminBusy = false;
+      renderAdminSection(authState());
     }
   }
 
@@ -6093,6 +6454,60 @@ window.PRO_PAYMENT_CONFIG = {
       }
       var repBtn = e.target.closest ? e.target.closest('[data-rep-period]') : null;
       if (repBtn) { reportPeriod = repBtn.getAttribute('data-rep-period'); renderReports(); return; }
+      var adAct = e.target.closest ? e.target.closest('[data-admin-act]') : null;
+      if (adAct) {
+        adminExecuteChange({
+          action: 'activate',
+          uid: adAct.getAttribute('data-admin-uid') || '',
+          email: adAct.getAttribute('data-admin-email') || '',
+          plan: adAct.getAttribute('data-admin-act') || 'monthly',
+          days: adAct.getAttribute('data-admin-days') ? Number(adAct.getAttribute('data-admin-days')) : undefined,
+          note: String(($('adminNote') && $('adminNote').value) || '').trim() || (adAct.getAttribute('data-admin-days') === '30' ? 'Regalo 1 mes' : 'Activado por admin')
+        });
+        return;
+      }
+      var adDeact = e.target.closest ? e.target.closest('[data-admin-deact]') : null;
+      if (adDeact) {
+        adminExecuteChange({
+          action: 'deactivate',
+          uid: adDeact.getAttribute('data-admin-uid') || '',
+          email: adDeact.getAttribute('data-admin-email') || '',
+          note: String(($('adminNote') && $('adminNote').value) || '').trim() || 'Desactivado por admin'
+        });
+        return;
+      }
+    });
+
+    var bAdRef = $('btnAdminRefresh'); if (bAdRef) bAdRef.addEventListener('click', function () { loadAdminOverview(false); });
+    var bAdLkp = $('btnAdminLookup'); if (bAdLkp) bAdLkp.addEventListener('click', adminLookupFlow);
+    var adFilt = $('adminTableFilter'); if (adFilt) adFilt.addEventListener('input', function () { renderAdminSection(authState()); });
+    var bAdAct = $('btnAdminActivate'); if (bAdAct) bAdAct.addEventListener('click', function () {
+      var email = String(($('adminSearchEmail') && $('adminSearchEmail').value) || '').trim();
+      var uid = (adminLookupUser && email.toLowerCase() === String(adminLookupUser.email || '').toLowerCase()) ? adminLookupUser.uid : '';
+      if (!email && !uid) { toast('Escribe el correo de la cuenta a activar'); return; }
+      var planId = ($('adminPlanSelect') && $('adminPlanSelect').value) || 'monthly';
+      var rawDays = String(($('adminCustomDays') && $('adminCustomDays').value) || '').trim();
+      var note = String(($('adminNote') && $('adminNote').value) || '').trim();
+      adminExecuteChange({
+        action: 'activate',
+        uid: uid || undefined,
+        email: email,
+        plan: planId,
+        days: rawDays ? Number(rawDays) : undefined,
+        note: note || 'Activado desde panel admin'
+      });
+    });
+    var bAdDeact = $('btnAdminDeactivate'); if (bAdDeact) bAdDeact.addEventListener('click', function () {
+      var email = String(($('adminSearchEmail') && $('adminSearchEmail').value) || '').trim();
+      var uid = (adminLookupUser && email.toLowerCase() === String(adminLookupUser.email || '').toLowerCase()) ? adminLookupUser.uid : '';
+      if (!email && !uid) { toast('Escribe el correo de la cuenta a desactivar'); return; }
+      var note = String(($('adminNote') && $('adminNote').value) || '').trim();
+      adminExecuteChange({
+        action: 'deactivate',
+        uid: uid || undefined,
+        email: email,
+        note: note || 'Desactivado desde panel admin'
+      });
     });
 
     var cgm = $('btnCloseGateModal'); if (cgm) cgm.addEventListener('click', closeGateModal);
@@ -6166,6 +6581,10 @@ window.PRO_PAYMENT_CONFIG = {
     if (tabId === 'pro') {
       renderPlansPage();
       if (!remotePayConfig) loadRemotePayConfig();
+      var st = authState();
+      if (isAdminUser(st) && (!adminOverview || adminLoadedUid !== (st.user && st.user.uid))) {
+        loadAdminOverview(true);
+      }
     }
     else if (tabId === 'lote') syncLoteDefaultsFromCalc();
     else if (tabId === 'hist') renderReports();
@@ -6256,7 +6675,7 @@ window.PRO_PAYMENT_CONFIG = {
   function getBridgeState() {
     return {
       firebaseOn: firebaseOn,
-      user: user ? { uid: user.uid, email: user.email || '', displayName: user.displayName || '' } : null,
+      user: user ? { uid: user.uid, email: user.email || '', displayName: user.displayName || '', emailVerified: !!user.emailVerified } : null,
       isPro: isProUser(),
       subState: currentSubState(),
       subCurrent: subCurrent,
@@ -7632,9 +8051,13 @@ window.PRO_PAYMENT_CONFIG = {
       if (!user || !db) throw new Error('Inicia sesión primero para registrar tu referencia de pago.');
       var refTxt = String((payload && payload.reference) || '').trim();
       if (refTxt.length < 4 || refTxt.length > 60) throw new Error('La referencia debe tener entre 4 y 60 caracteres.');
-      var planId = (payload && payload.plan) === 'annual' ? 'annual' : 'monthly';
+      var rawPlan = payload && payload.plan;
+      var planPrices = { monthly: 1.99, quarterly: 4.99, semiannual: 7.99, annual: 15.99 };
+      var planId = Object.prototype.hasOwnProperty.call(planPrices, rawPlan) ? rawPlan : 'monthly';
       var method = (payload && payload.method) === 'usdt' ? 'usdt' : 'pago_movil';
-      var amountUsd = planId === 'annual' ? 15 : 1.99;
+      var amountUsd = (window.ProCore && window.ProCore.PLANS && window.ProCore.PLANS[planId])
+        ? window.ProCore.PLANS[planId].usd
+        : planPrices[planId];
       var docData = {
         v: 1,
         plan: planId,

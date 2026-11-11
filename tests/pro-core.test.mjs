@@ -5,26 +5,39 @@ import '../pro-core.js';
 const C = globalThis.ProCore;
 const NOW = new Date('2026-11-11T16:00:00Z'); // 12:00 en Caracas
 
-test('plan anual ahorra 37% frente a 12 x $1,99', () => {
+test('planes Mensual $1,99, Trimestral $4,99, 6 Meses $7,99 y Anual $15,99 + admins', () => {
   assert.equal(C.PLANS.monthly.usd, 1.99);
-  assert.equal(C.PLANS.annual.usd, 15);
+  assert.equal(C.PLANS.quarterly.usd, 4.99);
+  assert.equal(C.PLANS.semiannual.usd, 7.99);
+  assert.equal(C.PLANS.annual.usd, 15.99);
   assert.equal(Math.round(12 * C.PLANS.monthly.usd * 100) / 100, 23.88);
-  assert.equal(C.annualSavingsPct(), 37);
+  assert.equal(C.planSavingsPct('quarterly'), 16);
+  assert.equal(C.planSavingsPct('semiannual'), 33);
+  assert.equal(C.annualSavingsPct(), 33);
+  assert.equal(C.isAdminEmail('LAYANKRACH@GMAIL.COM'), true);
+  assert.equal(C.isAdminEmail('soporterefillstore@gmail.com'), true);
+  assert.equal(C.isAdminEmail('cliente@gmail.com'), false);
 });
 
 test('precios de plan en Bs al cambio del día', () => {
   const m = C.planPrice('monthly', 901.62);
+  const q = C.planPrice('quarterly', 901.62);
+  const s = C.planPrice('semiannual', 901.62);
   const a = C.planPrice('annual', 901.62);
   assert.equal(m.usd, 1.99);
   assert.equal(m.bs, 1794.22);   // 1,99 × 901,62
-  assert.equal(a.bs, 13524.3);   // 15 × 901,62
+  assert.equal(q.bs, 4499.08);   // 4,99 × 901,62
+  assert.equal(s.bs, 7203.94);   // 7,99 × 901,62
+  assert.equal(a.bs, 14416.9);   // 15,99 × 901,62
   assert.equal(C.planPrice('monthly', 0).bs, null);
 });
 
-test('suscripción: solo es Pro si está activa y no venció', () => {
+test('suscripción: solo es Pro si está activa y no venció (todos los planes válidos)', () => {
   const active = { plan: 'monthly', status: 'active', startDate: '2026-11-01T00:00:00Z', endDate: '2026-12-01T00:00:00Z' };
   assert.equal(C.subscriptionState(active, NOW).isPro, true);
   assert.equal(C.subscriptionState(active, NOW).status, 'pro');
+  assert.equal(C.subscriptionState({ plan: 'quarterly', status: 'active', endDate: '2027-02-01T00:00:00Z' }, NOW).isPro, true);
+  assert.equal(C.subscriptionState({ plan: 'semiannual', status: 'active', endDate: '2027-05-01T00:00:00Z' }, NOW).isPro, true);
   assert.equal(C.subscriptionState(active, new Date('2026-12-02T00:00:00Z')).isPro, false);
   assert.equal(C.subscriptionState(active, new Date('2026-12-02T00:00:00Z')).status, 'expired');
   assert.equal(C.subscriptionState(null, NOW).isPro, false);
@@ -41,6 +54,8 @@ test('suscripción: solo es Pro si está activa y no venció', () => {
 
 test('vencimientos de planes', () => {
   assert.equal(C.computeEndDate('2026-11-11T00:00:00.000Z', 'monthly'), '2026-12-11T00:00:00.000Z');
+  assert.equal(C.computeEndDate('2026-11-11T00:00:00.000Z', 'quarterly'), '2027-02-11T00:00:00.000Z');
+  assert.equal(C.computeEndDate('2026-11-11T00:00:00.000Z', 'semiannual'), '2027-05-11T00:00:00.000Z');
   assert.equal(C.computeEndDate('2026-11-11T00:00:00.000Z', 'annual'), '2027-11-11T00:00:00.000Z');
   assert.equal(C.computeEndDate('2026-01-31T00:00:00.000Z', 'monthly'), '2026-02-28T00:00:00.000Z');
 });

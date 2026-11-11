@@ -9,7 +9,8 @@ window.PRO_PAYMENT_CONFIG = {
     endpoints: {
       config: 'https://getpropaymentconfig-yqgkyclg5a-uc.a.run.app',
       checkout: 'https://createprocheckout-yqgkyclg5a-uc.a.run.app',
-      verify: 'https://verifypropayment-yqgkyclg5a-uc.a.run.app'
+      verify: 'https://verifypropayment-yqgkyclg5a-uc.a.run.app',
+      admin: 'https://adminmanagepro-yqgkyclg5a-uc.a.run.app'
     }
   },
   pagoMovil: {

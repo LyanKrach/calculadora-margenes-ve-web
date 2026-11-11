@@ -6,7 +6,7 @@
  *  - Lista de precios Imagen PNG (Canvas) y PDF con nombre del negocio
  *  - Reportes de ganancia (día/semana/mes/producto + Excel/PDF)
  *  - Gráfico 30 días BCV vs Paralelo + tasa de reposición + alertas
- *  - Página de Planes Pro ($1,99 mensual / $15 anual -37%) + Pago manual
+ *  - Página de Planes Pro ($1,99 mensual · $4,99 trimestral · $7,99 6 meses · $15,99 anual) + Admin
  */
 (function (root) {
   'use strict';
@@ -30,6 +30,11 @@
   var activeOrder = null;
   var payStatusMsg = null;
   var payVerifying = false;
+  var adminOverview = null;
+  var adminLookupUser = null;
+  var adminNotice = null;
+  var adminBusy = false;
+  var adminLoadedUid = '';
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (ch) {
@@ -69,7 +74,7 @@
     setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
   }
   function goToPlans(planOpt) {
-    if (planOpt === 'monthly' || planOpt === 'annual') {
+    if (planOpt && C.PLANS && Object.prototype.hasOwnProperty.call(C.PLANS, planOpt)) {
       selectedPlan = planOpt;
       renderPlansPage();
     }
@@ -95,7 +100,7 @@
     if (!st.user) {
       promptUpgrade((msg ? msg + ' ' : '') + 'Inicia sesión y activa un plan Pro para usar esta función.');
     } else {
-      promptUpgrade(msg || 'Desbloquea esta función activando el plan Pro ($1,99/mes o $15/año).');
+      promptUpgrade(msg || 'Desbloquea esta función activando un plan Pro (desde $1,99/mes).');
     }
     return false;
   }
@@ -129,19 +134,51 @@
     if (repBody) repBody.hidden = !st.isPro;
   }
 
+  function planLabelLong(planId) {
+    var map = {
+      monthly: 'Pro Mensual ($1,99 / 1 mes)',
+      quarterly: 'Pro Trimestral ($4,99 / 3 meses · ahorra 16%)',
+      semiannual: 'Pro 6 Meses ($7,99 / 6 meses · ahorra 33%)',
+      annual: 'Pro Anual ($15,99 / 12 meses · ahorra 33%)'
+    };
+    return map[planId] || map.monthly;
+  }
+  function planLabelShort(planId) {
+    var map = {
+      monthly: 'Mensual ($1,99)',
+      quarterly: 'Trimestral ($4,99)',
+      semiannual: '6 Meses ($7,99)',
+      annual: 'Anual ($15,99)'
+    };
+    return map[planId] || map.monthly;
+  }
+
   /* ===== Página de Planes Pro y Pago Manual ===== */
   function renderPlansPage() {
     var st = authState();
     var r = rates();
     var pMon = C.planPrice('monthly', r.bcvUsd);
+    var pQrt = C.planPrice('quarterly', r.bcvUsd);
+    var pSem = C.planPrice('semiannual', r.bcvUsd);
     var pAnn = C.planPrice('annual', r.bcvUsd);
-    var savePct = C.annualSavingsPct();
+    var saveQrt = C.planSavingsPct ? C.planSavingsPct('quarterly') : 16;
+    var saveSem = C.planSavingsPct ? C.planSavingsPct('semiannual') : 33;
+    var saveAnn = C.annualSavingsPct();
 
-    var mUsd = $('planMonthlyUsd'); if (mUsd) mUsd.textContent = '$' + C.fmt2(pMon.usd);
-    var mBs = $('planMonthlyBs'); if (mBs) mBs.textContent = pMon.bs ? ('≈ Bs ' + C.fmt2(pMon.bs) + ' al BCV (' + C.fmt2(pMon.rate) + ')') : 'Según BCV del día';
-    var aUsd = $('planAnnualUsd'); if (aUsd) aUsd.textContent = '$' + C.fmt0(pAnn.usd);
-    var aBs = $('planAnnualBs'); if (aBs) aBs.textContent = pAnn.bs ? ('≈ Bs ' + C.fmt2(pAnn.bs) + ' al BCV (' + C.fmt2(pAnn.rate) + ')') : 'Según BCV del día';
-    var badgeSave = $('planAnnualSavings'); if (badgeSave) badgeSave.textContent = 'Ahorra ' + savePct + '%';
+    var mUsd = $('planMonthlyUsd'); if (mUsd && pMon) mUsd.textContent = '$' + C.fmt2(pMon.usd);
+    var mBs = $('planMonthlyBs'); if (mBs && pMon) mBs.textContent = pMon.bs ? ('≈ Bs ' + C.fmt2(pMon.bs) + ' al BCV (' + C.fmt2(pMon.rate) + ')') : 'Según BCV del día';
+
+    var qUsd = $('planQuarterlyUsd'); if (qUsd && pQrt) qUsd.textContent = '$' + C.fmt2(pQrt.usd);
+    var qBs = $('planQuarterlyBs'); if (qBs && pQrt) qBs.textContent = pQrt.bs ? ('≈ Bs ' + C.fmt2(pQrt.bs) + ' al BCV (' + C.fmt2(pQrt.rate) + ')') : 'Según BCV del día';
+    var qSav = $('planQuarterlySavings'); if (qSav) qSav.textContent = 'Ahorra ' + saveQrt + '%';
+
+    var sUsd = $('planSemiannualUsd'); if (sUsd && pSem) sUsd.textContent = '$' + C.fmt2(pSem.usd);
+    var sBs = $('planSemiannualBs'); if (sBs && pSem) sBs.textContent = pSem.bs ? ('≈ Bs ' + C.fmt2(pSem.bs) + ' al BCV (' + C.fmt2(pSem.rate) + ')') : 'Según BCV del día';
+    var sSav = $('planSemiannualSavings'); if (sSav) sSav.textContent = 'Ahorra ' + saveSem + '%';
+
+    var aUsd = $('planAnnualUsd'); if (aUsd && pAnn) aUsd.textContent = '$' + C.fmt2(pAnn.usd);
+    var aBs = $('planAnnualBs'); if (aBs && pAnn) aBs.textContent = pAnn.bs ? ('≈ Bs ' + C.fmt2(pAnn.bs) + ' al BCV (' + C.fmt2(pAnn.rate) + ')') : 'Según BCV del día';
+    var badgeSave = $('planAnnualSavings'); if (badgeSave) badgeSave.textContent = 'Ahorra ' + saveAnn + '%';
 
     // Estado actual de cuenta/suscripción
     var statusCard = $('proAccountStatusCard');
@@ -151,8 +188,11 @@
         var bl = $('btnProLoginNow');
         if (bl) bl.addEventListener('click', function () { var b = bridge(); if (b) b.openAuth(); });
       } else if (st.isPro) {
-        var planLbl = st.subState.plan === 'annual' ? 'Pro Anual ($15/año)' : 'Pro Mensual ($1,99/mes)';
-        statusCard.innerHTML = '<div><span class="pro-inline-tag">ACTIVO</span> <b>' + esc(planLbl) + '</b><p class="sub" style="margin:6px 0 0">Inicio: <b>' + esc(fmtDateShort(st.subState.startDate)) + '</b> · Vence: <b>' + esc(fmtDateShort(st.subState.endDate)) + '</b> (' + st.subState.daysLeft + ' días restantes). Al vencer vuelve automáticamente a Gratis si no se renueva.</p></div>';
+        var planLbl = planLabelShort(st.subState.plan);
+        var provLbl = (st.subCurrent && st.subCurrent.provider === 'admin_owner')
+          ? ' · Cuenta propietaria'
+          : (st.subCurrent && st.subCurrent.note ? (' · ' + esc(st.subCurrent.note)) : '');
+        statusCard.innerHTML = '<div><span class="pro-inline-tag">ACTIVO</span> <b>Pro ' + esc(planLbl) + '</b><span class="hint">' + provLbl + '</span><p class="sub" style="margin:6px 0 0">Inicio: <b>' + esc(fmtDateShort(st.subState.startDate)) + '</b> · Vence: <b>' + esc(fmtDateShort(st.subState.endDate)) + '</b> (' + st.subState.daysLeft + ' días restantes). Al vencer vuelve automáticamente a Gratis si no se renueva.</p></div>';
       } else if (st.subState.status === 'expired') {
         statusCard.innerHTML = '<div><span class="pro-warn-tag">VENCIDO</span> <b>Tu suscripción Pro venció el ' + esc(fmtDateShort(st.subState.endDate)) + '</b><p class="sub" style="margin:4px 0 0">Tu cuenta volvió al plan Gratis (tus datos se conservan, pero aplican los límites de 10 productos y 30 días de historial). Renueva abajo cuando quieras.</p></div>';
       } else {
@@ -168,7 +208,7 @@
       var showPend = pend && pend.status === 'pending' && (!st.isPro || String(pend.requestedAt || '') > String(curAt));
       pendBox.hidden = !showPend;
       if (showPend) {
-        var pl = pend.plan === 'annual' ? 'Anual ($15,00)' : 'Mensual ($1,99)';
+        var pl = planLabelShort(pend.plan);
         var met = pend.method === 'usdt' ? 'USDT' : 'Pago Móvil (BDV)';
         pendBox.innerHTML = '⏳ <b>Pago pendiente de verificación manual:</b> ' + esc(pl) + ' vía ' + esc(met) + ' · Referencia: <code>' + esc(pend.reference) + '</code> · Enviado: ' + esc(fmtDateShort(pend.requestedAt)) + '. El administrador activará tu Pro al verificar la referencia.';
       }
@@ -185,12 +225,12 @@
     var price = C.planPrice(selectedPlan, r.bcvUsd);
     var sum = $('payTotalSummary');
     if (sum && price) {
-      var pName = selectedPlan === 'annual' ? 'Plan Pro Anual (12 meses · ahorra 37%)' : 'Plan Pro Mensual (1 mes)';
-      sum.innerHTML = '<b>' + pName + ':</b> $' + C.fmt2(price.usdt) + ' USDT' + (price.bs ? ' · ≈ <b>Bs ' + C.fmt2(price.bs) + '</b> (tasa BCV ' + C.fmt2(price.rate) + ')' : '');
+      sum.innerHTML = '<b>' + esc(planLabelLong(selectedPlan)) + ':</b> $' + C.fmt2(price.usdt) + ' USDT' + (price.bs ? ' · ≈ <b>Bs ' + C.fmt2(price.bs) + '</b> (tasa BCV ' + C.fmt2(price.rate) + ')' : '');
     }
 
     renderPaymentInstructions();
     renderSupportBox(st);
+    renderAdminSection(st);
   }
 
   function apiEndpoints() {
@@ -199,7 +239,8 @@
     return {
       config: ep.config || 'https://getpropaymentconfig-yqgkyclg5a-uc.a.run.app',
       checkout: ep.checkout || 'https://createprocheckout-yqgkyclg5a-uc.a.run.app',
-      verify: ep.verify || 'https://verifypropayment-yqgkyclg5a-uc.a.run.app'
+      verify: ep.verify || 'https://verifypropayment-yqgkyclg5a-uc.a.run.app',
+      admin: ep.admin || 'https://adminmanagepro-yqgkyclg5a-uc.a.run.app'
     };
   }
   function mergedPaymentConfig() {
@@ -568,6 +609,157 @@
         btn.textContent = mInfo.autoVerify ? 'Verificar pago y activar Pro' : 'Enviar referencia para validación manual';
       }
       renderPlansPage();
+    }
+  }
+
+  /* ===== Panel Administrador Pro (solo owners autorizados) ===== */
+  function isAdminUser(st) {
+    return !!(st && st.user && typeof C.isAdminEmail === 'function' && C.isAdminEmail(st.user.email));
+  }
+  function renderAdminNotice() {
+    var box = $('adminNoticeBox');
+    if (!box) return;
+    if (!adminNotice || !adminNotice.text) {
+      box.hidden = true;
+      box.className = 'pay-status-banner';
+      box.textContent = '';
+      return;
+    }
+    box.hidden = false;
+    box.className = 'pay-status-banner ' + (adminNotice.tone || 'info');
+    box.textContent = adminNotice.text;
+  }
+  function renderAdminUserHtml(u) {
+    var pillCls = u.isPro ? 'pro' : 'free';
+    var pillTxt = u.isPro ? ('PRO ' + planLabelShort(u.plan) + ' · ' + u.daysLeft + 'd') : 'GRATIS';
+    var pendHtml = u.pending
+      ? ' <span class="admin-pill pend">Pendiente: ' + esc(u.pending.reference || u.pending.method) + '</span>'
+      : '';
+    var ownerHtml = u.isOwner ? ' <span class="admin-pill pro">PROPIETARIO</span>' : '';
+    var metaParts = [];
+    if (u.endDate && u.isPro) metaParts.push('Vence: ' + fmtDateShort(u.endDate));
+    if (u.note) metaParts.push('Nota: ' + u.note);
+    if (u.activatedBy) metaParts.push('Por: ' + u.activatedBy);
+    return '<div class="admin-user-row">'
+      + '<div>'
+      + '<div><b>' + esc(u.email || u.uid) + '</b> ' + (u.displayName ? '<span class="hint">(' + esc(u.displayName) + ')</span>' : '') + ' <span class="admin-pill ' + pillCls + '">' + esc(pillTxt) + '</span>' + ownerHtml + pendHtml + '</div>'
+      + '<div class="hint" style="margin-top:4px">' + esc(metaParts.join(' · ') || ('UID: ' + u.uid)) + '</div>'
+      + '</div>'
+      + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+      + '<button type="button" class="btn-mini accent" data-admin-act="monthly" data-admin-days="30" data-admin-uid="' + esc(u.uid) + '" data-admin-email="' + esc(u.email || '') + '">Regalar 1 mes</button>'
+      + '<button type="button" class="btn-mini" data-admin-act="annual" data-admin-uid="' + esc(u.uid) + '" data-admin-email="' + esc(u.email || '') + '">Activar 1 año</button>'
+      + (u.isPro ? '<button type="button" class="btn-mini" data-admin-deact="1" data-admin-uid="' + esc(u.uid) + '" data-admin-email="' + esc(u.email || '') + '">Desactivar</button>' : '')
+      + '</div>'
+      + '</div>';
+  }
+  function renderAdminSection(st) {
+    var sec = $('adminPanelSection');
+    if (!sec) return;
+    var ok = isAdminUser(st);
+    sec.hidden = !ok;
+    if (!ok) {
+      adminOverview = null;
+      adminLookupUser = null;
+      adminNotice = null;
+      adminLoadedUid = '';
+      return;
+    }
+    var statsBadge = $('adminStatsBadge');
+    if (statsBadge) {
+      if (adminOverview && adminOverview.stats) {
+        statsBadge.textContent = adminOverview.stats.totalUsers + ' cuentas · ' + adminOverview.stats.activePro + ' Pro · ' + adminOverview.stats.pendingManual + ' pendientes';
+      } else {
+        statsBadge.textContent = adminBusy ? 'Cargando…' : 'Listo';
+      }
+    }
+    renderAdminNotice();
+    var preview = $('adminLookupPreview');
+    if (preview) {
+      if (adminLookupUser) {
+        preview.hidden = false;
+        preview.innerHTML = renderAdminUserHtml(adminLookupUser);
+      } else {
+        preview.hidden = true;
+        preview.innerHTML = '';
+      }
+    }
+    var listEl = $('adminUsersList');
+    if (listEl) {
+      var filter = String(($('adminTableFilter') && $('adminTableFilter').value) || '').trim().toLowerCase();
+      var rows = (adminOverview && Array.isArray(adminOverview.users)) ? adminOverview.users : [];
+      if (filter) {
+        rows = rows.filter(function (u) {
+          return String(u.email || '').toLowerCase().indexOf(filter) !== -1
+            || String(u.displayName || '').toLowerCase().indexOf(filter) !== -1;
+        });
+      }
+      if (!rows.length) {
+        listEl.innerHTML = '<p class="hint">' + (adminOverview ? 'No hay cuentas que coincidan con el filtro.' : 'Pulsa «Actualizar lista» para cargar las cuentas registradas.') + '</p>';
+      } else {
+        listEl.innerHTML = rows.slice(0, 60).map(renderAdminUserHtml).join('');
+      }
+    }
+  }
+  async function callAdminApi(payload) {
+    var out = await callAuthedJson(apiEndpoints().admin, payload, 25000);
+    if (!out.data || !out.data.ok) {
+      throw new Error((out.data && out.data.message) || ('Error del panel admin (HTTP ' + out.status + ')'));
+    }
+    return out.data;
+  }
+  async function loadAdminOverview(quiet) {
+    var st = authState();
+    if (!isAdminUser(st) || adminBusy) return;
+    adminBusy = true;
+    adminLoadedUid = st.user ? st.user.uid : '';
+    renderAdminSection(st);
+    try {
+      var data = await callAdminApi({ action: 'overview' });
+      adminOverview = data;
+      if (!quiet) adminNotice = null;
+    } catch (e) {
+      adminNotice = { tone: 'err', text: (e && e.message) || 'No se pudo cargar el panel administrador.' };
+    } finally {
+      adminBusy = false;
+      renderAdminSection(authState());
+    }
+  }
+  async function adminLookupFlow() {
+    var email = String(($('adminSearchEmail') && $('adminSearchEmail').value) || '').trim();
+    if (!email || email.indexOf('@') === -1) { toast('Escribe un correo válido para buscar'); return; }
+    adminBusy = true;
+    adminNotice = null;
+    renderAdminSection(authState());
+    try {
+      var data = await callAdminApi({ action: 'lookup', email: email });
+      adminLookupUser = data.user || null;
+      adminNotice = adminLookupUser ? { tone: 'info', text: 'Cuenta encontrada: ' + adminLookupUser.email } : null;
+    } catch (e) {
+      adminLookupUser = null;
+      adminNotice = { tone: 'err', text: (e && e.message) || 'No se encontró ese usuario.' };
+    } finally {
+      adminBusy = false;
+      renderAdminSection(authState());
+    }
+  }
+  async function adminExecuteChange(payload) {
+    adminBusy = true;
+    adminNotice = null;
+    renderAdminSection(authState());
+    try {
+      var data = await callAdminApi(payload);
+      adminLookupUser = data.user || adminLookupUser;
+      adminNotice = { tone: 'ok', text: data.message || 'Cambios aplicados.' };
+      toast(data.message || 'Actualizado');
+      renderAdminSection(authState());
+      var ov = await callAdminApi({ action: 'overview' }).catch(function () { return null; });
+      if (ov) adminOverview = ov;
+    } catch (e) {
+      adminNotice = { tone: 'err', text: (e && e.message) || 'No se pudo actualizar la suscripción.' };
+      toast(adminNotice.text);
+    } finally {
+      adminBusy = false;
+      renderAdminSection(authState());
     }
   }
 
@@ -1095,6 +1287,60 @@
       }
       var repBtn = e.target.closest ? e.target.closest('[data-rep-period]') : null;
       if (repBtn) { reportPeriod = repBtn.getAttribute('data-rep-period'); renderReports(); return; }
+      var adAct = e.target.closest ? e.target.closest('[data-admin-act]') : null;
+      if (adAct) {
+        adminExecuteChange({
+          action: 'activate',
+          uid: adAct.getAttribute('data-admin-uid') || '',
+          email: adAct.getAttribute('data-admin-email') || '',
+          plan: adAct.getAttribute('data-admin-act') || 'monthly',
+          days: adAct.getAttribute('data-admin-days') ? Number(adAct.getAttribute('data-admin-days')) : undefined,
+          note: String(($('adminNote') && $('adminNote').value) || '').trim() || (adAct.getAttribute('data-admin-days') === '30' ? 'Regalo 1 mes' : 'Activado por admin')
+        });
+        return;
+      }
+      var adDeact = e.target.closest ? e.target.closest('[data-admin-deact]') : null;
+      if (adDeact) {
+        adminExecuteChange({
+          action: 'deactivate',
+          uid: adDeact.getAttribute('data-admin-uid') || '',
+          email: adDeact.getAttribute('data-admin-email') || '',
+          note: String(($('adminNote') && $('adminNote').value) || '').trim() || 'Desactivado por admin'
+        });
+        return;
+      }
+    });
+
+    var bAdRef = $('btnAdminRefresh'); if (bAdRef) bAdRef.addEventListener('click', function () { loadAdminOverview(false); });
+    var bAdLkp = $('btnAdminLookup'); if (bAdLkp) bAdLkp.addEventListener('click', adminLookupFlow);
+    var adFilt = $('adminTableFilter'); if (adFilt) adFilt.addEventListener('input', function () { renderAdminSection(authState()); });
+    var bAdAct = $('btnAdminActivate'); if (bAdAct) bAdAct.addEventListener('click', function () {
+      var email = String(($('adminSearchEmail') && $('adminSearchEmail').value) || '').trim();
+      var uid = (adminLookupUser && email.toLowerCase() === String(adminLookupUser.email || '').toLowerCase()) ? adminLookupUser.uid : '';
+      if (!email && !uid) { toast('Escribe el correo de la cuenta a activar'); return; }
+      var planId = ($('adminPlanSelect') && $('adminPlanSelect').value) || 'monthly';
+      var rawDays = String(($('adminCustomDays') && $('adminCustomDays').value) || '').trim();
+      var note = String(($('adminNote') && $('adminNote').value) || '').trim();
+      adminExecuteChange({
+        action: 'activate',
+        uid: uid || undefined,
+        email: email,
+        plan: planId,
+        days: rawDays ? Number(rawDays) : undefined,
+        note: note || 'Activado desde panel admin'
+      });
+    });
+    var bAdDeact = $('btnAdminDeactivate'); if (bAdDeact) bAdDeact.addEventListener('click', function () {
+      var email = String(($('adminSearchEmail') && $('adminSearchEmail').value) || '').trim();
+      var uid = (adminLookupUser && email.toLowerCase() === String(adminLookupUser.email || '').toLowerCase()) ? adminLookupUser.uid : '';
+      if (!email && !uid) { toast('Escribe el correo de la cuenta a desactivar'); return; }
+      var note = String(($('adminNote') && $('adminNote').value) || '').trim();
+      adminExecuteChange({
+        action: 'deactivate',
+        uid: uid || undefined,
+        email: email,
+        note: note || 'Desactivado desde panel admin'
+      });
     });
 
     var cgm = $('btnCloseGateModal'); if (cgm) cgm.addEventListener('click', closeGateModal);
@@ -1168,6 +1414,10 @@
     if (tabId === 'pro') {
       renderPlansPage();
       if (!remotePayConfig) loadRemotePayConfig();
+      var st = authState();
+      if (isAdminUser(st) && (!adminOverview || adminLoadedUid !== (st.user && st.user.uid))) {
+        loadAdminOverview(true);
+      }
     }
     else if (tabId === 'lote') syncLoteDefaultsFromCalc();
     else if (tabId === 'hist') renderReports();
