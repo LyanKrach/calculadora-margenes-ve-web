@@ -5184,6 +5184,7 @@ window.PRO_PAYMENT_CONFIG = {
 
   var SNAP_KEY = 'cmv_reval_snapshot_v1';
   var HIST_CACHE_KEY = 'cmv_rates_hist30_v1';
+  var ACTIVE_ORDER_KEY = 'cmv_pro_active_order_v1';
   var selectedPlan = 'annual';
   var selectedMethod = 'pago_movil';
   var reportPeriod = 'day';
@@ -5195,6 +5196,8 @@ window.PRO_PAYMENT_CONFIG = {
   var remotePayConfig = null;
   var remotePayLoading = false;
   var activeOrder = null;
+  var restoredOrderUid = '';
+  var handledGraciasParam = false;
   var payStatusMsg = null;
   var payVerifying = false;
   var adminOverview = null;
@@ -5457,6 +5460,33 @@ window.PRO_PAYMENT_CONFIG = {
       remotePayLoading = false;
     }
   }
+  function saveStoredOrder(ord, uid) {
+    try {
+      var targetUid = uid || (authState().user && authState().user.uid) || '';
+      if (!targetUid) return;
+      if (!ord || ord.status === 'paid') {
+        localStorage.removeItem(ACTIVE_ORDER_KEY + '_' + targetUid);
+      } else {
+        localStorage.setItem(ACTIVE_ORDER_KEY + '_' + targetUid, JSON.stringify(ord));
+      }
+    } catch (e) {}
+  }
+  function loadStoredOrder(uid) {
+    try {
+      var targetUid = uid || (authState().user && authState().user.uid) || '';
+      if (!targetUid) return null;
+      var raw = localStorage.getItem(ACTIVE_ORDER_KEY + '_' + targetUid);
+      if (!raw) return null;
+      var ord = JSON.parse(raw);
+      if (!ord || !ord.id || ord.status === 'paid') return null;
+      var exp = ord.expiresAt ? Date.parse(ord.expiresAt) : 0;
+      if (exp && !(Number(ord.paidAmount) > 0) && exp < Date.now()) {
+        localStorage.removeItem(ACTIVE_ORDER_KEY + '_' + targetUid);
+        return null;
+      }
+      return ord;
+    } catch (e) { return null; }
+  }
   function matchingActiveOrder() {
     if (!activeOrder) return null;
     if (activeOrder.plan !== selectedPlan || activeOrder.method !== selectedMethod) return null;
@@ -5482,12 +5512,18 @@ window.PRO_PAYMENT_CONFIG = {
     var partialLine = paid > 0
       ? '<div style="margin-top:4px;color:var(--accent)">✓ Abonado: <b>' + (isBs ? 'Bs ' : '$') + C.fmt2(paid) + '</b> · Resta por transferir: <b>' + (isBs ? 'Bs ' : '$') + C.fmt2(rem) + '</b></div>'
       : '';
+    var linkLine = ord.paymentLinkUrl
+      ? '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">'
+        + '<a class="btn-mini accent" href="' + esc(ord.paymentLinkUrl) + '" target="_blank" rel="noopener noreferrer">⚡ Pagar con enlace Pabilo</a>'
+        + '<button type="button" class="btn-mini" data-verify-link-order="' + esc(ord.id) + '">Ya pagué con el enlace · Verificar</button>'
+        + '</div>'
+      : '';
     box.hidden = false;
     box.innerHTML = '<div><b>Orden activa:</b> <code>' + esc(ord.id) + '</code>' + (expStr ? ' <span class="hint">· Tasa BCV congelada hasta las ' + esc(expStr) + '</span>' : '') + '</div>'
       + '<div class="pay-order-amount">'
       + '<span>Monto exacto a transferir: <strong style="font-size:16px">' + (isBs ? ('Bs ' + C.fmt2(rem)) : ('$' + C.fmt2(rem) + ' USDT')) + '</strong>' + (isBs ? ' <span class="hint">(BCV ' + C.fmt2(ord.rateBs) + ')</span>' : '') + '</span>'
       + '<button type="button" class="btn-mini accent" data-copy-txt="' + esc(copyVal) + '">Copiar monto exacto</button>'
-      + '</div>' + partialLine;
+      + '</div>' + partialLine + linkLine;
   }
   function renderPayStatusBanner() {
     var banner = $('payStatusBanner');
@@ -5622,6 +5658,7 @@ window.PRO_PAYMENT_CONFIG = {
         throw new Error((out.data && out.data.message) || 'No se pudo generar la orden de pago.');
       }
       activeOrder = out.data.order;
+      saveStoredOrder(activeOrder, st.user && st.user.uid);
       if (out.data.paymentConfig) {
         remotePayConfig = Object.assign({}, remotePayConfig || {}, {
           ok: true,
@@ -5728,49 +5765,7 @@ window.PRO_PAYMENT_CONFIG = {
         orderId: ord.id,
         reference: cleanRef
       }, 55000);
-      var data = res.data || {};
-
-      if (data.ok && (data.code === 'ACTIVATED' || data.code === 'ALREADY_ACTIVATED')) {
-        if (b && typeof b.applyActivatedSubscription === 'function' && data.subscription) {
-          b.applyActivatedSubscription(data.subscription);
-        }
-        activeOrder = null;
-        if (refEl) refEl.value = '';
-        payStatusMsg = {
-          tone: 'ok',
-          html: '✅ <b>¡Suscripción Pro activada al instante!</b> Ya tienes todas las funciones Pro desbloqueadas en la web y en tu app Android.'
-        };
-        toast('¡Suscripción Pro activada!');
-      } else if (data.code === 'PARTIAL_PAYMENT') {
-        activeOrder = Object.assign({}, ord, {
-          paidAmount: data.paidAmount,
-          remainingAmount: data.remainingAmount,
-          expiresAt: data.expiresAt || ord.expiresAt
-        });
-        if (refEl) refEl.value = '';
-        var copyRem = Number(data.remainingAmount || 0).toFixed(2);
-        payStatusMsg = {
-          tone: 'warn',
-          html: '⚠ <b>Pago parcial acreditado:</b> ' + esc(data.message)
-            + ' <button type="button" class="btn-mini accent" data-copy-txt="' + esc(copyRem) + '">Copiar diferencia</button>'
-        };
-        toast('Pago parcial recibido · falta la diferencia');
-      } else if (data.code === 'AUTO_VERIFY_UNAVAILABLE' || data.fallbackManual) {
-        var btnManual = $('btnSubmitManualFallback');
-        if (btnManual) btnManual.hidden = false;
-        payStatusMsg = {
-          tone: 'warn',
-          html: '📝 ' + esc(data.message || 'Verificación automática no disponible en este momento.') + ' Puedes usar el botón «Enviar para validación manual».'
-        };
-      } else if (data.code === 'ORDER_EXPIRED') {
-        activeOrder = null;
-        payStatusMsg = { tone: 'warn', html: '⌛ ' + esc(data.message || 'La orden expiró. Pulsa verificar de nuevo para generar una con la tasa actual.') };
-      } else {
-        payStatusMsg = {
-          tone: data.retryable ? 'warn' : 'err',
-          html: esc(data.message || 'No se pudo verificar el pago. Revisa tu referencia e intenta de nuevo.')
-        };
-      }
+      applyVerificationOutcome(res, st, ord, refEl, b);
     } catch (e) {
       var isTimeout = e && e.name === 'AbortError';
       if (!isTimeout) {
@@ -5790,6 +5785,165 @@ window.PRO_PAYMENT_CONFIG = {
         btn.textContent = mInfo.autoVerify ? 'Verificar pago y activar Pro' : 'Enviar referencia para validación manual';
       }
       renderPlansPage();
+    }
+  }
+
+  function applyVerificationOutcome(res, st, ord, refEl, b) {
+    var data = (res && res.data) || {};
+    var uid = st && st.user && st.user.uid;
+    if (data.ok && (data.code === 'ACTIVATED' || data.code === 'ALREADY_ACTIVATED')) {
+      if (b && typeof b.applyActivatedSubscription === 'function' && data.subscription) {
+        b.applyActivatedSubscription(data.subscription);
+      }
+      activeOrder = null;
+      saveStoredOrder(null, uid);
+      if (refEl) refEl.value = '';
+      payStatusMsg = {
+        tone: 'ok',
+        html: '✅ <b>¡Suscripción Pro activada al instante!</b> Ya tienes todas las funciones Pro desbloqueadas en la web y en tu app Android.'
+      };
+      toast('¡Suscripción Pro activada!');
+    } else if (data.code === 'PARTIAL_PAYMENT') {
+      activeOrder = Object.assign({}, ord, {
+        paidAmount: data.paidAmount,
+        remainingAmount: data.remainingAmount,
+        expiresAt: data.expiresAt || ord.expiresAt
+      });
+      saveStoredOrder(activeOrder, uid);
+      if (refEl) refEl.value = '';
+      var copyRem = Number(data.remainingAmount || 0).toFixed(2);
+      payStatusMsg = {
+        tone: 'warn',
+        html: '⚠ <b>Pago parcial acreditado:</b> ' + esc(data.message)
+          + ' <button type="button" class="btn-mini accent" data-copy-txt="' + esc(copyRem) + '">Copiar diferencia</button>'
+      };
+      toast('Pago parcial recibido · falta la diferencia');
+    } else if (data.code === 'AUTO_VERIFY_UNAVAILABLE' || data.fallbackManual) {
+      var btnManual = $('btnSubmitManualFallback');
+      if (btnManual) btnManual.hidden = false;
+      payStatusMsg = {
+        tone: 'warn',
+        html: '📝 ' + esc(data.message || 'Verificación automática no disponible en este momento.') + ' Puedes usar el botón «Enviar para validación manual».'
+      };
+    } else if (data.code === 'ORDER_EXPIRED') {
+      activeOrder = null;
+      saveStoredOrder(null, uid);
+      payStatusMsg = { tone: 'warn', html: '⌛ ' + esc(data.message || 'La orden expiró. Pulsa verificar de nuevo para generar una con la tasa actual.') };
+    } else {
+      payStatusMsg = {
+        tone: data.retryable ? 'warn' : 'err',
+        html: esc(data.message || 'No se pudo verificar el pago. Revisa tu referencia e intenta de nuevo.')
+      };
+    }
+  }
+
+  async function verifyLinkOrderFlow(orderId) {
+    var st = authState();
+    var b = bridge();
+    if (!st.user) {
+      toast('Entra con tu cuenta para verificar tu pago');
+      if (b) b.openAuth(function () { if (root.setDashboardTab) root.setDashboardTab('pro'); });
+      return;
+    }
+    var targetOrderId = String(orderId || (activeOrder && activeOrder.id) || '').trim();
+    if (!targetOrderId || payVerifying) return;
+    payVerifying = true;
+    var linkBtn = document.querySelector('[data-verify-link-order="' + targetOrderId + '"]');
+    if (linkBtn) {
+      linkBtn.disabled = true;
+      linkBtn.textContent = 'Verificando enlace…';
+    }
+    payStatusMsg = {
+      tone: 'info',
+      html: '⏳ <b>Consultando estado de tu enlace Pabilo…</b> Un momento por favor.'
+    };
+    renderPayStatusBanner();
+    try {
+      var ord = (activeOrder && activeOrder.id === targetOrderId)
+        ? activeOrder
+        : { id: targetOrderId, plan: selectedPlan, method: selectedMethod, remainingAmount: 0 };
+      var res = await callAuthedJson(apiEndpoints().verify, {
+        orderId: targetOrderId
+      }, 55000);
+      applyVerificationOutcome(res, st, ord, $('payReference'), b);
+    } catch (e) {
+      payStatusMsg = {
+        tone: 'warn',
+        html: esc((e && e.message) || 'No pudimos consultar el enlace Pabilo en este momento.') + ' Puedes volver a intentar o ingresar tu referencia bancaria manualmente.'
+      };
+    } finally {
+      payVerifying = false;
+      renderPlansPage();
+    }
+  }
+
+  function restoreStoredOrderForUser(st) {
+    if (!st || !st.user) {
+      activeOrder = null;
+      restoredOrderUid = '';
+      return;
+    }
+    if (st.user.uid === restoredOrderUid) return;
+    restoredOrderUid = st.user.uid;
+    if (activeOrder && activeOrder.status !== 'paid') return;
+    var cached = loadStoredOrder(st.user.uid);
+    if (!cached) return;
+    activeOrder = cached;
+    if (cached.plan && C.PLANS && Object.prototype.hasOwnProperty.call(C.PLANS, cached.plan)) {
+      selectedPlan = cached.plan;
+    }
+    if (cached.method === 'pago_movil' || cached.method === 'usdt') {
+      selectedMethod = cached.method;
+    }
+  }
+
+  function checkGraciasRedirect(st) {
+    if (handledGraciasParam) return;
+    var pathname = (root.location && root.location.pathname) || '';
+    var search = (root.location && root.location.search) || '';
+    var isGracias = /\/gracias\/?$/i.test(pathname);
+    var qOrderId = '';
+    try {
+      qOrderId = new URLSearchParams(search).get('orderId') || '';
+    } catch (e) {}
+    if (!isGracias && !qOrderId) {
+      handledGraciasParam = true;
+      return;
+    }
+    if (root.setDashboardTab) root.setDashboardTab('pro');
+    if (!st || !st.user) {
+      if (st && st.firebaseOn === false) handledGraciasParam = true;
+      payStatusMsg = {
+        tone: 'info',
+        html: '⏳ Inicia sesión o espera a que cargue tu cuenta para confirmar automáticamente el pago de tu enlace Pabilo.'
+      };
+      renderPayStatusBanner();
+      return;
+    }
+    handledGraciasParam = true;
+    try {
+      if (root.history && typeof root.history.replaceState === 'function') {
+        root.history.replaceState(null, '', '/');
+      }
+    } catch (e) {}
+    var targetId = String(qOrderId || (activeOrder && activeOrder.id) || '').trim();
+    if (st.isPro) {
+      payStatusMsg = {
+        tone: 'ok',
+        html: '✅ <b>¡Tu suscripción Pro ya está activa!</b>'
+      };
+      renderPayStatusBanner();
+      toast('¡Suscripción Pro activa!');
+      return;
+    }
+    if (targetId) {
+      verifyLinkOrderFlow(targetId);
+    } else {
+      payStatusMsg = {
+        tone: 'info',
+        html: '⚡ Si ya pagaste en Pabilo, escribe tu referencia bancaria abajo y pulsa <b>«Verificar pago y activar Pro»</b>.'
+      };
+      renderPayStatusBanner();
     }
   }
 
@@ -6448,6 +6602,12 @@ window.PRO_PAYMENT_CONFIG = {
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(function () { toast('Copiado'); });
         return;
       }
+      var vl = e.target.closest ? e.target.closest('[data-verify-link-order]') : null;
+      if (vl) {
+        e.preventDefault();
+        verifyLinkOrderFlow(vl.getAttribute('data-verify-link-order'));
+        return;
+      }
       var pp = e.target.closest ? e.target.closest('[data-choose-plan]') : null;
       if (pp) {
         selectedPlan = pp.getAttribute('data-choose-plan') || 'annual';
@@ -6609,6 +6769,7 @@ window.PRO_PAYMENT_CONFIG = {
     promptUpgrade: promptUpgrade,
     goToPlans: goToPlans,
     onStateChange: function (st) {
+      restoreStoredOrderForUser(st);
       var bizIn = $('shareBusinessName');
       if (bizIn && document.activeElement !== bizIn && !bizIn.value && st.profileSettings && st.profileSettings.businessName) {
         bizIn.value = st.profileSettings.businessName;
@@ -6616,6 +6777,7 @@ window.PRO_PAYMENT_CONFIG = {
       renderHeaderAndLocks();
       syncAlertsForm(st);
       renderPlansPage();
+      checkGraciasRedirect(st);
       renderReports();
       if (st.isPro) {
         loadRateHistory30();
@@ -6630,8 +6792,10 @@ window.PRO_PAYMENT_CONFIG = {
   };
   root.ProUI = api;
   wire();
+  restoreStoredOrderForUser(authState());
   renderHeaderAndLocks();
   renderPlansPage();
+  checkGraciasRedirect(authState());
 })(window);
 
 </script>

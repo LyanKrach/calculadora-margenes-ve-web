@@ -204,6 +204,7 @@ function createHarness(authMockState = null) {
     JSON,
     Intl,
     URL: { createObjectURL: () => 'blob:x', revokeObjectURL: () => {} },
+    URLSearchParams: globalThis.URLSearchParams,
     Blob: class {},
     Uint8Array,
     TextEncoder,
@@ -614,4 +615,84 @@ test('Planes Pro: precios USD/Bs (4 planes), pago Pabilo/manual, Panel Admin y b
   byId.get('loteInput').value = 'Prueba 10';
   byId.get('btnCalcLote').click();
   assert.ok(byId.get('loteTableBody').innerHTML.includes('11.640'));
+});
+
+test('Pabilo Payment Link: persiste orden en localStorage y activa Pro con [data-verify-link-order]', async () => {
+  const { sandbox, byId, doc, setAuthState } = createHarness({
+    firebaseOn: true,
+    user: { uid: 'uLink', email: 'comprador@ejemplo.com', displayName: 'Comprador', emailVerified: true },
+    isPro: false,
+    subState: { isPro: false, status: 'free', daysLeft: 0 },
+    subCurrent: null,
+    subPending: null,
+    prodItems: [],
+    histItems: [],
+    profileSettings: { businessName: '' },
+    alertSettings: {},
+  });
+  const futureActivatedEnd = new Date(Date.now() + 30 * 86400000).toISOString();
+  const verifyBodies = [];
+  const flush = () => new Promise((r) => setTimeout(r, 0));
+
+  sandbox.__fetchImpl = async (url, init) => {
+    const body = init && init.body ? JSON.parse(init.body) : {};
+    const lowerUrl = String(url).toLowerCase();
+    if (lowerUrl.includes('createprocheckout')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          ok: true,
+          order: {
+            id: 'ord_link_1',
+            plan: body.plan || 'annual',
+            method: body.method || 'pago_movil',
+            currency: 'BS',
+            expectedTotal: 1794.22,
+            paidAmount: 0,
+            remainingAmount: 1794.22,
+            rateBs: 901.62,
+            paymentLinkId: 'plink_test_1',
+            paymentLinkUrl: 'https://pabilo.app/pay/plink_test_1',
+            expiresAt: new Date(Date.now() + 900000).toISOString(),
+          },
+        }),
+      };
+    }
+    if (lowerUrl.includes('verifypropayment')) {
+      verifyBodies.push(body);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          ok: true,
+          code: 'ACTIVATED',
+          subscription: { plan: 'monthly', status: 'active', endDate: futureActivatedEnd, startDate: new Date().toISOString() },
+        }),
+      };
+    }
+    return { ok: false, status: 404, json: async () => ({ ok: false }) };
+  };
+
+  setAuthState(sandbox.__margenesAuthBridge.getState());
+  byId.get('btnCreateOrder').click();
+  await flush();
+
+  const boxHtml = byId.get('payOrderBox').innerHTML;
+  assert.ok(boxHtml.includes('https://pabilo.app/pay/plink_test_1'), 'Debe mostrar enlace Pabilo');
+  assert.ok(boxHtml.includes('data-verify-link-order="ord_link_1"'), 'Debe renderizar botón verificar enlace');
+  assert.ok(sandbox.localStorage.getItem('cmv_pro_active_order_v1_uLink')?.includes('ord_link_1'), 'Debe guardar orden activa en localStorage');
+
+  const verifyBtn = {
+    getAttribute: (name) => (name === 'data-verify-link-order' ? 'ord_link_1' : null),
+    closest: (sel) => (sel === '[data-verify-link-order]' ? verifyBtn : null),
+  };
+  doc.dispatchClick(verifyBtn);
+  await flush();
+
+  assert.equal(verifyBodies.length, 1);
+  assert.equal(verifyBodies[0].orderId, 'ord_link_1');
+  assert.equal(verifyBodies[0].reference, undefined);
+  assert.equal(sandbox.__margenesAuthBridge.getState().isPro, true);
+  assert.equal(sandbox.localStorage.getItem('cmv_pro_active_order_v1_uLink'), null);
 });

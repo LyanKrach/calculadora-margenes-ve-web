@@ -23,6 +23,12 @@
     ],
     "cleanUrls": true,
     "trailingSlash": false,
+    "rewrites": [
+      {
+        "source": "/gracias",
+        "destination": "/index.html"
+      }
+    ],
     "headers": [
       {
         "source": "**/*.@(html|js|css)",
