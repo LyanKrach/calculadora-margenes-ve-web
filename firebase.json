@@ -1,0 +1,37 @@
+{
+  "hosting": {
+    "site": "calc-margenes-ve-2026",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".git/**",
+      "**/.git/**",
+      ".firebase/**",
+      "**/.firebase/**",
+      ".github/**",
+      "**/.github/**",
+      ".gitignore",
+      "firestore.rules",
+      "package.json",
+      "package-lock.json",
+      "README.md",
+      "calculadora-margenes-ve-solo-archivo.html",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "headers": [
+      {
+        "source": "**/*.@(html|js|css)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      }
+    ]
+  }
+}

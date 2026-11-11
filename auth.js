@@ -126,12 +126,26 @@
   /* ===== Config y arranque ===== */
   function configLista() {
     var c = window.FIREBASE_CONFIG || {};
-    var keys = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
+    var keys = ['apiKey', 'authDomain', 'projectId', 'appId'];
     for (var i = 0; i < keys.length; i++) {
       var v = c[keys[i]];
       if (!v || typeof v !== 'string' || v.indexOf('TU_') === 0) return false;
     }
     return true;
+  }
+  async function cargarConfigHostingSiFalta() {
+    if (configLista()) return true;
+    try {
+      if (typeof location !== 'undefined' && location.protocol === 'file:') return false;
+      var res = await fetch('/__/firebase/init.json', { cache: 'no-store' });
+      if (!res.ok) return false;
+      var cfg = await res.json();
+      if (cfg && cfg.apiKey && cfg.projectId) {
+        window.FIREBASE_CONFIG = cfg;
+        return configLista();
+      }
+    } catch (e) { /* fuera de Firebase Hosting */ }
+    return false;
   }
   function setFirebaseState(state) {
     var notice = $('fbNotice');
@@ -140,7 +154,7 @@
   }
 
   async function initFirebase() {
-    if (!configLista()) { setFirebaseState('noconfig'); return; }
+    if (!(await cargarConfigHostingSiFalta())) { setFirebaseState('noconfig'); return; }
     try {
       var appMod = await import(SDK('firebase-app.js'));
       var authMod = await import(SDK('firebase-auth.js'));
