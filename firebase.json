@@ -16,6 +16,7 @@
       "package.json",
       "package-lock.json",
       "README.md",
+      "tests/**",
       "calculadora-margenes-ve-solo-archivo.html",
       "**/.*",
       "**/node_modules/**"

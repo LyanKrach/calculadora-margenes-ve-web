@@ -29,9 +29,116 @@
   var user = null;
   var firebaseOn = false;
   var unsubHist = null, unsubProd = null;
+  var unsubSubCur = null, unsubSubPend = null, unsubProf = null, unsubAlerts = null;
+  var expiryTimer = null;
+  var histQueryIsPro = null;
   var authMode = 'login'; // 'login' | 'register'
   var histItems = [];
   var prodItems = [];
+  var subCurrent = null;
+  var subPending = null;
+  var profileSettings = { businessName: '' };
+  var alertSettings = { gapEnabled: false, gapThresholdPct: 20, rateEnabled: false, bcvAboveBs: null, lastSeenBcvDate: null, lastSeenBcvUsd: null };
+  var afterLoginAction = null;
+
+  function currentSubState() {
+    return window.ProCore ? window.ProCore.subscriptionState(subCurrent) : { isPro: false, status: 'free', plan: null, endDate: '', startDate: '', daysLeft: 0 };
+  }
+  function isProUser() {
+    return currentSubState().isPro;
+  }
+  function getBridgeState() {
+    return {
+      firebaseOn: firebaseOn,
+      user: user ? { uid: user.uid, email: user.email || '', displayName: user.displayName || '' } : null,
+      isPro: isProUser(),
+      subState: currentSubState(),
+      subCurrent: subCurrent,
+      subPending: subPending,
+      prodItems: prodItems.map(function (it) { return { id: it.id, data: normalizeProduct(it.data), raw: it.data }; }),
+      histItems: histItems.slice(),
+      profileSettings: Object.assign({}, profileSettings),
+      alertSettings: Object.assign({}, alertSettings)
+    };
+  }
+  function notifyProUI() {
+    if (window.ProUI && typeof window.ProUI.onStateChange === 'function') {
+      try { window.ProUI.onStateChange(getBridgeState()); } catch (e) { console.error(e); }
+    }
+  }
+  function scheduleExpiryTimer() {
+    if (expiryTimer) { clearTimeout(expiryTimer); expiryTimer = null; }
+    if (!window.ProCore || !subCurrent) return;
+    var ms = window.ProCore.msUntilExpiry(subCurrent);
+    if (ms == null) return;
+    // setTimeout tiene límite de ~24,8 días (2^31-1 ms): si falta más, reevaluamos en 20 días.
+    var delay = Math.min(ms + 1000, 1728000000);
+    expiryTimer = setTimeout(function () {
+      scheduleExpiryTimer();
+      handleSubscriptionTransition();
+    }, delay);
+  }
+  function handleSubscriptionTransition() {
+    var pro = isProUser();
+    if (user && histQueryIsPro !== pro) {
+      subscribeHistory();
+    } else {
+      renderHistory();
+    }
+    renderProducts();
+    notifyProUI();
+  }
+  function stopSubAndSettings() {
+    if (unsubSubCur) { unsubSubCur(); unsubSubCur = null; }
+    if (unsubSubPend) { unsubSubPend(); unsubSubPend = null; }
+    if (unsubProf) { unsubProf(); unsubProf = null; }
+    if (unsubAlerts) { unsubAlerts(); unsubAlerts = null; }
+    if (expiryTimer) { clearTimeout(expiryTimer); expiryTimer = null; }
+    histQueryIsPro = null;
+    subCurrent = null;
+    subPending = null;
+    profileSettings = { businessName: '' };
+    alertSettings = { gapEnabled: false, gapThresholdPct: 20, rateEnabled: false, bcvAboveBs: null, lastSeenBcvDate: null, lastSeenBcvUsd: null };
+  }
+  function subscribeSubAndSettings() {
+    stopSubAndSettings();
+    if (!user || !db) return;
+    unsubSubCur = F.fs.onSnapshot(
+      F.fs.doc(db, 'users', user.uid, 'subscription', 'current'),
+      function (snap) {
+        subCurrent = snap.exists() ? (snap.data() || null) : null;
+        scheduleExpiryTimer();
+        handleSubscriptionTransition();
+      },
+      function (e) { console.warn('subscription/current read:', e); }
+    );
+    unsubSubPend = F.fs.onSnapshot(
+      F.fs.doc(db, 'users', user.uid, 'subscription', 'pending'),
+      function (snap) {
+        subPending = snap.exists() ? (snap.data() || null) : null;
+        notifyProUI();
+      },
+      function (e) { console.warn('subscription/pending read:', e); }
+    );
+    unsubProf = F.fs.onSnapshot(
+      F.fs.doc(db, 'users', user.uid, 'settings', 'profile'),
+      function (snap) {
+        profileSettings = snap.exists() ? Object.assign({ businessName: '' }, snap.data() || {}) : { businessName: '' };
+        notifyProUI();
+      },
+      function () {}
+    );
+    unsubAlerts = F.fs.onSnapshot(
+      F.fs.doc(db, 'users', user.uid, 'settings', 'alerts'),
+      function (snap) {
+        alertSettings = snap.exists()
+          ? Object.assign({ gapEnabled: false, gapThresholdPct: 20, rateEnabled: false, bcvAboveBs: null, lastSeenBcvDate: null, lastSeenBcvUsd: null }, snap.data() || {})
+          : { gapEnabled: false, gapThresholdPct: 20, rateEnabled: false, bcvAboveBs: null, lastSeenBcvDate: null, lastSeenBcvUsd: null };
+        notifyProUI();
+      },
+      function () {}
+    );
+  }
 
   function toast(msg) {
     var t = $('toast');
@@ -327,19 +434,28 @@
       document.querySelectorAll('[data-needs-login]').forEach(function (el) { el.hidden = true; });
       var pb = $('prodBox'); if (pb) pb.hidden = false;
       var hb = $('histBox'); if (hb) hb.hidden = false;
+      subscribeSubAndSettings();
       subscribeHistory();
       subscribeProducts();
       resetProdForm();
+      notifyProUI();
+      if (typeof afterLoginAction === 'function') {
+        var cb = afterLoginAction;
+        afterLoginAction = null;
+        try { cb(u); } catch (e) {}
+      }
     } else {
       if (btnEntrar) btnEntrar.hidden = false;
       if (chip) chip.hidden = true;
       document.querySelectorAll('[data-needs-login]').forEach(function (el) { el.hidden = false; });
       var pb2 = $('prodBox'); if (pb2) pb2.hidden = true;
       var hb2 = $('histBox'); if (hb2) hb2.hidden = true;
+      stopSubAndSettings();
       if (unsubHist) { unsubHist(); unsubHist = null; }
       if (unsubProd) { unsubProd(); unsubProd = null; }
       histItems = []; prodItems = [];
       renderHistory(); renderProducts();
+      notifyProUI();
     }
   }
 
@@ -516,15 +632,27 @@
   function subscribeHistory() {
     if (unsubHist) { unsubHist(); unsubHist = null; }
     if (!user || !db) return;
-    var q = F.fs.query(
-      F.fs.collection(db, 'users', user.uid, 'history'),
-      F.fs.orderBy('timestamp', 'desc'),
-      F.fs.limit(50)
-    );
+    var pro = isProUser();
+    histQueryIsPro = pro;
+    var colRef = F.fs.collection(db, 'users', user.uid, 'history');
+    var q = (!pro && window.ProCore)
+      ? F.fs.query(
+          colRef,
+          F.fs.where('timestamp', '>=', window.ProCore.historyCutoffIso()),
+          F.fs.orderBy('timestamp', 'desc'),
+          F.fs.limit(window.ProCore.FREE_LIMITS.historyItems)
+        )
+      : F.fs.query(
+          colRef,
+          F.fs.orderBy('timestamp', 'desc'),
+          F.fs.limit(window.ProCore ? window.ProCore.PRO_HISTORY_READ_CAP : 1000)
+        );
     unsubHist = F.fs.onSnapshot(q, function (snap) {
-      histItems = [];
-      snap.forEach(function (d) { histItems.push({ id: d.id, data: d.data() }); });
+      var raw = [];
+      snap.forEach(function (d) { raw.push({ id: d.id, data: d.data() }); });
+      histItems = window.ProCore ? window.ProCore.applyHistoryPolicy(raw, isProUser()) : raw;
       renderHistory();
+      notifyProUI();
     }, function (e) { console.error(e); toast('No se pudo leer tu historial'); });
   }
   function renderHistory() {
@@ -532,6 +660,14 @@
     if (b) {
       b.textContent = histItems.length;
       b.hidden = histItems.length === 0;
+    }
+    var hintEl = $('histPlanHint');
+    if (hintEl) {
+      if (isProUser()) {
+        hintEl.textContent = 'Plan Pro activo · Historial ilimitado (' + histItems.length + ' cálculos).';
+      } else {
+        hintEl.textContent = 'Plan Gratis: últimos 30 días o 50 cálculos, lo que se cumpla primero (' + histItems.length + ' visibles).';
+      }
     }
     var list = $('histList');
     if (!list) return;
@@ -700,13 +836,49 @@
       });
       populateProdCategorySelect();
       renderProducts();
+      notifyProUI();
     }, function (e) { console.error(e); toast('No se pudieron leer tus productos'); });
+  }
+  function renderProductCardHtml(it) {
+    var d = normalizeProduct(it.data);
+    var modeLabel = (d.marginMode === 'onCost') ? 's/costo' : 's/venta';
+    var activeRateSrc = catalogOverrideRate || d.rateSourceName;
+    var m = window.calcProductMetrics ? window.calcProductMetrics(d, catalogOverrideRate) : null;
+    var priceTxt = (m && !m.error) ? (fmtBs.format(m.precioFinal) + ' Bs') : '—';
+    var rateTxt = formatRateLabel(activeRateSrc, d.customRateValue);
+    var comPct = (d.commissionPlatform + d.commissionPaymentMethod + d.commissionOther) * 100;
+    var gainTxt = (m && !m.error) ? (' · Ganancia ' + fmtBs.format(m.gananciaBs) + ' Bs') : '';
+    var catBadge = d.category ? ('<span class="cat-pill">' + esc(d.category) + '</span>') : '';
+
+    return '<div class="prod-card">'
+      + '<div class="item-meta"><div class="prod-head"><b>' + esc(d.name || 'Producto') + '</b>' + catBadge + '</div>'
+      + '<span>Costo $' + fmtBs.format(d.costUsd || 0)
+      + ' · Margen ' + fmtBs.format(d.marginPercent || 0) + '% (' + modeLabel + ')'
+      + ' · Comisiones ' + fmtBs.format(comPct) + '%' + gainTxt + '</span></div>'
+      + '<div class="prod-price-col"><strong>' + esc(priceTxt) + '</strong><span>' + esc(rateTxt) + '</span></div>'
+      + '<div class="prod-actions">'
+      + '<button type="button" class="btn-mini accent" data-copy-bs="' + it.id + '">Copiar Bs</button>'
+      + '<button type="button" class="btn-mini" data-wa-prod="' + it.id + '">WhatsApp</button>'
+      + '<button type="button" class="btn-mini" data-load-prod="' + it.id + '">Cargar</button>'
+      + '<button type="button" class="btn-mini" data-edit-prod="' + it.id + '">Editar</button>'
+      + '<button type="button" class="btn-mini danger" data-del-prod="' + it.id + '">✕</button>'
+      + '</div></div>';
   }
   function renderProducts() {
     var b = $('badgeProd');
     if (b) {
       b.textContent = prodItems.length;
       b.hidden = prodItems.length === 0;
+    }
+    var pro = isProUser();
+    var quotaEl = $('prodQuotaInfo');
+    if (quotaEl) {
+      if (pro) {
+        quotaEl.innerHTML = '<span class="pro-inline-tag">PRO</span> ' + prodItems.length + ' productos · Ilimitados, organizados por categorías';
+      } else {
+        var maxFree = window.ProCore ? window.ProCore.FREE_LIMITS.products : 10;
+        quotaEl.innerHTML = 'Plan Gratis: <b>' + prodItems.length + ' / ' + maxFree + '</b> productos en la nube · <a href="#pro" data-go-pro>Desbloquea ilimitados</a>';
+      }
     }
     var tools = $('catalogTools');
     if (tools) tools.hidden = prodItems.length === 0;
@@ -737,31 +909,27 @@
     }
 
     var html = '';
-    filtered.forEach(function (it) {
-      var d = normalizeProduct(it.data);
-      var modeLabel = (d.marginMode === 'onCost') ? 's/costo' : 's/venta';
-      var activeRateSrc = catalogOverrideRate || d.rateSourceName;
-      var m = window.calcProductMetrics ? window.calcProductMetrics(d, catalogOverrideRate) : null;
-      var priceTxt = (m && !m.error) ? (fmtBs.format(m.precioFinal) + ' Bs') : '—';
-      var rateTxt = formatRateLabel(activeRateSrc, d.customRateValue);
-      var comPct = (d.commissionPlatform + d.commissionPaymentMethod + d.commissionOther) * 100;
-      var gainTxt = (m && !m.error) ? (' · Ganancia ' + fmtBs.format(m.gananciaBs) + ' Bs') : '';
-      var catBadge = d.category ? ('<span class="cat-pill">' + esc(d.category) + '</span>') : '';
-
-      html += '<div class="prod-card">'
-        + '<div class="item-meta"><div class="prod-head"><b>' + esc(d.name || 'Producto') + '</b>' + catBadge + '</div>'
-        + '<span>Costo $' + fmtBs.format(d.costUsd || 0)
-        + ' · Margen ' + fmtBs.format(d.marginPercent || 0) + '% (' + modeLabel + ')'
-        + ' · Comisiones ' + fmtBs.format(comPct) + '%' + gainTxt + '</span></div>'
-        + '<div class="prod-price-col"><strong>' + esc(priceTxt) + '</strong><span>' + esc(rateTxt) + '</span></div>'
-        + '<div class="prod-actions">'
-        + '<button type="button" class="btn-mini accent" data-copy-bs="' + it.id + '">Copiar Bs</button>'
-        + '<button type="button" class="btn-mini" data-wa-prod="' + it.id + '">WhatsApp</button>'
-        + '<button type="button" class="btn-mini" data-load-prod="' + it.id + '">Cargar</button>'
-        + '<button type="button" class="btn-mini" data-edit-prod="' + it.id + '">Editar</button>'
-        + '<button type="button" class="btn-mini danger" data-del-prod="' + it.id + '">✕</button>'
-        + '</div></div>';
-    });
+    if (pro && filtered.length) {
+      var byCat = {};
+      filtered.forEach(function (it) {
+        var c = normalizeProduct(it.data).category || 'Sin categoría';
+        if (!byCat[c]) byCat[c] = [];
+        byCat[c].push(it);
+      });
+      var catCollator = new Intl.Collator('es', { numeric: true, sensitivity: 'base' });
+      var catNames = Object.keys(byCat).sort(function (a, b2) {
+        if (a === 'Sin categoría') return 1;
+        if (b2 === 'Sin categoría') return -1;
+        return catCollator.compare(a, b2);
+      });
+      catNames.forEach(function (catName) {
+        html += '<div class="prod-cat-group"><div class="prod-cat-head"><span>' + esc(catName) + '</span><small>' + byCat[catName].length + '</small></div>';
+        byCat[catName].forEach(function (it) { html += renderProductCardHtml(it); });
+        html += '</div>';
+      });
+    } else {
+      filtered.forEach(function (it) { html += renderProductCardHtml(it); });
+    }
     list.innerHTML = html;
   }
   function findProd(id) {
@@ -867,6 +1035,15 @@
   async function saveProduct(ev) {
     if (ev) ev.preventDefault();
     if (!user) { toast('Inicia sesión para guardar productos'); return; }
+    var editId = $('prodEditId').value;
+    if (!editId && window.ProCore && !window.ProCore.canAddProduct(prodItems.length, isProUser())) {
+      if (window.ProUI && typeof window.ProUI.promptUpgrade === 'function') {
+        window.ProUI.promptUpgrade('En el plan Gratis puedes guardar hasta ' + window.ProCore.FREE_LIMITS.products + ' productos en la nube. Pásate a Pro para guardar productos ilimitados.');
+      } else {
+        toast('Plan Gratis: límite de ' + window.ProCore.FREE_LIMITS.products + ' productos alcanzado. Activa Pro para guardar más.');
+      }
+      return;
+    }
     var nombre = ($('prodNombre').value || '').trim();
     if (!nombre) { toast('Ponle un nombre al producto'); $('prodNombre').focus(); return; }
     if (nombre.length > 120) { toast('El nombre no puede superar 120 caracteres'); $('prodNombre').focus(); return; }
@@ -915,7 +1092,6 @@
     }
 
     var now = new Date().toISOString();
-    var editId = $('prodEditId').value;
     var stored = editId ? normalizeProduct((findProd(editId) || { data: {} }).data) : null;
     var data = {
       v: 1,
@@ -1225,12 +1401,159 @@
       renderProducts();
       var sm = $('shareListModal');
       if (sm && !sm.hidden) regenerateSharePreview();
+      if (window.ProUI && typeof window.ProUI.onRatesUpdated === 'function') {
+        try { window.ProUI.onRatesUpdated(); } catch (e) {}
+      }
     };
   }
+
+  window.__margenesAuthBridge = {
+    getState: getBridgeState,
+    openAuth: function (cb) {
+      afterLoginAction = typeof cb === 'function' ? cb : null;
+      showReset(false);
+      setAuthMode('login');
+      openAuth();
+    },
+    getShareSelection: function () {
+      return {
+        selectedCats: Object.assign({}, shareSelectedCats),
+        includeUncat: shareIncludeUncat,
+        overrideRate: ($('shareRateOverride') && $('shareRateOverride').value) || catalogOverrideRate || ''
+      };
+    },
+    submitPendingPayment: async function (payload) {
+      if (!user || !db) throw new Error('Inicia sesión primero para registrar tu referencia de pago.');
+      var refTxt = String((payload && payload.reference) || '').trim();
+      if (refTxt.length < 4 || refTxt.length > 60) throw new Error('La referencia debe tener entre 4 y 60 caracteres.');
+      var planId = (payload && payload.plan) === 'annual' ? 'annual' : 'monthly';
+      var method = (payload && payload.method) === 'usdt' ? 'usdt' : 'pago_movil';
+      var amountUsd = planId === 'annual' ? 15 : 1.99;
+      var docData = {
+        v: 1,
+        plan: planId,
+        method: method,
+        reference: refTxt,
+        amountUsd: amountUsd,
+        status: 'pending',
+        provider: 'manual',
+        requestedAt: new Date().toISOString()
+      };
+      if (payload && typeof payload.amountBs === 'number' && payload.amountBs >= 0 && isFinite(payload.amountBs)) {
+        docData.amountBs = Math.round(payload.amountBs * 100) / 100;
+      }
+      if (payload && typeof payload.rateBs === 'number' && payload.rateBs >= 0 && isFinite(payload.rateBs)) {
+        docData.rateBs = Math.round(payload.rateBs * 100) / 100;
+      }
+      await F.fs.setDoc(F.fs.doc(db, 'users', user.uid, 'subscription', 'pending'), docData);
+      return docData;
+    },
+    saveProfileSettings: async function (businessName) {
+      if (!user || !db) throw new Error('Inicia sesión para guardar la configuración.');
+      var clean = String(businessName || '').trim().slice(0, 60);
+      var data = { v: 1, businessName: clean, updatedAt: new Date().toISOString() };
+      await F.fs.setDoc(F.fs.doc(db, 'users', user.uid, 'settings', 'profile'), data);
+      return data;
+    },
+    saveAlertSettings: async function (cfg) {
+      if (!user || !db) throw new Error('Inicia sesión para guardar tus alertas.');
+      var thr = parseFloat(cfg && cfg.gapThresholdPct);
+      if (!isFinite(thr) || thr < 0 || thr > 1000) thr = 20;
+      var data = {
+        v: 1,
+        gapEnabled: !!(cfg && cfg.gapEnabled),
+        gapThresholdPct: Math.round(thr * 100) / 100,
+        rateEnabled: !!(cfg && cfg.rateEnabled),
+        updatedAt: new Date().toISOString()
+      };
+      if (cfg && typeof cfg.bcvAboveBs === 'number' && cfg.bcvAboveBs >= 0 && isFinite(cfg.bcvAboveBs)) {
+        data.bcvAboveBs = Math.round(cfg.bcvAboveBs * 100) / 100;
+      } else {
+        data.bcvAboveBs = null;
+      }
+      if (cfg && typeof cfg.lastSeenBcvUsd === 'number' && cfg.lastSeenBcvUsd >= 0 && isFinite(cfg.lastSeenBcvUsd)) {
+        data.lastSeenBcvUsd = Math.round(cfg.lastSeenBcvUsd * 100) / 100;
+      } else {
+        data.lastSeenBcvUsd = null;
+      }
+      if (cfg && cfg.lastSeenBcvDate) {
+        data.lastSeenBcvDate = String(cfg.lastSeenBcvDate).slice(0, 20);
+      } else {
+        data.lastSeenBcvDate = null;
+      }
+      await F.fs.setDoc(F.fs.doc(db, 'users', user.uid, 'settings', 'alerts'), data);
+      return data;
+    },
+    applyRevaluationUpdates: async function (updates) {
+      if (!user || !db) throw new Error('Inicia sesión primero.');
+      if (!isProUser()) throw new Error('Activa Pro para revalorizar todo tu catálogo.');
+      var now = new Date().toISOString();
+      var list = Array.isArray(updates) ? updates : [];
+      for (var i = 0; i < list.length; i += 400) {
+        var batch = F.fs.writeBatch(db);
+        list.slice(i, i + 400).forEach(function (u) {
+          if (!u || !u.id || !(u.customRateValue > 0)) return;
+          batch.update(F.fs.doc(db, 'users', user.uid, 'products', u.id), {
+            customRateValue: Math.round(u.customRateValue * 100) / 100,
+            updatedAt: now
+          });
+        });
+        await batch.commit();
+      }
+      return list.length;
+    },
+    importProductsBatch: async function (items) {
+      if (!user || !db) throw new Error('Inicia sesión primero.');
+      if (!isProUser()) throw new Error('Activa Pro para importar catálogos por Excel o CSV.');
+      var list = Array.isArray(items) ? items : [];
+      if (!list.length) return 0;
+      var now = new Date().toISOString();
+      for (var i = 0; i < list.length; i += 400) {
+        var batch = F.fs.writeBatch(db);
+        list.slice(i, i + 400).forEach(function (p) {
+          var ref = newDocRef('products');
+          var docData = {
+            v: 1,
+            id: ref.id,
+            name: String(p.name).slice(0, 120),
+            costUsd: Number(p.costUsd),
+            marginPercent: Number(p.marginPercent),
+            fixedExpenseBs: Number(p.fixedExpenseBs || 0),
+            commissionPlatform: Number(p.commissionPlatform || 0),
+            commissionPaymentMethod: Number(p.commissionPaymentMethod || 0),
+            commissionOther: Number(p.commissionOther || 0),
+            roundStep: Math.trunc(p.roundStep != null ? p.roundStep : 10),
+            rateSourceName: p.rateSourceName || 'bcvUsd',
+            marginMode: p.marginMode === 'onSale' ? 'onSale' : 'onCost',
+            createdAt: now,
+            updatedAt: now
+          };
+          if (p.category) docData.category = String(p.category).slice(0, 80);
+          if (p.rateSourceName === 'custom' && p.customRateValue > 0) docData.customRateValue = Number(p.customRateValue);
+          batch.set(ref, docData);
+        });
+        await batch.commit();
+      }
+      return list.length;
+    },
+    getIdToken: async function (forceRefresh) {
+      if (!user) return null;
+      return user.getIdToken(!!forceRefresh);
+    },
+    applyActivatedSubscription: function (subDoc) {
+      if (!subDoc || typeof subDoc !== 'object') return;
+      subCurrent = Object.assign({}, subDoc);
+      subPending = null;
+      scheduleExpiryTimer();
+      renderAuthUI();
+      notifyProUI();
+    }
+  };
 
   wire();
   setAuthMode('login');
   closeAuth();
   closeShareModal();
   initFirebase();
+  notifyProUI();
 })();

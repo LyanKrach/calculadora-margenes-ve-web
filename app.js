@@ -6,25 +6,18 @@
   function setHtml(id, val){ var el = $(id); if (el) el.innerHTML = val; }
   function setVal(id, val){ var el = $(id); if (el) el.value = val; }
 
+  /* Texto de vigencia de una tasa ("Vigente: Hoy (11 nov)" / "Mañana" / fecha).
+     Una sola función para la calculadora y la pestaña Tasas; compara contra el día de Venezuela. */
   function formatEffDate(isoDate){
     if (!isoDate) return '';
     try {
-      var clean = String(isoDate).split('T')[0];
-      var parts = clean.split('-');
-      if (parts.length !== 3) return 'Vigente: ' + isoDate;
-      var y = parseInt(parts[0], 10), m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
-      var target = new Date(y, m - 1, d);
-      var now = new Date();
-      var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      var diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
-      var meses = ['','ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-      var mesTxt = meses[m] || m;
-      if (diffDays === 0) return 'Vigente: Hoy (' + d + ' ' + mesTxt + ')';
-      if (diffDays === 1) return 'Vigente: Mañana (' + d + ' ' + mesTxt + ')';
-      return 'Vigente: ' + d + ' ' + mesTxt;
+      return window.ProCore ? window.ProCore.vigenciaText(isoDate) : 'Vigente: ' + String(isoDate).split('T')[0];
     } catch(e){
       return 'Vigente: ' + isoDate;
     }
+  }
+  function effDateKey(isoDate){
+    return isoDate ? String(isoDate).split('T')[0] : '';
   }
 
   /* ===== TASAS AUTOMÁTICAS =====
@@ -32,10 +25,11 @@
      Respaldos BCV: BCV Today (bcv.today) -> DolarAPI oficial (USD y EUR).
      Paralelo / USDT: DolarAPI paralelo. */
   var RATES = {
-    bcv:     { label:'BCV · Dólar oficial',      value:901.62,   unit:'$',    fecha:'Vigente: Mañana (11 nov)' },
-    binance: { label:'Binance · USDT (P2P)',     value:1077.97,  unit:'USDT', fecha:'Hoy' },
-    euro:    { label:'BCV · Euro oficial',       value:1007.96,  unit:'€',    fecha:'Vigente: Mañana (11 nov)' },
-    custom:  { label:'Personalizada',            value:901.62,   unit:'$',    fecha:'' }
+    // Valores de arranque (sin conexión). La vigencia real llega con la tasa en vivo.
+    bcv:     { label:'BCV · Dólar oficial',      value:901.62,   unit:'$',    fecha:'Tasa guardada (sin confirmar vigencia)', date:'' },
+    binance: { label:'Binance · USDT (P2P)',     value:1077.97,  unit:'USDT', fecha:'Tasa guardada', date:'' },
+    euro:    { label:'BCV · Euro oficial',       value:1007.96,  unit:'€',    fecha:'Tasa guardada (sin confirmar vigencia)', date:'' },
+    custom:  { label:'Personalizada',            value:901.62,   unit:'$',    fecha:'', date:'' }
   };
   var rateSource = 'bcv';
   var fmtBs = new Intl.NumberFormat('es-VE',{minimumFractionDigits:2, maximumFractionDigits:2});
@@ -98,6 +92,7 @@
     return {
       error: null,
       rate: rate,
+      denom: denom,
       costBs: costBs,
       precioExacto: precioExacto,
       precioFinal: precioFinal,
@@ -135,7 +130,13 @@
       if (elSrc) {
         if (k === 'bcv') elSrc.textContent = RATES.bcv.fecha || 'Oficial';
         else if (k === 'euro') elSrc.textContent = RATES.euro.fecha || 'Oficial EUR';
+        else if (k === 'binance') elSrc.textContent = RATES.binance.fecha || 'Paralelo / USDT';
       }
+    });
+    // Pestaña "Tasas y Brecha": mismos datos y misma vigencia que las tarjetas de la calculadora.
+    ['bcv','euro','binance'].forEach(function(k){
+      setTxt('tasasVal-' + k, fmtRate(RATES[k].value) + ' / ' + RATES[k].unit);
+      setTxt('tasasFecha-' + k, RATES[k].fecha || '—');
     });
     document.querySelectorAll('.rate-card').forEach(function(c){
       c.classList.toggle('active', c.getAttribute('data-rate') === rateSource);
@@ -190,10 +191,10 @@
     var got = { bcv:false, euro:false, binance:false };
     var jobs = [];
 
-    function applyRate(key, value, fechaTxt){
+    function applyRate(key, value, effIso, textOverride){
       if (!value || !(value > 0)) return;
       RATES[key].value = Math.round(value * 100) / 100;
-      if (fechaTxt) RATES[key].fecha = fechaTxt;
+      if (effIso) { RATES[key].date = effDateKey(effIso); RATES[key].fecha = textOverride || formatEffDate(effIso); }
       got[key] = true;
       if (rateSource === key) {
         var elTasa = $('tasa');
@@ -211,7 +212,7 @@
             .then(function(d){
               if (!got.bcv && d && d.promedio){
                 var eff = (d.fechaActualizacion || '').split('T')[0];
-                applyRate('bcv', d.promedio, formatEffDate(eff));
+                applyRate('bcv', d.promedio, eff);
               }
             }).catch(function(){})
         );
@@ -222,7 +223,7 @@
             .then(function(d){
               if (!got.euro && d && d.promedio){
                 var eff = (d.fechaActualizacion || '').split('T')[0];
-                applyRate('euro', d.promedio, formatEffDate(eff));
+                applyRate('euro', d.promedio, eff);
               }
             }).catch(function(){})
         );
@@ -235,9 +236,8 @@
         .then(function(d){
           if (d){
             var effDate = d.effective_date || d.date;
-            var vigTxt = formatEffDate(effDate);
-            if (!got.bcv && d.USD) applyRate('bcv', d.USD, vigTxt);
-            if (!got.euro && d.EUR) applyRate('euro', d.EUR, vigTxt);
+            if (!got.bcv && d.USD) applyRate('bcv', d.USD, effDate);
+            if (!got.euro && d.EUR) applyRate('euro', d.EUR, effDate);
           }
           if (!got.bcv || !got.euro) return fetchDolarApiFallback();
         })
@@ -247,10 +247,14 @@
     var bcvJob = fetchJSON('https://rates.dolarvzla.com/bcv/current.json')
       .then(function(d){
         var cur = d && d.current;
+        var prev = d && d.previous;
+        if (prev){
+          if (prev.usd > 0) RATES.bcv.prevValue = Math.round(prev.usd * 100) / 100;
+          if (prev.eur > 0) RATES.euro.prevValue = Math.round(prev.eur * 100) / 100;
+        }
         if (cur){
-          var vigTxt = formatEffDate(cur.date);
-          if (cur.usd) applyRate('bcv', cur.usd, vigTxt);
-          if (cur.eur) applyRate('euro', cur.eur, vigTxt);
+          if (cur.usd) applyRate('bcv', cur.usd, cur.date);
+          if (cur.eur) applyRate('euro', cur.eur, cur.date);
         }
         if (!got.bcv || !got.euro) return fetchBcvTodayFallback();
       })
@@ -261,7 +265,7 @@
     jobs.push(
       fetchJSON('https://ve.dolarapi.com/v1/dolares/paralelo')
         .then(function(d){
-          if (d && d.promedio) applyRate('binance', d.promedio, 'Hoy');
+          if (d && d.promedio) applyRate('binance', d.promedio, window.ProCore ? window.ProCore.todayKey() : new Date().toISOString().slice(0,10), 'Actualizado: Hoy');
         })
         .catch(function(){})
     );
@@ -332,13 +336,35 @@
   }
   window.getMarginMode = function(){ return marginMode; };
   window.setMarginMode = function(m){ setMarginMode(m); };
+  // Ganchos para las funciones Pro (pro-ui.js): usan la MISMA fórmula y las MISMAS tasas de la calculadora.
+  window.computeSaleMetrics = computeSaleMetrics;
+  window.refreshRatesNow = function(){ return refreshRates(); };
   window.getRatesSnapshot = function(){
     return {
       bcvUsd: RATES.bcv.value,
+      bcvPrevUsd: RATES.bcv.prevValue || 0,
       binanceUsdt: RATES.binance.value,
       euroBcv: RATES.euro.value,
+      euroPrevBcv: RATES.euro.prevValue || 0,
       custom: RATES.custom.value,
+      bcvDate: RATES.bcv.date || '',
+      bcvFechaTxt: RATES.bcv.fecha || '',
+      euroDate: RATES.euro.date || '',
+      binanceFechaTxt: RATES.binance.fecha || '',
       fmtBs: function(v){ return fmtBs.format(v); }
+    };
+  };
+  window.getCalculatorDefaults = function(){
+    var comTotal = num('comProveedor') + num('comPasarela') + num('comOtra');
+    var elR = $('redondeo');
+    return {
+      rateSource: rateSource,
+      rate: num('tasa') || RATES.bcv.value,
+      marginPercent: num('margen', 20),
+      comFraction: comTotal / 100,
+      fixedExpenseBs: num('gastoFijo', 0),
+      roundStep: elR ? (parseFloat(elR.value) || 1) : 10,
+      mode: marginMode
     };
   };
   window.selectRateSource = function(rateSourceName, customVal){
@@ -477,45 +503,31 @@
     setTxt('legCom', fmtPct.format(pCom) + '%');
     setTxt('legGan', fmtPct.format(pGan) + '%');
 
-    // Desglose paso a paso
-    setTxt('step1f', '$' + fmtBs.format(costoUsd) + ' × ' + fmtBs.format(tasa) + ' Bs/$');
-    setTxt('step1r', 'Bs ' + fmtBs.format(costoBs));
-    setTxt('step2f', fmtPct.format(comP) + '% + ' + fmtPct.format(comPa) + '% + ' + fmtPct.format(comO) + '%');
-    setTxt('step2r', fmtPct.format(comTotal) + '% en comisiones');
+    // Desglose paso a paso: cada paso usa la fórmula del modo elegido y sale de las MISMAS métricas
+    // del resultado principal (así los números coinciden al centavo).
+    var steps = window.ProCore.buildBreakdown({
+      mode: marginMode, costUsd: costoUsd, rate: tasa, marginPercent: margen,
+      comP: comP, comPa: comPa, comO: comO, gasto: gasto, roundStep: step
+    }, metrics);
+    steps.forEach(function(s, i){
+      setTxt('step' + (i + 1) + 't', s.title);
+      setTxt('step' + (i + 1) + 'f', s.formula);
+      setTxt('step' + (i + 1) + 'r', s.result);
+    });
 
-    if (marginMode === 'onCost') {
-      setTxt('step3f', '100% − Comisiones (divisor pasarela)');
-      setTxt('step3r', '1 − ' + comFraction.toFixed(2).replace('.',',') + ' = ' + denom.toFixed(2).replace('.',','));
-      setTxt('step4f', '(Bs ' + fmtBs.format(costoBs) + ' × (1 + ' + margenFraction.toFixed(2).replace('.',',') + ') + Bs ' + fmtBs.format(gasto) + ') ÷ ' + denom.toFixed(2).replace('.',','));
-      setTxt('step4r', 'Bs ' + fmtBs.format(precioExacto));
-      setTxt('step5r', 'Ganancia: Bs ' + fmtBs.format(gananciaBs) + ' (s/costo ' + fmtPct.format(margenRealCost) + '%)');
-    } else {
-      setTxt('step3f', '100% − Comisiones − Margen');
-      setTxt('step3r', '1 − ' + comFraction.toFixed(2).replace('.',',') + ' − ' + margenFraction.toFixed(2).replace('.',',') + ' = ' + denom.toFixed(2).replace('.',','));
-      setTxt('step4f', '(Bs ' + fmtBs.format(costoBs + gasto) + ') ÷ ' + denom.toFixed(2).replace('.',','));
-      setTxt('step4r', 'Bs ' + fmtBs.format(precioExacto));
-      setTxt('step5r', 'Ganancia: Bs ' + fmtBs.format(gananciaBs) + ' (' + fmtPct.format(margenRealSale) + '%)');
-    }
-
-    // Tabla comparativa
+    // Tabla comparativa "¿Y si cambias el margen?": reutiliza computeSaleMetrics (sin fórmulas duplicadas)
     var elTabla = $('tablaBody');
     if (elTabla){
-      var margins = [10,15,20,25,30,35,40];
+      var tRows = window.ProCore.marginTableRows(margen, function(mg){
+        return computeSaleMetrics({
+          costUsd: costoUsd, rate: tasa, marginPercent: mg, comFraction: comFraction,
+          fixedExpenseBs: gasto, roundStep: step, mode: marginMode
+        });
+      });
       var html = '';
-      margins.forEach(function(m){
-        var mFrac = m / 100;
-        var pEx;
-        if (marginMode === 'onCost') {
-          pEx = ((costoBs * (1 + mFrac)) + gasto) / denom;
-        } else {
-          var d = 1 - comFraction - mFrac;
-          if (d <= 0) return;
-          pEx = (costoBs + gasto) / d;
-        }
-        var p = roundUp(pEx, step);
-        var g = p - costoBs - gasto - p * comFraction;
-        var cls = (m === margen) ? ' class="current"' : '';
-        html += '<tr'+cls+'><td>' + m + '%</td><td>Bs ' + fmtBs0.format(p) + '</td><td>$' + fmtBs.format(tasa>0 ? p/tasa : 0) + '</td><td>Bs ' + fmtBs.format(g) + '</td></tr>';
+      tRows.forEach(function(r){
+        var cls = r.current ? ' class="current"' : '';
+        html += '<tr'+cls+'><td>' + fmtPct.format(r.margin).replace(',0','') + '%</td><td>Bs ' + fmtBs0.format(r.precioFinal) + '</td><td>$' + fmtBs.format(r.precioUsd) + '</td><td>Bs ' + fmtBs.format(r.gananciaBs) + '</td></tr>';
       });
       elTabla.innerHTML = html;
     }
@@ -569,7 +581,8 @@
       gananciaUsd: gananciaUsd,
       margenReal: margenRealSale,
       margenRealCost: margenRealCost,
-      denom: denom
+      denom: metrics.denom,
+      steps: steps
     };
     window.__margenesLast = last; // gancho para auth.js (historial)
   }
@@ -668,36 +681,27 @@
   var bcd = $('btnCopiarDesglose');
   if (bcd) bcd.addEventListener('click', function(){
     if(!last) return;
-    var txt;
-    if (last.marginMode === 'onCost') {
-      txt = 'DESGLOSE (Sobre costo / Markup) — ' + last.producto + '\n'
-        + '1) Costo en Bs: $' + fmtBs.format(last.costoUsd) + ' × ' + fmtBs.format(last.tasa) + ' = Bs ' + fmtBs.format(last.costoBs) + '\n'
-        + '2) Comisiones: ' + fmtPct.format(last.comTotal) + '% (' + fmtPct.format(last.comP) + '% proveedor + ' + fmtPct.format(last.comPa) + '% pasarela + ' + fmtPct.format(last.comO) + '% otra)\n'
-        + '3) Markup s/costo: ' + fmtPct.format(last.margen) + '% -> Costo con margen: Bs ' + fmtBs.format(last.costoBs * (1 + last.margen/100)) + '\n'
-        + '4) Precio exacto: (Costo con margen + Gasto) ÷ (1 − Comisiones) = Bs ' + fmtBs.format(last.precioExacto) + '\n'
-        + '5) Precio a cobrar: Bs ' + fmtBs0.format(last.precioFinal) + ' ($' + fmtBs.format(last.precioUsd) + ')\n'
-        + 'Ganancia neta: Bs ' + fmtBs.format(last.gananciaBs) + ' ($' + fmtBs.format(last.gananciaUsd) + ') · Margen s/costo: ' + fmtPct.format(last.margenRealCost) + '% (s/venta: ' + fmtPct.format(last.margenReal) + '%)';
-    } else {
-      txt = 'DESGLOSE (Sobre venta / Comercial) — ' + last.producto + '\n'
-        + '1) Costo en Bs: $' + fmtBs.format(last.costoUsd) + ' × ' + fmtBs.format(last.tasa) + ' = Bs ' + fmtBs.format(last.costoBs) + '\n'
-        + '2) Comisiones totales: ' + fmtPct.format(last.comTotal) + '% (' + fmtPct.format(last.comP) + '% proveedor + ' + fmtPct.format(last.comPa) + '% pasarela + ' + fmtPct.format(last.comO) + '% otra)\n'
-        + '3) Denominador: 1 − ' + fmtPct.format(last.comTotal) + '% − ' + fmtPct.format(last.margen) + '% = ' + last.denom.toFixed(2).replace('.',',') + '\n'
-        + '4) Precio exacto: (Bs ' + fmtBs.format(last.costoBs + last.gasto) + ') ÷ ' + last.denom.toFixed(2).replace('.',',') + ' = Bs ' + fmtBs.format(last.precioExacto) + '\n'
-        + '5) Precio a cobrar (redondeado hacia arriba): Bs ' + fmtBs0.format(last.precioFinal) + ' ($' + fmtBs.format(last.precioUsd) + ')\n'
-        + 'Ganancia neta: Bs ' + fmtBs.format(last.gananciaBs) + ' ($' + fmtBs.format(last.gananciaUsd) + ') · Margen real: ' + fmtPct.format(last.margenReal) + '%';
-    }
+    // El texto sale de los mismos pasos que se ven en pantalla (mismos números del resultado principal).
+    var modeTxt = last.marginMode === 'onCost' ? 'Sobre costo / Markup' : 'Sobre venta / Margen';
+    var txt = 'DESGLOSE (' + modeTxt + ') — ' + last.producto + '\n';
+    (last.steps || []).forEach(function(s, i){
+      txt += (i + 1) + ') ' + s.title + ': ' + s.formula + ' = ' + s.result.replace(/^= /, '') + '\n';
+    });
+    txt += 'Precio a cobrar: Bs ' + fmtBs0.format(last.precioFinal) + ' ($' + fmtBs.format(last.precioUsd) + ')';
     copiar(txt, 'Desglose completo copiado');
   });
 
   /* ===== DASHBOARD TABS ===== */
   function setDashboardTab(tabId) {
-    if (!tabId) tabId = 'calc';
+    if (!tabId || tabId === 'planes') tabId = tabId === 'planes' ? 'pro' : 'calc';
     if (tabId === 'guia' && window.innerWidth > 960) {
       setDashboardTab('calc');
       var elSlot = $('desktopGuideSlot');
       if (elSlot) elSlot.scrollIntoView({ behavior: 'smooth' });
       return;
     }
+    var view = $('tabView-' + tabId);
+    if (!view) tabId = 'calc';
     document.querySelectorAll('.dash-tab').forEach(function(b){
       b.classList.toggle('active', b.getAttribute('data-tab') === tabId);
     });
@@ -705,6 +709,9 @@
       v.classList.toggle('active', v.id === 'tabView-' + tabId);
     });
     if (tabId === 'tasas') updateGapDisplay();
+    if (typeof window.__margenesOnTabChange === 'function') {
+      try { window.__margenesOnTabChange(tabId); } catch (e) {}
+    }
   }
   window.setDashboardTab = setDashboardTab;
 
@@ -720,4 +727,8 @@
   setMarginMode(marginMode);
   renderRates();
   refreshRates();
+  try {
+    var hTab = (typeof location !== 'undefined' && location.hash) ? location.hash.replace('#', '').toLowerCase() : '';
+    if (hTab && $('tabView-' + (hTab === 'planes' ? 'pro' : hTab))) setDashboardTab(hTab);
+  } catch (e) {}
 })();

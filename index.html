@@ -28,15 +28,19 @@
 
   <div class="authbar">
     <span class="authbar-brand"><img src="favicon-48x48.png" alt="Logo" class="brand-logo" width="26" height="26" /> Calculadora de Márgenes <b>VE</b></span>
-    <span id="authArea">
-      <button type="button" class="secondary auth-btn" id="btnEntrar">Entrar / Crear cuenta</button>
-      <span id="authUser" class="auth-user" hidden>
-        <span id="authUserName"></span>
-        <button type="button" class="rate-refresh" id="btnSalir">Salir</button>
+    <div class="authbar-actions">
+      <button type="button" class="pro-nav-btn" id="btnHeaderPro" data-go-pro="annual">💎 Pro</button>
+      <span id="authArea">
+        <button type="button" class="secondary auth-btn" id="btnEntrar">Entrar / Crear cuenta</button>
+        <span id="authUser" class="auth-user" hidden>
+          <span id="authUserName"></span>
+          <button type="button" class="rate-refresh" id="btnSalir">Salir</button>
+        </span>
       </span>
-    </span>
+    </div>
   </div>
   <div class="notice" id="fbNotice" hidden>⚠ Falta la configuración de Firebase: pega tu config web en <code>firebase-config.js</code> para activar cuentas, historial y productos. La calculadora sigue funcionando como invitada.</div>
+  <div class="notice alert-banner" id="proAlertBanner" hidden></div>
 
   <header class="hero" style="padding:14px 0 18px">
     <div>
@@ -57,7 +61,9 @@
     <button type="button" class="dash-tab" data-tab="prod">📦 Mis Productos <span class="tab-badge" id="badgeProd" hidden>0</span></button>
     <button type="button" class="dash-tab" data-tab="hist">📜 Historial <span class="tab-badge" id="badgeHist" hidden>0</span></button>
     <button type="button" class="dash-tab" data-tab="tasas">📈 Tasas y Brecha</button>
+    <button type="button" class="dash-tab" data-tab="lote">⚡ Lote <span class="pro-mini-pill">PRO</span></button>
     <button type="button" class="dash-tab" data-tab="guia">💡 Guía y Margen Real</button>
+    <button type="button" class="dash-tab" data-tab="pro">💎 Planes Pro</button>
   </nav>
 
   <!-- TAB VIEW 1: CALCULADORA -->
@@ -99,19 +105,19 @@
             <span class="rc-check" aria-hidden="true">✓</span>
             <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg> BCV · Dólar</span>
             <span class="rc-val" id="rateVal-bcv">Bs 901,62 <small>/ $</small></span>
-            <span class="rc-src" id="rateSrc-bcv">Vigente: Mañana (11 nov)</span>
+            <span class="rc-src" id="rateSrc-bcv">Cargando vigencia…</span>
           </button>
           <button type="button" class="rate-card" data-rate="binance">
             <span class="rc-check" aria-hidden="true">✓</span>
             <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 6.5 15.2 9.7 12 12.9 8.8 9.7Z M6.5 12 3.3 15.2 6.5 18.4 9.7 15.2Z M17.5 12 20.7 15.2 17.5 18.4 14.3 15.2Z M12 14.3 15.2 17.5 12 20.7 8.8 17.5Z M12 1.8 15.2 5 12 8.2 8.8 5Z"/></svg> Binance · USDT</span>
             <span class="rc-val" id="rateVal-binance">Bs 1.077,97 <small>/ USDT</small></span>
-            <span class="rc-src">Paralelo / USDT</span>
+            <span class="rc-src" id="rateSrc-binance">Paralelo / USDT</span>
           </button>
           <button type="button" class="rate-card" data-rate="euro">
             <span class="rc-check" aria-hidden="true">✓</span>
             <span class="rc-name"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg> BCV · Euro</span>
             <span class="rc-val" id="rateVal-euro">Bs 1.007,96 <small>/ €</small></span>
-            <span class="rc-src" id="rateSrc-euro">Vigente: Mañana (11 nov)</span>
+            <span class="rc-src" id="rateSrc-euro">Cargando vigencia…</span>
           </button>
           <button type="button" class="rate-card" data-rate="custom">
             <span class="rc-check" aria-hidden="true">✓</span>
@@ -127,7 +133,7 @@
           <button type="button" class="rate-refresh" id="btnRefreshRates">↻ Actualizar tasas</button>
         </div>
 
-        <label for="tasa">Tasa que entra en el cálculo <span id="tasaFuenteLabel">BCV · Dólar oficial · Vigente: Mañana (11 nov)</span></label>
+        <label for="tasa">Tasa que entra en el cálculo <span id="tasaFuenteLabel">BCV · Dólar oficial</span></label>
         <div class="field"><input type="number" id="tasa" value="901.62" min="0" step="0.01" inputmode="decimal"><span class="suffix">Bs / $</span></div>
         <p class="hint">Usa la tasa real con la que repones: BCV, la de tu proveedor o la que pagas al cambiar. Si repones más caro de lo que cobras, pierdes aunque el margen se vea bien. Si tocas este número a mano, la fuente pasa a “Personalizada”.</p>
 
@@ -226,11 +232,11 @@
         <p>Así sale el precio, con tus números en vivo. Si alguien te discute el precio, esto es lo que le muestras.</p>
       </div>
       <div class="steps">
-        <article class="step"><div class="num">1</div><b>Pasa el costo a bolívares</b><code id="step1f">Costo $ × Tasa</code><strong id="step1r">Bs 1.000,00</strong></article>
-        <article class="step"><div class="num">2</div><b>Suma todo lo que te quitan</b><code id="step2f">Proveedor + Pasarela + Otra</code><strong id="step2r">7,0% en comisiones</strong></article>
-        <article class="step"><div class="num">3</div><b>Saca lo que queda para ti</b><code>1 − Comisiones − Margen</code><strong id="step3r">1 − 0,07 − 0,20 = 0,73</strong></article>
-        <article class="step"><div class="num">4</div><b>Divide el costo entre eso</b><code id="step4f">(Costo Bs + Gasto fijo) ÷ 0,73</code><strong id="step4r">Bs 1.369,86</strong></article>
-        <article class="step"><div class="num">5</div><b>Verifica que no pierdes</b><code>Precio − Costo − Comisiones</code><strong id="step5r">Ganancia: Bs 273,97</strong></article>
+        <article class="step"><div class="num">1</div><b id="step1t">Pasa el costo a bolívares</b><code id="step1f">Costo $ × Tasa</code><strong id="step1r">Bs 1.000,00</strong></article>
+        <article class="step"><div class="num">2</div><b id="step2t">Suma todo lo que te quitan</b><code id="step2f">Proveedor + Pasarela + Otra</code><strong id="step2r">7,0% en comisiones</strong></article>
+        <article class="step"><div class="num">3</div><b id="step3t">Saca lo que queda para ti</b><code id="step3f">1 − Comisiones − Margen</code><strong id="step3r">1 − 0,07 − 0,20 = 0,73</strong></article>
+        <article class="step"><div class="num">4</div><b id="step4t">Divide el costo entre eso</b><code id="step4f">(Costo Bs + Gasto fijo) ÷ 0,73</code><strong id="step4r">Bs 1.369,86</strong></article>
+        <article class="step"><div class="num">5</div><b id="step5t">Verifica que no pierdes</b><code id="step5f">Precio − Costo − Comisiones</code><strong id="step5r">Ganancia: Bs 273,97</strong></article>
       </div>
     </section>
   </div>
@@ -244,6 +250,11 @@
       </div>
       <div class="notice" data-needs-login hidden>Inicia sesión para guardar tus productos en la nube. <button type="button" class="chip" data-open-auth>Entrar</button></div>
       <div id="prodBox" hidden>
+        <div class="quota-bar" id="prodQuotaInfo"></div>
+        <div class="pro-tools-bar" id="prodProBar">
+          <button type="button" class="btn-mini accent" id="btnRevalueCatalog">🔄 Actualizar precios con tasa de hoy <span class="pro-mini-pill">PRO</span></button>
+          <button type="button" class="btn-mini" id="btnOpenImport">📥 Importar Excel / CSV <span class="pro-mini-pill">PRO</span></button>
+        </div>
         <form id="prodForm">
           <div class="form-grid">
             <div>
@@ -334,20 +345,63 @@
 
   <!-- TAB VIEW 3: HISTORIAL -->
   <div class="dash-view" id="tabView-hist">
-    <section class="card panel" aria-label="Historial de cálculos" style="max-width:880px;margin:0 auto">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-        <div>
-          <h2 style="margin:0">Historial de cálculos</h2>
-          <p class="sub" style="margin:0">Cálculos guardados en la nube. Toca “Cargar” en cualquiera para abrirlo en la calculadora.</p>
+    <div style="max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+      <section class="card panel" aria-label="Historial de cálculos">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+          <div>
+            <h2 style="margin:0">Historial de cálculos</h2>
+            <p class="sub" style="margin:0">Cálculos guardados en la nube. Toca “Cargar” en cualquiera para abrirlo en la calculadora.</p>
+            <p class="hint" id="histPlanHint" style="margin:6px 0 0"></p>
+          </div>
+          <button type="button" class="secondary" id="btnLimpiarHist">Limpiar historial</button>
         </div>
-        <button type="button" class="secondary" id="btnLimpiarHist">Limpiar historial</button>
-      </div>
-      <div class="notice" data-needs-login hidden>Inicia sesión para ver tu historial en la nube. <button type="button" class="chip" data-open-auth>Entrar</button></div>
-      <div id="histBox" hidden>
-        <div id="histList"></div>
-        <p class="hint" id="histEmpty">Aún no tienes cálculos guardados.</p>
-      </div>
-    </section>
+        <div class="notice" data-needs-login hidden>Inicia sesión para ver tu historial en la nube. <button type="button" class="chip" data-open-auth>Entrar</button></div>
+        <div id="histBox" hidden>
+          <div id="histList"></div>
+          <p class="hint" id="histEmpty">Aún no tienes cálculos guardados.</p>
+        </div>
+      </section>
+
+      <section class="card panel" aria-label="Reportes de ganancia">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+          <div>
+            <h2 style="margin:0">Reportes de ganancia <span class="pro-inline-tag">PRO</span></h2>
+            <p class="sub" style="margin:4px 0 0">Analiza tus ganancias por día, semana, mes y producto, y exporta a Excel o PDF.</p>
+          </div>
+        </div>
+        <div id="reportsProLock" class="pro-lock-box">
+          <p>📊 Desbloquea reportes por día, semana, mes y producto con exportación directa a Excel (.xlsx) y PDF.</p>
+          <button type="button" class="primary" data-go-pro="annual">Desbloquear con Pro</button>
+        </div>
+        <div id="reportsProBody" hidden>
+          <div class="rep-controls">
+            <div class="rate-chips-row">
+              <button type="button" class="chip active" data-rep-period="day">Por día</button>
+              <button type="button" class="chip" data-rep-period="week">Por semana</button>
+              <button type="button" class="chip" data-rep-period="month">Por mes</button>
+              <button type="button" class="chip" data-rep-period="product">Por producto</button>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button type="button" class="btn-mini accent" id="btnExportReportXlsx">⬇ Excel (.xlsx)</button>
+              <button type="button" class="btn-mini" id="btnExportReportPdf">⬇ PDF</button>
+            </div>
+          </div>
+          <div class="rep-summary-grid">
+            <div class="rep-stat"><span>Ventas estimadas</span><strong id="repTotalRev">Bs 0,00</strong></div>
+            <div class="rep-stat"><span>Ganancia neta</span><strong id="repTotalGain" class="green">Bs 0,00</strong></div>
+            <div class="rep-stat"><span>Ganancia USD</span><strong id="repTotalUsd">$0,00</strong></div>
+            <div class="rep-stat"><span>Margen prom.</span><strong id="repAvgMargin">0,0%</strong></div>
+            <div class="rep-stat"><span>Cálculos</span><strong id="repCount">0</strong></div>
+          </div>
+          <div class="table-scroll">
+            <table class="pro-table">
+              <thead id="reportTableHead"></thead>
+              <tbody id="reportTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 
   <!-- TAB VIEW 4: TASAS Y BRECHA -->
@@ -356,6 +410,24 @@
       <section class="card panel">
         <h2>Monitor de Tasas y Brecha Cambiaria</h2>
         <p class="sub">Compara la tasa oficial con el mercado paralelo para protegerte de la diferencia cambiaria al reponer mercancía.</p>
+
+        <div class="tasas-live-grid">
+          <div class="tasas-live-card">
+            <span class="tlc-tag">BCV · Dólar oficial</span>
+            <strong class="tlc-val" id="tasasVal-bcv">—</strong>
+            <span class="tlc-date" id="tasasFecha-bcv">Cargando vigencia…</span>
+          </div>
+          <div class="tasas-live-card">
+            <span class="tlc-tag">BCV · Euro oficial</span>
+            <strong class="tlc-val" id="tasasVal-euro">—</strong>
+            <span class="tlc-date" id="tasasFecha-euro">Cargando vigencia…</span>
+          </div>
+          <div class="tasas-live-card">
+            <span class="tlc-tag">Binance · USDT</span>
+            <strong class="tlc-val" id="tasasVal-binance">—</strong>
+            <span class="tlc-date" id="tasasFecha-binance">Paralelo / USDT</span>
+          </div>
+        </div>
         
         <div class="gap-card" id="gapCard">
           <div class="gap-stat">
@@ -365,6 +437,65 @@
           </div>
           <div class="gap-advice">
             Si cobras en bolívares a tasa oficial BCV pero compras dólares a tasa paralelo / Binance para reponer inventario, tu costo de reposición es mayor. Tu margen de venta debe superar la brecha cambiaria para no perder capital de trabajo.
+          </div>
+        </div>
+      </section>
+
+      <!-- HISTÓRICO 30 DÍAS + REPOSICIÓN (PRO) -->
+      <section class="card panel" aria-label="Histórico 30 días y tasa de reposición">
+        <h2>Histórico 30 días y tasa de reposición <span class="pro-inline-tag">PRO</span></h2>
+        <p class="sub">Evolución de BCV oficial vs paralelo en los últimos 30 días y tasa recomendada para reponer sin descapitalizarte.</p>
+        <div id="tasasProLock" class="pro-lock-box">
+          <p>📈 Mira el gráfico comparativo BCV vs paralelo de 30 días y calcula tu tasa de reposición recomendada.</p>
+          <button type="button" class="primary" data-go-pro="annual">Desbloquear con Pro</button>
+        </div>
+        <div id="tasasProBody" hidden>
+          <div class="chart-legend">
+            <span class="lg-bcv"><i></i>BCV Oficial</span>
+            <span class="lg-par"><i></i>Paralelo / USDT</span>
+          </div>
+          <div class="chart-wrap">
+            <svg id="ratesChartSvg" viewBox="0 0 640 210" preserveAspectRatio="none" role="img" aria-label="Gráfico de tasas BCV y paralelo de los últimos 30 días"></svg>
+          </div>
+          <p class="hint" id="ratesChartMeta">Cargando serie de los últimos 30 días…</p>
+          <div class="rep-rate-card">
+            <div>
+              <span>Tasa de reposición recomendada</span>
+              <strong id="repRateVal">—</strong>
+              <small id="repRateMeta">Según tendencia reciente del paralelo</small>
+            </div>
+            <button type="button" class="primary" id="btnApplyRepRate">Usar esta tasa</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ALERTAS DE BRECHA Y TASA (PRO) -->
+      <section class="card panel" aria-label="Alertas de brecha y tasa">
+        <h2>Alertas de brecha y nueva tasa BCV <span class="pro-inline-tag">PRO</span></h2>
+        <p class="sub">Fija un límite de brecha y recibe aviso cuando se cruce o cuando el BCV publique una nueva tasa.</p>
+        <div id="alertsProLock" class="pro-lock-box">
+          <p>🔔 Configura alertas automáticas de brecha cambiaria y avisos de nueva tasa BCV.</p>
+          <button type="button" class="primary" data-go-pro="annual">Activar alertas con Pro</button>
+        </div>
+        <div id="alertsProBody" hidden>
+          <div class="alerts-grid">
+            <label class="alert-check">
+              <input type="checkbox" id="alertGapEnabled">
+              <span>Avisar si la brecha supera este porcentaje:</span>
+            </label>
+            <div class="field"><input type="number" id="alertGapPct" value="20" min="1" max="500" step="0.5" inputmode="decimal"><span class="prefix">%</span></div>
+            <label class="alert-check" style="grid-column:1/-1">
+              <input type="checkbox" id="alertRateEnabled">
+              <span>Avisar cuando el BCV publique una tasa nueva</span>
+            </label>
+            <div>
+              <label for="alertBcvAbove">Opcional: avisar si el BCV supera</label>
+              <div class="field"><span class="prefix">Bs</span><input type="number" id="alertBcvAbove" min="0" step="0.01" inputmode="decimal" placeholder="Ej. 950"></div>
+            </div>
+          </div>
+          <div class="actions" style="padding:14px 0 0">
+            <button type="button" class="primary" id="btnSaveAlerts">Guardar alertas</button>
+            <button type="button" class="secondary" id="btnEnableNotif">Permitir notificaciones</button>
           </div>
         </div>
       </section>
@@ -384,6 +515,63 @@
         <p class="hint" style="padding:10px 16px 16px;margin:0">La fila destacada corresponde al margen seleccionado actualmente en la calculadora.</p>
       </section>
     </div>
+  </div>
+
+  <!-- TAB VIEW: LOTE (PRO) -->
+  <div class="dash-view" id="tabView-lote">
+    <section class="card panel" aria-label="Calculadora por lote" style="max-width:880px;margin:0 auto">
+      <div class="section-head" style="margin-bottom:14px">
+        <h2>Calculadora por lote <span class="pro-inline-tag">PRO</span></h2>
+        <p class="sub">Pega una lista de costos (uno por línea, con o sin nombre) y obtén todos los precios en bolívares y dólares de una vez.</p>
+      </div>
+      <div class="notice" id="loteProNotice" hidden>⚡ Esta herramienta es parte de <b>Calculadora Pro</b>. Puedes escribir tu lista y <button type="button" class="chip" data-go-pro="annual">activar Pro</button> para calcular y exportar el lote completo.</div>
+      <div class="form-grid lote-controls">
+        <div>
+          <label for="loteMode">Modo</label>
+          <div class="field">
+            <select id="loteMode">
+              <option value="onCost">Sobre costo (Markup)</option>
+              <option value="onSale">Sobre la venta</option>
+            </select>
+          </div>
+        </div>
+        <div><label for="loteRate">Tasa Bs / $</label><div class="field"><span class="prefix">Bs</span><input type="number" id="loteRate" min="0" step="0.01" inputmode="decimal"></div></div>
+        <div><label for="loteMargen">Margen %</label><div class="field"><input type="number" id="loteMargen" min="0" max="99.9" step="0.5" inputmode="decimal"></div></div>
+        <div><label for="loteComTotal">Comisiones totales %</label><div class="field"><input type="number" id="loteComTotal" min="0" max="99" step="0.1" inputmode="decimal"></div></div>
+        <div><label for="loteGasto">Gasto fijo Bs</label><div class="field"><span class="prefix">Bs</span><input type="number" id="loteGasto" min="0" step="1" inputmode="decimal"></div></div>
+        <div>
+          <label for="loteRound">Redondeo</label>
+          <div class="field">
+            <select id="loteRound">
+              <option value="1">Exacto (sin redondear)</option>
+              <option value="10" selected>Hacia arriba a Bs 10</option>
+              <option value="50">Hacia arriba a Bs 50</option>
+              <option value="100">Hacia arriba a Bs 100</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <label for="loteInput" style="margin-top:12px">Lista de productos y costos en USD (máx. 200 líneas)</label>
+      <textarea id="loteInput" class="share-textarea" rows="7" placeholder="Camisa Oxford 12.50&#10;Pantalón jean; 18&#10;Gorra $6,50&#10;24.90"></textarea>
+      <div class="actions" style="padding:12px 0 0">
+        <button type="button" class="primary" id="btnCalcLote">Calcular todos los precios</button>
+      </div>
+      <div id="loteResultsBox" hidden style="margin-top:18px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+          <strong id="loteSummary">0 calculados</strong>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="secondary" id="btnCopyLote">Copiar lista</button>
+            <button type="button" class="secondary" id="btnXlsxLote">⬇ Descargar Excel (.xlsx)</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="pro-table">
+            <thead><tr><th>#</th><th>Producto</th><th>Costo $</th><th>Precio Bs</th><th>Precio $</th><th>Ganancia Bs</th></tr></thead>
+            <tbody id="loteTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
   </div>
 
   <!-- TAB VIEW 5: GUÍA Y MARGEN REAL (Móvil) -->
@@ -416,7 +604,114 @@
     </div>
   </div>
 
-  <footer>Hecha para vender en Venezuela sin perder por tasa, comisiones ni redondeo. Los valores de arranque son un ejemplo editable — pon siempre tu tasa y tus comisiones reales del día.</footer>
+  <!-- TAB VIEW: PLANES PRO Y PAGO MANUAL -->
+  <div class="dash-view" id="tabView-pro">
+    <div style="max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+      <section class="card panel" aria-label="Tu plan actual">
+        <h2 style="margin:0 0 6px">Calculadora de Márgenes Pro</h2>
+        <p class="sub" style="margin:0 0 12px">La calculadora completa, las tasas BCV/paralelo y el monitor de brecha <b>siguen 100% gratis siempre para todos</b>. Con Pro desbloqueas herramientas pensadas para escalar tu catálogo y ahorrar horas cada semana.</p>
+        <div id="proAccountStatusCard"></div>
+        <div class="notice" id="payPendingCard" hidden style="margin-top:12px"></div>
+      </section>
+
+      <section class="plans-grid" aria-label="Planes disponibles">
+        <article class="card panel plan-card">
+          <div class="plan-head">
+            <h3>Pro Mensual</h3>
+            <span class="plan-tag">Flexible</span>
+          </div>
+          <div class="plan-price"><strong id="planMonthlyUsd">$1,99</strong> <small>/ mes en USDT</small></div>
+          <div class="plan-bs" id="planMonthlyBs">Según BCV del día</div>
+          <ul class="plan-features">
+            <li>✓ Productos ilimitados organizados por categorías</li>
+            <li>✓ Historial de cálculos ilimitado</li>
+            <li>✓ Reportes de ganancia (día, semana, mes y producto) + Excel y PDF</li>
+            <li>✓ Revalorización masiva en 1 toque con la tasa de hoy</li>
+            <li>✓ Alertas de brecha cambiaria y de nueva tasa BCV</li>
+            <li>✓ Lista de precios en Imagen (WhatsApp/IG) y PDF con tu negocio</li>
+            <li>✓ Calculadora por lote para múltiples productos</li>
+            <li>✓ Gráfico histórico 30 días BCV vs paralelo + tasa de reposición</li>
+            <li>✓ Importar catálogo masivo por Excel (.xlsx) o CSV</li>
+            <li>✓ Soporte prioritario</li>
+          </ul>
+          <button type="button" class="secondary" style="width:100%" data-choose-plan="monthly">Elegir Plan Mensual</button>
+        </article>
+
+        <article class="card panel plan-card recommended">
+          <div class="plan-head">
+            <h3>Pro Anual</h3>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span class="plan-rec-badge">Recomendado</span>
+              <span class="plan-save-badge" id="planAnnualSavings">Ahorra 37%</span>
+            </div>
+          </div>
+          <div class="plan-price"><strong id="planAnnualUsd">$15</strong> <small>/ año en USDT</small></div>
+          <div class="plan-compare">Frente a 12 × $1,99 = $23,88 al año</div>
+          <div class="plan-bs" id="planAnnualBs">Según BCV del día</div>
+          <ul class="plan-features">
+            <li>✓ Todo lo del plan Mensual durante 12 meses</li>
+            <li>✓ Productos y categorías ilimitadas</li>
+            <li>✓ Historial ilimitado en la nube</li>
+            <li>✓ Reportes de ganancia con exportación Excel y PDF</li>
+            <li>✓ Actualización masiva de precios con tasa de hoy</li>
+            <li>✓ Alertas automáticas de brecha y nueva tasa BCV</li>
+            <li>✓ Catálogo en Imagen PNG (WhatsApp/IG) y PDF profesional</li>
+            <li>✓ Calculadora por lote e importación Excel / CSV</li>
+            <li>✓ Histórico 30 días y tasa de reposición recomendada</li>
+            <li>✓ Soporte prioritario durante todo el año</li>
+          </ul>
+          <button type="button" class="primary" style="width:100%" data-choose-plan="annual">Elegir Plan Anual ($15)</button>
+        </article>
+      </section>
+
+      <section class="card panel pay-box" id="paymentBox" aria-label="Pago automático Pabilo y envío de referencia">
+        <div class="pay-box-head">
+          <div>
+            <h2>Pagar y activar suscripción Pro</h2>
+            <p class="sub" style="margin:4px 0 0">Verificación bancaria automática con Pabilo en segundos. Transfiere el monto exacto, pega tu referencia y tu cuenta pasa a Pro al instante (al vencer vuelve a Gratis si no renuevas).</p>
+          </div>
+          <span class="pro-inline-tag" id="payAutoBadge">⚡ Verificación automática</span>
+        </div>
+        <div class="pay-selectors">
+          <div>
+            <span class="pay-lbl">1. Elige el plan</span>
+            <div class="rate-chips-row">
+              <button type="button" class="chip" data-pay-plan="monthly">Mensual · $1,99</button>
+              <button type="button" class="chip active" data-pay-plan="annual">Anual · $15 (Ahorra 37%)</button>
+            </div>
+          </div>
+          <div>
+            <span class="pay-lbl">2. Método de pago</span>
+            <div class="rate-chips-row">
+              <button type="button" class="chip active" data-pay-method="pago_movil">Pago Móvil (BDV)</button>
+              <button type="button" class="chip" data-pay-method="usdt">USDT / Binance Pay</button>
+            </div>
+          </div>
+        </div>
+        <div class="pay-total" id="payTotalSummary"></div>
+        <div class="pay-order-box" id="payOrderBox" hidden></div>
+        <div class="pay-instructions" id="payInstructions"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <button type="button" class="secondary" id="btnCreateOrder">Generar orden con monto exacto (congelar 30 min)</button>
+        </div>
+        <label for="payReference" style="margin-top:14px">3. Número de referencia bancaria o ID de orden</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <div class="field" style="flex:1;min-width:220px"><input type="text" id="payReference" maxlength="64" placeholder="Ej. últimos 6-8 dígitos o referencia completa" autocomplete="off"></div>
+          <button type="button" class="primary" id="btnSubmitPayment">Verificar pago y activar Pro</button>
+          <button type="button" class="secondary" id="btnSubmitManualFallback" hidden>Enviar para validación manual</button>
+        </div>
+        <div class="pay-status-banner" id="payStatusBanner" hidden aria-live="polite"></div>
+        <p class="hint" style="margin-top:10px">Nota: la cuenta gratuita siempre incluye calculadora completa sin límites, tasas y brecha en vivo, hasta 10 productos guardados e historial de últimos 30 días o 50 cálculos.</p>
+      </section>
+
+      <section class="card panel" id="proSupportCard" aria-label="Soporte prioritario"></section>
+    </div>
+  </div>
+
+  <footer>
+    <span>Hecha para vender en Venezuela sin perder por tasa, comisiones ni redondeo. Los valores de arranque son un ejemplo editable — pon siempre tu tasa y tus comisiones reales del día.</span>
+    <span class="footer-links"><a href="#planes" data-go-pro="annual">Planes Pro</a> · <a href="terminos.html">Términos de Uso</a> · <a href="privacidad.html">Política de Privacidad</a></span>
+  </footer>
 </div>
 
 <div class="modal-backdrop" id="authModal" hidden>
@@ -466,6 +761,11 @@
       </div>
     </div>
     <div class="share-cats" id="shareCatChips"></div>
+    <label for="shareBusinessName">Nombre de tu negocio (para Imagen y PDF) <span class="pro-mini-pill">PRO</span></label>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="field" style="flex:1"><input type="text" id="shareBusinessName" maxlength="80" placeholder="Ej. Inversiones El Éxito"></div>
+      <button type="button" class="btn-mini" id="btnSaveBizName">Guardar</button>
+    </div>
     <label for="shareRateOverride">Tasa para calcular la lista</label>
     <div class="field">
       <select id="shareRateOverride">
@@ -479,10 +779,75 @@
       <span>Vista previa (editable)</span>
       <button type="button" class="btn-mini" id="btnShareRegen">Regenerar</button>
     </label>
-    <textarea id="sharePreview" class="share-textarea" rows="9"></textarea>
+    <textarea id="sharePreview" class="share-textarea" rows="8"></textarea>
     <div class="actions" style="padding:14px 0 0">
       <button type="button" class="secondary" id="btnCopyShareList">Copiar lista</button>
       <button type="button" class="primary" id="btnSendShareWa">Enviar por WhatsApp</button>
+    </div>
+    <div class="actions" style="padding:10px 0 0">
+      <button type="button" class="secondary" id="btnShareImage">🖼 Imagen WhatsApp / IG <span class="pro-mini-pill">PRO</span></button>
+      <button type="button" class="secondary" id="btnSharePdf">📄 PDF catálogo <span class="pro-mini-pill">PRO</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="proGateModal" hidden>
+  <div class="modal card" role="dialog" aria-modal="true" aria-label="Función Pro">
+    <div class="modal-head">
+      <h2>Herramienta de Calculadora Pro 💎</h2>
+      <button type="button" class="rate-refresh" id="btnCloseGateModal">✕</button>
+    </div>
+    <p class="sub" id="proGateMsg" style="margin:10px 0 16px">Esta función forma parte de Calculadora Pro.</p>
+    <div class="actions" style="padding:0">
+      <button type="button" class="primary" style="width:100%" data-go-pro="annual">Ver Planes Pro ($1,99/mes o $15/año)</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="revalModal" hidden>
+  <div class="modal modal-wide card" role="dialog" aria-modal="true" aria-label="Actualizar precios con tasa de hoy">
+    <div class="modal-head">
+      <h2>Actualizar precios con tasa de hoy <span class="pro-inline-tag">PRO</span></h2>
+      <button type="button" class="rate-refresh" id="btnCloseReval">✕</button>
+    </div>
+    <p class="sub" style="margin:6px 0 12px">Revaloriza tu catálogo con las tasas en vivo de hoy y revisa cuánto cambió cada precio.</p>
+    <label for="revalTargetSource">Tasa destino para productos con tasa personalizada</label>
+    <div class="field">
+      <select id="revalTargetSource">
+        <option value="bcvUsd">BCV dólar</option>
+        <option value="binanceUsdt">Binance USDT</option>
+        <option value="euroBcv">BCV Euro</option>
+      </select>
+    </div>
+    <p class="hint" id="revalSummary" style="margin:10px 0">Calculando variaciones…</p>
+    <div class="table-scroll" style="max-height:300px">
+      <table class="pro-table">
+        <thead><tr><th>Producto</th><th>Antes</th><th>Hoy</th><th>Cambio</th></tr></thead>
+        <tbody id="revalTableBody"></tbody>
+      </table>
+    </div>
+    <div class="actions" style="padding:14px 0 0">
+      <button type="button" class="primary" id="btnApplyReval">Confirmar actualización de precios</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="importModal" hidden>
+  <div class="modal modal-wide card" role="dialog" aria-modal="true" aria-label="Importar catálogo Excel o CSV">
+    <div class="modal-head">
+      <h2>Importar catálogo por Excel o CSV <span class="pro-inline-tag">PRO</span></h2>
+      <button type="button" class="rate-refresh" id="btnCloseImport">✕</button>
+    </div>
+    <p class="sub" style="margin:6px 0 10px">Descarga la plantilla si la necesitas y luego sube tu archivo <code>.xlsx</code> o <code>.csv</code> con tus productos.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button type="button" class="btn-mini" id="btnTplXlsx">⬇ Plantilla Excel (.xlsx)</button>
+      <button type="button" class="btn-mini" id="btnTplCsv">⬇ Plantilla CSV</button>
+    </div>
+    <label for="importFileInput">Seleccionar archivo (.xlsx o .csv)</label>
+    <div class="field"><input type="file" id="importFileInput" accept=".xlsx,.csv,.txt"></div>
+    <div id="importPreview" style="margin-top:12px"></div>
+    <div class="actions" style="padding:14px 0 0">
+      <button type="button" class="primary" id="btnConfirmImport" disabled>Importar productos válidos</button>
     </div>
   </div>
 </div>
@@ -490,7 +855,11 @@
 <div class="toast" id="toast" role="status">Copiado</div>
 
 <script src="firebase-config.js"></script>
+<script src="pro-config.js"></script>
+<script src="pro-core.js"></script>
+<script src="pro-files.js"></script>
 <script src="app.js"></script>
+<script src="pro-ui.js"></script>
 <script type="module" src="auth.js"></script>
 </body>
 </html>
