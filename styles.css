@@ -2003,6 +2003,31 @@ input[type="password"] {
   box-shadow: var(--shadow);
 }
 
+.plan-card.plan-current {
+  border: 2px solid var(--green);
+  background: var(--green-soft);
+}
+
+.plan-card.plan-locked {
+  opacity: .72;
+}
+
+.plan-upgrade-note {
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--card2);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+[data-choose-plan]:disabled,
+[data-pay-plan]:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
 .plan-head {
   display: flex;
   align-items: center;

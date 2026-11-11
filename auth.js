@@ -1549,8 +1549,7 @@
       subCurrent = Object.assign({}, subDoc);
       subPending = null;
       scheduleExpiryTimer();
-      renderAuthUI();
-      notifyProUI();
+      handleSubscriptionTransition();
     }
   };
 

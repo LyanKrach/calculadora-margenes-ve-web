@@ -217,18 +217,106 @@
       }
     }
 
-    // Selector de plan y método en pago manual
+    var upgradeCandidates = ['annual', 'semiannual', 'quarterly', 'monthly'];
+    var firstAvailablePlan = null;
+    if (st.isPro) {
+      for (var ui = 0; ui < upgradeCandidates.length; ui++) {
+        var cand = upgradeCandidates[ui];
+        if (C.planUpgradeInfo && C.planUpgradeInfo(st.subState, cand).canPurchase) {
+          firstAvailablePlan = cand;
+          break;
+        }
+      }
+      if (firstAvailablePlan && C.planUpgradeInfo && !C.planUpgradeInfo(st.subState, selectedPlan).canPurchase) {
+        selectedPlan = firstAvailablePlan;
+      }
+    } else {
+      firstAvailablePlan = selectedPlan;
+    }
+
+    var basePlanTitles = {
+      monthly: 'Elegir Plan Mensual ($1,99)',
+      quarterly: 'Elegir Trimestral ($4,99)',
+      semiannual: 'Elegir 6 Meses ($7,99)',
+      annual: 'Elegir Plan Anual ($14,99)'
+    };
+    var upgradePlanTitles = {
+      monthly: 'Mejorar a Mensual ($1,99)',
+      quarterly: 'Mejorar a Trimestral ($4,99)',
+      semiannual: 'Mejorar a 6 Meses ($7,99)',
+      annual: 'Mejorar a Anual ($14,99)'
+    };
+
+    ['monthly', 'quarterly', 'semiannual', 'annual'].forEach(function (pid) {
+      var upInfo = C.planUpgradeInfo ? C.planUpgradeInfo(st.subState, pid) : { canPurchase: true };
+      var card = document.querySelector('[data-plan-card="' + pid + '"]');
+      if (card) {
+        card.classList.toggle('plan-current', !!upInfo.isCurrentPlan);
+        card.classList.toggle('plan-locked', !!upInfo.isLowerPlan);
+      }
+      var noteEl = $('planUpgradeNote-' + pid);
+      if (noteEl) {
+        if (st.isPro && upInfo.isCurrentPlan) {
+          noteEl.hidden = false;
+          noteEl.innerHTML = '✓ <b>Plan actual activo</b> (' + upInfo.remainingDays + ' días restantes hasta el ' + esc(fmtDateShort(st.subState.endDate)) + '). Elige un plan superior para acumular tus días.';
+        } else if (st.isPro && upInfo.isLowerPlan) {
+          noteEl.hidden = false;
+          noteEl.textContent = 'Ya cuentas con un plan superior activo (' + planLabelShort(upInfo.activePlan) + ').';
+        } else if (st.isPro && upInfo.isUpgrade) {
+          noteEl.hidden = false;
+          noteEl.innerHTML = '📅 <b>Ajuste de acumulación de días:</b> tus ' + upInfo.remainingDays + ' días actuales + ' + upInfo.addedDays + ' días = <b>' + upInfo.totalDaysAfter + ' días en total</b> (hasta el ' + esc(fmtDateShort(upInfo.projectedEndDate)) + ').';
+        } else {
+          noteEl.hidden = true;
+          noteEl.textContent = '';
+        }
+      }
+      var chooseBtn = document.querySelector('[data-choose-plan="' + pid + '"]');
+      if (chooseBtn) {
+        chooseBtn.disabled = !upInfo.canPurchase;
+        chooseBtn.setAttribute('aria-disabled', upInfo.canPurchase ? 'false' : 'true');
+        if (st.isPro && upInfo.isCurrentPlan) {
+          chooseBtn.textContent = '✓ Plan actual activo';
+        } else if (st.isPro && upInfo.isLowerPlan) {
+          chooseBtn.textContent = 'Incluido en tu plan actual';
+        } else if (st.isPro && upInfo.isUpgrade) {
+          chooseBtn.textContent = upgradePlanTitles[pid] || basePlanTitles[pid];
+        } else {
+          chooseBtn.textContent = basePlanTitles[pid];
+        }
+      }
+    });
+
+    // Selector de plan y método en pago
     document.querySelectorAll('[data-pay-plan]').forEach(function (b) {
-      b.classList.toggle('active', b.getAttribute('data-pay-plan') === selectedPlan);
+      var pid = b.getAttribute('data-pay-plan');
+      var upInfo = C.planUpgradeInfo ? C.planUpgradeInfo(st.subState, pid) : { canPurchase: true };
+      b.disabled = !upInfo.canPurchase;
+      b.classList.toggle('active', upInfo.canPurchase && pid === selectedPlan);
     });
     document.querySelectorAll('[data-pay-method]').forEach(function (b) {
       b.classList.toggle('active', b.getAttribute('data-pay-method') === selectedMethod);
     });
 
+    var payFlowArea = $('payFlowArea');
+    var maxNotice = $('payMaxPlanNotice');
+    var blockedOnMaxPlan = !!(st.isPro && !firstAvailablePlan);
+    if (payFlowArea) payFlowArea.hidden = blockedOnMaxPlan;
+    if (maxNotice) {
+      maxNotice.hidden = !blockedOnMaxPlan;
+      if (blockedOnMaxPlan) {
+        maxNotice.innerHTML = '✅ <b>Ya cuentas con el plan máximo (' + esc(planLabelShort(st.subState.plan)) + ') activo</b> hasta el <b>' + esc(fmtDateShort(st.subState.endDate)) + '</b> (' + st.subState.daysLeft + ' días restantes). No necesitas volver a comprar mientras esté vigente.';
+      }
+    }
+
+    var selUpInfo = C.planUpgradeInfo ? C.planUpgradeInfo(st.subState, selectedPlan) : { isUpgrade: false };
     var price = C.planPrice(selectedPlan, r.bcvUsd);
     var sum = $('payTotalSummary');
     if (sum && price) {
-      sum.innerHTML = '<b>' + esc(planLabelLong(selectedPlan)) + ':</b> $' + C.fmt2(price.usdt) + ' USDT' + (price.bs ? ' · ≈ <b>Bs ' + C.fmt2(price.bs) + '</b> (tasa BCV ' + C.fmt2(price.rate) + ')' : '');
+      var actionPrefix = selUpInfo.isUpgrade ? ('Mejora a ' + planLabelLong(selectedPlan)) : planLabelLong(selectedPlan);
+      var adjText = selUpInfo.isUpgrade
+        ? (' <span class="hint">· 📅 Incluye +' + selUpInfo.remainingDays + ' días acumulados = <b>' + selUpInfo.totalDaysAfter + ' días totales</b> (hasta el ' + esc(fmtDateShort(selUpInfo.projectedEndDate)) + ')</span>')
+        : '';
+      sum.innerHTML = '<b>' + esc(actionPrefix) + ':</b> $' + C.fmt2(price.usdt) + ' USDT' + (price.bs ? ' · ≈ <b>Bs ' + C.fmt2(price.bs) + '</b> (tasa BCV ' + C.fmt2(price.rate) + ')' : '') + adjText;
     }
 
     renderPaymentInstructions();
@@ -488,6 +576,11 @@
       if (b) b.openAuth(function () { if (root.setDashboardTab) root.setDashboardTab('pro'); });
       return null;
     }
+    var curUpInfo = C.planUpgradeInfo ? C.planUpgradeInfo(st.subState, selectedPlan) : { canPurchase: true };
+    if (!curUpInfo.canPurchase) {
+      toast('Este es tu plan actual activo. Elige un plan superior para mejorarlo.');
+      return null;
+    }
     var btn = $('btnCreateOrder');
     if (btn && !silent) { btn.disabled = true; btn.textContent = 'Congelando tasa…'; }
     try {
@@ -535,6 +628,11 @@
       if (b) b.openAuth(function () { if (root.setDashboardTab) root.setDashboardTab('pro'); });
       return;
     }
+    var submitUpInfo = C.planUpgradeInfo ? C.planUpgradeInfo(st.subState, selectedPlan) : { canPurchase: true };
+    if (!submitUpInfo.canPurchase) {
+      toast('Este plan ya está activo en tu cuenta. Elige un plan superior para mejorarlo.');
+      return;
+    }
     var refEl = $('payReference');
     var ref = (refEl && refEl.value || '').trim();
     if (ref.length < 4) { toast('Escribe la referencia o hash del pago (mínimo 4 caracteres)'); if (refEl) refEl.focus(); return; }
@@ -575,6 +673,11 @@
       if (b) b.openAuth(function () { if (root.setDashboardTab) root.setDashboardTab('pro'); });
       return;
     }
+    var submitUpInfo = C.planUpgradeInfo ? C.planUpgradeInfo(st.subState, selectedPlan) : { canPurchase: true };
+    if (!submitUpInfo.canPurchase) {
+      toast('Este plan ya está activo en tu cuenta. Elige un plan superior para mejorarlo.');
+      return;
+    }
     var refEl = $('payReference');
     var rawRef = (refEl && refEl.value || '').trim();
     var cleanRef = selectedMethod === 'pago_movil'
@@ -588,12 +691,12 @@
     if (payVerifying) return;
     payVerifying = true;
     var btn = $('btnSubmitPayment');
-    if (btn) { btn.disabled = true; btn.textContent = 'Verificando con Pabilo…'; }
+    if (btn) { btn.disabled = true; btn.textContent = 'Verificando pago…'; }
     payStatusMsg = {
       tone: 'info',
       html: selectedMethod === 'pago_movil'
-        ? '⏳ <b>Verificando tu referencia automáticamente con Pabilo…</b> Si pagaste vía BDV puede tardar 15 a 35 segundos, no cierres esta ventana.'
-        : '⏳ <b>Verificando tu orden de Binance Pay automáticamente con Pabilo…</b> Un momento por favor, no cierres esta ventana.'
+        ? '⏳ <b>Verificando pago…</b> Si pagaste vía BDV puede tardar 15 a 35 segundos, no cierres esta ventana.'
+        : '⏳ <b>Verificando pago…</b> Un momento por favor, no cierres esta ventana.'
     };
     renderPayStatusBanner();
 
@@ -1451,13 +1554,30 @@
       }
       var pp = e.target.closest ? e.target.closest('[data-choose-plan]') : null;
       if (pp) {
-        selectedPlan = pp.getAttribute('data-choose-plan') || 'annual';
+        var nextPlan = pp.getAttribute('data-choose-plan') || 'annual';
+        var ppUp = C.planUpgradeInfo ? C.planUpgradeInfo(authState().subState, nextPlan) : { canPurchase: true };
+        if (!ppUp.canPurchase) {
+          toast(ppUp.isCurrentPlan ? 'Este es tu plan actual activo.' : 'Ya cuentas con un plan superior activo.');
+          return;
+        }
+        selectedPlan = nextPlan;
         renderPlansPage();
         var pb = $('paymentBox'); if (pb) pb.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
       var pSel = e.target.closest ? e.target.closest('[data-pay-plan]') : null;
-      if (pSel) { selectedPlan = pSel.getAttribute('data-pay-plan'); if (payStatusMsg && payStatusMsg.tone !== 'ok') payStatusMsg = null; renderPlansPage(); return; }
+      if (pSel) {
+        var chipPlan = pSel.getAttribute('data-pay-plan');
+        var chipUp = C.planUpgradeInfo ? C.planUpgradeInfo(authState().subState, chipPlan) : { canPurchase: true };
+        if (!chipUp.canPurchase) {
+          toast(chipUp.isCurrentPlan ? 'Este es tu plan actual activo.' : 'Ya cuentas con un plan superior activo.');
+          return;
+        }
+        selectedPlan = chipPlan;
+        if (payStatusMsg && payStatusMsg.tone !== 'ok') payStatusMsg = null;
+        renderPlansPage();
+        return;
+      }
       var mSel = e.target.closest ? e.target.closest('[data-pay-method]') : null;
       if (mSel) {
         selectedMethod = mSel.getAttribute('data-pay-method');

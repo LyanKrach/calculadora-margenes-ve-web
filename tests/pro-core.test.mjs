@@ -255,3 +255,50 @@ test('revalorización masiva muestra cuánto cambió cada precio', () => {
   assert.equal(out2.rows[1].delta, 250);
 });
 
+test('planUpgradeInfo: bloquea plan actual/inferior y calcula ajuste con acumulación de días', () => {
+  assert.deepEqual(C.PLAN_ORDER, { monthly: 1, quarterly: 2, semiannual: 3, annual: 4 });
+  const subMonthly = C.subscriptionState({
+    plan: 'monthly',
+    status: 'active',
+    startDate: '2026-11-11T16:00:00Z',
+    endDate: '2026-12-11T16:00:00Z', // 30 días exactos desde NOW
+  }, NOW);
+
+  const same = C.planUpgradeInfo(subMonthly, 'monthly', NOW);
+  assert.equal(same.canPurchase, false);
+  assert.equal(same.isCurrentPlan, true);
+  assert.equal(same.isLowerPlan, false);
+  assert.equal(same.isUpgrade, false);
+  assert.equal(same.remainingDays, 30);
+
+  const upQ = C.planUpgradeInfo(subMonthly, 'quarterly', NOW);
+  assert.equal(upQ.canPurchase, true);
+  assert.equal(upQ.isUpgrade, true);
+  assert.equal(upQ.remainingDays, 30);
+  assert.equal(upQ.addedDays, 90);
+  assert.equal(upQ.totalDaysAfter, 120);
+  assert.equal(upQ.projectedEndDate, '2027-03-11T16:00:00.000Z');
+
+  const subSemi = C.subscriptionState({
+    plan: 'semiannual',
+    status: 'active',
+    startDate: '2026-11-11T16:00:00Z',
+    endDate: '2027-05-10T16:00:00Z', // 180 días desde NOW
+  }, NOW);
+  const lower = C.planUpgradeInfo(subSemi, 'quarterly', NOW);
+  assert.equal(lower.canPurchase, false);
+  assert.equal(lower.isCurrentPlan, false);
+  assert.equal(lower.isLowerPlan, true);
+  const upAnnual = C.planUpgradeInfo(subSemi, 'annual', NOW);
+  assert.equal(upAnnual.canPurchase, true);
+  assert.equal(upAnnual.isUpgrade, true);
+  assert.equal(upAnnual.totalDaysAfter, 180 + 365);
+
+  const free = C.planUpgradeInfo(C.subscriptionState(null, NOW), 'monthly', NOW);
+  assert.equal(free.canPurchase, true);
+  assert.equal(free.isUpgrade, false);
+  assert.equal(free.addedDays, 30);
+  assert.equal(free.totalDaysAfter, 30);
+});
+
+

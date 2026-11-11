@@ -2027,6 +2027,31 @@ input[type="password"] {
   box-shadow: var(--shadow);
 }
 
+.plan-card.plan-current {
+  border: 2px solid var(--green);
+  background: var(--green-soft);
+}
+
+.plan-card.plan-locked {
+  opacity: .72;
+}
+
+.plan-upgrade-note {
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--card2);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+[data-choose-plan]:disabled,
+[data-pay-plan]:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
 .plan-head {
   display: flex;
   align-items: center;
@@ -2987,7 +3012,7 @@ footer {
       </section>
 
       <section class="plans-grid" aria-label="Planes disponibles">
-        <article class="card panel plan-card">
+        <article class="card panel plan-card" data-plan-card="monthly">
           <div class="plan-head">
             <h3>Pro Mensual</h3>
             <span class="plan-tag">30 días · Flexible</span>
@@ -3003,10 +3028,11 @@ footer {
             <li>✓ Lista de precios en Imagen (WhatsApp/IG) y PDF con tu negocio</li>
             <li>✓ Calculadora por lote, histórico 30 días, importar Excel/CSV y soporte prioritario</li>
           </ul>
+          <div class="plan-upgrade-note" id="planUpgradeNote-monthly" hidden></div>
           <button type="button" class="secondary" style="width:100%" data-choose-plan="monthly">Elegir Plan Mensual ($1,99)</button>
         </article>
 
-        <article class="card panel plan-card">
+        <article class="card panel plan-card" data-plan-card="quarterly">
           <div class="plan-head">
             <h3>Pro Trimestral</h3>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -3023,10 +3049,11 @@ footer {
             <li>✓ Reportes de ganancia, revalorización masiva y alertas BCV</li>
             <li>✓ Lista de precios PNG/PDF, lote, Excel/CSV y soporte prioritario</li>
           </ul>
+          <div class="plan-upgrade-note" id="planUpgradeNote-quarterly" hidden></div>
           <button type="button" class="secondary" style="width:100%" data-choose-plan="quarterly">Elegir Trimestral ($4,99)</button>
         </article>
 
-        <article class="card panel plan-card">
+        <article class="card panel plan-card" data-plan-card="semiannual">
           <div class="plan-head">
             <h3>Pro 6 Meses</h3>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -3043,10 +3070,11 @@ footer {
             <li>✓ Reportes Excel/PDF, revalorización masiva, lote e importación</li>
             <li>✓ Alertas automáticas, histórico 30 días y soporte prioritario</li>
           </ul>
+          <div class="plan-upgrade-note" id="planUpgradeNote-semiannual" hidden></div>
           <button type="button" class="secondary" style="width:100%" data-choose-plan="semiannual">Elegir 6 Meses ($7,99)</button>
         </article>
 
-        <article class="card panel plan-card recommended">
+        <article class="card panel plan-card recommended" data-plan-card="annual">
           <div class="plan-head">
             <h3>Pro Anual</h3>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -3064,11 +3092,14 @@ footer {
             <li>✓ Revalorización masiva, alertas BCV, catálogo PNG/PDF y lote</li>
             <li>✓ Histórico 30 días, tasa de reposición y soporte prioritario todo el año</li>
           </ul>
+          <div class="plan-upgrade-note" id="planUpgradeNote-annual" hidden></div>
           <button type="button" class="primary" style="width:100%" data-choose-plan="annual">Elegir Plan Anual ($14,99)</button>
         </article>
       </section>
 
       <section class="card panel pay-box" id="paymentBox" aria-label="Pago automático Pabilo y envío de referencia">
+        <div class="pay-status-banner ok" id="payMaxPlanNotice" hidden aria-live="polite"></div>
+        <div id="payFlowArea">
         <div class="pay-box-head">
           <div>
             <h2>Pagar y activar suscripción Pro</h2>
@@ -3108,6 +3139,7 @@ footer {
         </div>
         <div class="pay-status-banner" id="payStatusBanner" hidden aria-live="polite"></div>
         <p class="hint" style="margin-top:10px">Nota: la cuenta gratuita siempre incluye calculadora completa sin límites, tasas y brecha en vivo, hasta 10 productos guardados e historial de últimos 30 días o 50 cálculos.</p>
+        </div>
       </section>
 
       <section class="card panel" id="proSupportCard" aria-label="Soporte prioritario"></section>
@@ -3397,11 +3429,12 @@ window.PRO_PAYMENT_CONFIG = {
   var FREE_LIMITS = Object.freeze({ products: 10, historyDays: 30, historyItems: 50 });
   var PRO_HISTORY_READ_CAP = 1000; // tope técnico de lectura del historial Pro
   var PLANS = Object.freeze({
-    monthly: Object.freeze({ id: 'monthly', name: 'Mensual', label: 'Pro Mensual', usd: 1.99, months: 1, days: 30, savePct: 0 }),
-    quarterly: Object.freeze({ id: 'quarterly', name: 'Trimestral', label: 'Pro Trimestral', usd: 4.99, months: 3, days: 90, savePct: 16 }),
-    semiannual: Object.freeze({ id: 'semiannual', name: '6 meses', label: 'Pro 6 Meses', usd: 7.99, months: 6, days: 180, savePct: 33 }),
-    annual: Object.freeze({ id: 'annual', name: 'Anual', label: 'Pro Anual', usd: 14.99, months: 12, days: 365, savePct: 37 })
+    monthly: Object.freeze({ id: 'monthly', name: 'Mensual', label: 'Pro Mensual', usd: 1.99, months: 1, days: 30, savePct: 0, tier: 1 }),
+    quarterly: Object.freeze({ id: 'quarterly', name: 'Trimestral', label: 'Pro Trimestral', usd: 4.99, months: 3, days: 90, savePct: 16, tier: 2 }),
+    semiannual: Object.freeze({ id: 'semiannual', name: '6 meses', label: 'Pro 6 Meses', usd: 7.99, months: 6, days: 180, savePct: 33, tier: 3 }),
+    annual: Object.freeze({ id: 'annual', name: 'Anual', label: 'Pro Anual', usd: 14.99, months: 12, days: 365, savePct: 37, tier: 4 })
   });
+  var PLAN_ORDER = Object.freeze({ monthly: 1, quarterly: 2, semiannual: 3, annual: 4 });
 
   /* ===== Utilidades ===== */
   function toNum(v, d) {
@@ -3499,6 +3532,45 @@ window.PRO_PAYMENT_CONFIG = {
   function computeEndDate(startIso, planId) {
     var p = PLANS[planId];
     return p ? addMonthsIso(startIso, p.months) : '';
+  }
+  function planUpgradeInfo(subState, targetPlanId, now) {
+    var target = PLANS[targetPlanId];
+    var addedDays = target ? target.days : 0;
+    var activePlan = (subState && subState.isPro && subState.plan && PLANS[subState.plan]) ? subState.plan : null;
+    var endMs = activePlan ? parseEnd(subState.endDate) : NaN;
+    var nowMs = toDate(now).getTime();
+    if (!activePlan || !isFinite(endMs) || endMs <= nowMs) {
+      return {
+        isActive: false,
+        activePlan: null,
+        isCurrentPlan: false,
+        isLowerPlan: false,
+        isUpgrade: false,
+        canPurchase: true,
+        remainingDays: 0,
+        addedDays: addedDays,
+        totalDaysAfter: addedDays,
+        projectedEndDate: ''
+      };
+    }
+    var curTier = PLAN_ORDER[activePlan] || 0;
+    var tgtTier = PLAN_ORDER[targetPlanId] || 0;
+    var remainingDays = Math.max(1, Math.ceil((endMs - nowMs) / MS_DAY));
+    var isCurrentPlan = targetPlanId === activePlan;
+    var isLowerPlan = curTier > 0 && tgtTier > 0 && tgtTier < curTier;
+    var isUpgrade = curTier > 0 && tgtTier > curTier;
+    return {
+      isActive: true,
+      activePlan: activePlan,
+      isCurrentPlan: isCurrentPlan,
+      isLowerPlan: isLowerPlan,
+      isUpgrade: isUpgrade,
+      canPurchase: isUpgrade,
+      remainingDays: remainingDays,
+      addedDays: addedDays,
+      totalDaysAfter: remainingDays + addedDays,
+      projectedEndDate: new Date(endMs + addedDays * MS_DAY).toISOString()
+    };
   }
   function planSavingsPct(planId) {
     var p = PLANS[planId];
@@ -4032,10 +4104,10 @@ window.PRO_PAYMENT_CONFIG = {
 
   var api = {
     ADMIN_EMAILS: ADMIN_EMAILS, isAdminEmail: isAdminEmail,
-    FREE_LIMITS: FREE_LIMITS, PRO_HISTORY_READ_CAP: PRO_HISTORY_READ_CAP, PLANS: PLANS, TZ: TZ,
+    FREE_LIMITS: FREE_LIMITS, PRO_HISTORY_READ_CAP: PRO_HISTORY_READ_CAP, PLANS: PLANS, PLAN_ORDER: PLAN_ORDER, TZ: TZ,
     fmt0: fmt0, fmt1: fmt1, fmt2: fmt2, round2: round2, toNum: toNum,
     dayKey: dayKey, todayKey: todayKey, dayNumber: dayNumber, shortDate: shortDate, vigenciaText: vigenciaText,
-    subscriptionState: subscriptionState, msUntilExpiry: msUntilExpiry, computeEndDate: computeEndDate,
+    subscriptionState: subscriptionState, msUntilExpiry: msUntilExpiry, computeEndDate: computeEndDate, planUpgradeInfo: planUpgradeInfo,
     planSavingsPct: planSavingsPct, annualSavingsPct: annualSavingsPct, planPrice: planPrice,
     canAddProduct: canAddProduct, historyCutoffIso: historyCutoffIso, applyHistoryPolicy: applyHistoryPolicy,
     buildBreakdown: buildBreakdown, marginTableRows: marginTableRows,
@@ -4048,8 +4120,6 @@ window.PRO_PAYMENT_CONFIG = {
   };
   root.ProCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);
-
-
 </script>
 <script>
 /* === pro-files.js === */
@@ -5384,18 +5454,106 @@ window.PRO_PAYMENT_CONFIG = {
       }
     }
 
-    // Selector de plan y método en pago manual
+    var upgradeCandidates = ['annual', 'semiannual', 'quarterly', 'monthly'];
+    var firstAvailablePlan = null;
+    if (st.isPro) {
+      for (var ui = 0; ui < upgradeCandidates.length; ui++) {
+        var cand = upgradeCandidates[ui];
+        if (C.planUpgradeInfo && C.planUpgradeInfo(st.subState, cand).canPurchase) {
+          firstAvailablePlan = cand;
+          break;
+        }
+      }
+      if (firstAvailablePlan && C.planUpgradeInfo && !C.planUpgradeInfo(st.subState, selectedPlan).canPurchase) {
+        selectedPlan = firstAvailablePlan;
+      }
+    } else {
+      firstAvailablePlan = selectedPlan;
+    }
+
+    var basePlanTitles = {
+      monthly: 'Elegir Plan Mensual ($1,99)',
+      quarterly: 'Elegir Trimestral ($4,99)',
+      semiannual: 'Elegir 6 Meses ($7,99)',
+      annual: 'Elegir Plan Anual ($14,99)'
+    };
+    var upgradePlanTitles = {
+      monthly: 'Mejorar a Mensual ($1,99)',
+      quarterly: 'Mejorar a Trimestral ($4,99)',
+      semiannual: 'Mejorar a 6 Meses ($7,99)',
+      annual: 'Mejorar a Anual ($14,99)'
+    };
+
+    ['monthly', 'quarterly', 'semiannual', 'annual'].forEach(function (pid) {
+      var upInfo = C.planUpgradeInfo ? C.planUpgradeInfo(st.subState, pid) : { canPurchase: true };
+      var card = document.querySelector('[data-plan-card="' + pid + '"]');
+      if (card) {
+        card.classList.toggle('plan-current', !!upInfo.isCurrentPlan);
+        card.classList.toggle('plan-locked', !!upInfo.isLowerPlan);
+      }
+      var noteEl = $('planUpgradeNote-' + pid);
+      if (noteEl) {
+        if (st.isPro && upInfo.isCurrentPlan) {
+          noteEl.hidden = false;
+          noteEl.innerHTML = '✓ <b>Plan actual activo</b> (' + upInfo.remainingDays + ' días restantes hasta el ' + esc(fmtDateShort(st.subState.endDate)) + '). Elige un plan superior para acumular tus días.';
+        } else if (st.isPro && upInfo.isLowerPlan) {
+          noteEl.hidden = false;
+          noteEl.textContent = 'Ya cuentas con un plan superior activo (' + planLabelShort(upInfo.activePlan) + ').';
+        } else if (st.isPro && upInfo.isUpgrade) {
+          noteEl.hidden = false;
+          noteEl.innerHTML = '📅 <b>Ajuste de acumulación de días:</b> tus ' + upInfo.remainingDays + ' días actuales + ' + upInfo.addedDays + ' días = <b>' + upInfo.totalDaysAfter + ' días en total</b> (hasta el ' + esc(fmtDateShort(upInfo.projectedEndDate)) + ').';
+        } else {
+          noteEl.hidden = true;
+          noteEl.textContent = '';
+        }
+      }
+      var chooseBtn = document.querySelector('[data-choose-plan="' + pid + '"]');
+      if (chooseBtn) {
+        chooseBtn.disabled = !upInfo.canPurchase;
+        chooseBtn.setAttribute('aria-disabled', upInfo.canPurchase ? 'false' : 'true');
+        if (st.isPro && upInfo.isCurrentPlan) {
+          chooseBtn.textContent = '✓ Plan actual activo';
+        } else if (st.isPro && upInfo.isLowerPlan) {
+          chooseBtn.textContent = 'Incluido en tu plan actual';
+        } else if (st.isPro && upInfo.isUpgrade) {
+          chooseBtn.textContent = upgradePlanTitles[pid] || basePlanTitles[pid];
+        } else {
+          chooseBtn.textContent = basePlanTitles[pid];
+        }
+      }
+    });
+
+    // Selector de plan y método en pago
     document.querySelectorAll('[data-pay-plan]').forEach(function (b) {
-      b.classList.toggle('active', b.getAttribute('data-pay-plan') === selectedPlan);
+      var pid = b.getAttribute('data-pay-plan');
+      var upInfo = C.planUpgradeInfo ? C.planUpgradeInfo(st.subState, pid) : { canPurchase: true };
+      b.disabled = !upInfo.canPurchase;
+      b.classList.toggle('active', upInfo.canPurchase && pid === selectedPlan);
     });
     document.querySelectorAll('[data-pay-method]').forEach(function (b) {
       b.classList.toggle('active', b.getAttribute('data-pay-method') === selectedMethod);
     });
 
+    var payFlowArea = $('payFlowArea');
+    var maxNotice = $('payMaxPlanNotice');
+    var blockedOnMaxPlan = !!(st.isPro && !firstAvailablePlan);
+    if (payFlowArea) payFlowArea.hidden = blockedOnMaxPlan;
+    if (maxNotice) {
+      maxNotice.hidden = !blockedOnMaxPlan;
+      if (blockedOnMaxPlan) {
+        maxNotice.innerHTML = '✅ <b>Ya cuentas con el plan máximo (' + esc(planLabelShort(st.subState.plan)) + ') activo</b> hasta el <b>' + esc(fmtDateShort(st.subState.endDate)) + '</b> (' + st.subState.daysLeft + ' días restantes). No necesitas volver a comprar mientras esté vigente.';
+      }
+    }
+
+    var selUpInfo = C.planUpgradeInfo ? C.planUpgradeInfo(st.subState, selectedPlan) : { isUpgrade: false };
     var price = C.planPrice(selectedPlan, r.bcvUsd);
     var sum = $('payTotalSummary');
     if (sum && price) {
-      sum.innerHTML = '<b>' + esc(planLabelLong(selectedPlan)) + ':</b> $' + C.fmt2(price.usdt) + ' USDT' + (price.bs ? ' · ≈ <b>Bs ' + C.fmt2(price.bs) + '</b> (tasa BCV ' + C.fmt2(price.rate) + ')' : '');
+      var actionPrefix = selUpInfo.isUpgrade ? ('Mejora a ' + planLabelLong(selectedPlan)) : planLabelLong(selectedPlan);
+      var adjText = selUpInfo.isUpgrade
+        ? (' <span class="hint">· 📅 Incluye +' + selUpInfo.remainingDays + ' días acumulados = <b>' + selUpInfo.totalDaysAfter + ' días totales</b> (hasta el ' + esc(fmtDateShort(selUpInfo.projectedEndDate)) + ')</span>')
+        : '';
+      sum.innerHTML = '<b>' + esc(actionPrefix) + ':</b> $' + C.fmt2(price.usdt) + ' USDT' + (price.bs ? ' · ≈ <b>Bs ' + C.fmt2(price.bs) + '</b> (tasa BCV ' + C.fmt2(price.rate) + ')' : '') + adjText;
     }
 
     renderPaymentInstructions();
@@ -5655,6 +5813,11 @@ window.PRO_PAYMENT_CONFIG = {
       if (b) b.openAuth(function () { if (root.setDashboardTab) root.setDashboardTab('pro'); });
       return null;
     }
+    var curUpInfo = C.planUpgradeInfo ? C.planUpgradeInfo(st.subState, selectedPlan) : { canPurchase: true };
+    if (!curUpInfo.canPurchase) {
+      toast('Este es tu plan actual activo. Elige un plan superior para mejorarlo.');
+      return null;
+    }
     var btn = $('btnCreateOrder');
     if (btn && !silent) { btn.disabled = true; btn.textContent = 'Congelando tasa…'; }
     try {
@@ -5702,6 +5865,11 @@ window.PRO_PAYMENT_CONFIG = {
       if (b) b.openAuth(function () { if (root.setDashboardTab) root.setDashboardTab('pro'); });
       return;
     }
+    var submitUpInfo = C.planUpgradeInfo ? C.planUpgradeInfo(st.subState, selectedPlan) : { canPurchase: true };
+    if (!submitUpInfo.canPurchase) {
+      toast('Este plan ya está activo en tu cuenta. Elige un plan superior para mejorarlo.');
+      return;
+    }
     var refEl = $('payReference');
     var ref = (refEl && refEl.value || '').trim();
     if (ref.length < 4) { toast('Escribe la referencia o hash del pago (mínimo 4 caracteres)'); if (refEl) refEl.focus(); return; }
@@ -5742,6 +5910,11 @@ window.PRO_PAYMENT_CONFIG = {
       if (b) b.openAuth(function () { if (root.setDashboardTab) root.setDashboardTab('pro'); });
       return;
     }
+    var submitUpInfo = C.planUpgradeInfo ? C.planUpgradeInfo(st.subState, selectedPlan) : { canPurchase: true };
+    if (!submitUpInfo.canPurchase) {
+      toast('Este plan ya está activo en tu cuenta. Elige un plan superior para mejorarlo.');
+      return;
+    }
     var refEl = $('payReference');
     var rawRef = (refEl && refEl.value || '').trim();
     var cleanRef = selectedMethod === 'pago_movil'
@@ -5755,12 +5928,12 @@ window.PRO_PAYMENT_CONFIG = {
     if (payVerifying) return;
     payVerifying = true;
     var btn = $('btnSubmitPayment');
-    if (btn) { btn.disabled = true; btn.textContent = 'Verificando con Pabilo…'; }
+    if (btn) { btn.disabled = true; btn.textContent = 'Verificando pago…'; }
     payStatusMsg = {
       tone: 'info',
       html: selectedMethod === 'pago_movil'
-        ? '⏳ <b>Verificando tu referencia automáticamente con Pabilo…</b> Si pagaste vía BDV puede tardar 15 a 35 segundos, no cierres esta ventana.'
-        : '⏳ <b>Verificando tu orden de Binance Pay automáticamente con Pabilo…</b> Un momento por favor, no cierres esta ventana.'
+        ? '⏳ <b>Verificando pago…</b> Si pagaste vía BDV puede tardar 15 a 35 segundos, no cierres esta ventana.'
+        : '⏳ <b>Verificando pago…</b> Un momento por favor, no cierres esta ventana.'
     };
     renderPayStatusBanner();
 
@@ -6618,13 +6791,30 @@ window.PRO_PAYMENT_CONFIG = {
       }
       var pp = e.target.closest ? e.target.closest('[data-choose-plan]') : null;
       if (pp) {
-        selectedPlan = pp.getAttribute('data-choose-plan') || 'annual';
+        var nextPlan = pp.getAttribute('data-choose-plan') || 'annual';
+        var ppUp = C.planUpgradeInfo ? C.planUpgradeInfo(authState().subState, nextPlan) : { canPurchase: true };
+        if (!ppUp.canPurchase) {
+          toast(ppUp.isCurrentPlan ? 'Este es tu plan actual activo.' : 'Ya cuentas con un plan superior activo.');
+          return;
+        }
+        selectedPlan = nextPlan;
         renderPlansPage();
         var pb = $('paymentBox'); if (pb) pb.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
       var pSel = e.target.closest ? e.target.closest('[data-pay-plan]') : null;
-      if (pSel) { selectedPlan = pSel.getAttribute('data-pay-plan'); if (payStatusMsg && payStatusMsg.tone !== 'ok') payStatusMsg = null; renderPlansPage(); return; }
+      if (pSel) {
+        var chipPlan = pSel.getAttribute('data-pay-plan');
+        var chipUp = C.planUpgradeInfo ? C.planUpgradeInfo(authState().subState, chipPlan) : { canPurchase: true };
+        if (!chipUp.canPurchase) {
+          toast(chipUp.isCurrentPlan ? 'Este es tu plan actual activo.' : 'Ya cuentas con un plan superior activo.');
+          return;
+        }
+        selectedPlan = chipPlan;
+        if (payStatusMsg && payStatusMsg.tone !== 'ok') payStatusMsg = null;
+        renderPlansPage();
+        return;
+      }
       var mSel = e.target.closest ? e.target.closest('[data-pay-method]') : null;
       if (mSel) {
         selectedMethod = mSel.getAttribute('data-pay-method');
@@ -6805,7 +6995,6 @@ window.PRO_PAYMENT_CONFIG = {
   renderPlansPage();
   checkGraciasRedirect(authState());
 })(window);
-
 </script>
 <script type="module">
 /* === auth.js === */
@@ -8360,8 +8549,7 @@ window.PRO_PAYMENT_CONFIG = {
       subCurrent = Object.assign({}, subDoc);
       subPending = null;
       scheduleExpiryTimer();
-      renderAuthUI();
-      notifyProUI();
+      handleSubscriptionTransition();
     }
   };
 
@@ -8372,7 +8560,6 @@ window.PRO_PAYMENT_CONFIG = {
   initFirebase();
   notifyProUI();
 })();
-
 </script>
 </body>
 </html>

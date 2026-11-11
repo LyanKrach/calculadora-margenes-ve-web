@@ -615,7 +615,7 @@
       </section>
 
       <section class="plans-grid" aria-label="Planes disponibles">
-        <article class="card panel plan-card">
+        <article class="card panel plan-card" data-plan-card="monthly">
           <div class="plan-head">
             <h3>Pro Mensual</h3>
             <span class="plan-tag">30 días · Flexible</span>
@@ -631,10 +631,11 @@
             <li>✓ Lista de precios en Imagen (WhatsApp/IG) y PDF con tu negocio</li>
             <li>✓ Calculadora por lote, histórico 30 días, importar Excel/CSV y soporte prioritario</li>
           </ul>
+          <div class="plan-upgrade-note" id="planUpgradeNote-monthly" hidden></div>
           <button type="button" class="secondary" style="width:100%" data-choose-plan="monthly">Elegir Plan Mensual ($1,99)</button>
         </article>
 
-        <article class="card panel plan-card">
+        <article class="card panel plan-card" data-plan-card="quarterly">
           <div class="plan-head">
             <h3>Pro Trimestral</h3>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -651,10 +652,11 @@
             <li>✓ Reportes de ganancia, revalorización masiva y alertas BCV</li>
             <li>✓ Lista de precios PNG/PDF, lote, Excel/CSV y soporte prioritario</li>
           </ul>
+          <div class="plan-upgrade-note" id="planUpgradeNote-quarterly" hidden></div>
           <button type="button" class="secondary" style="width:100%" data-choose-plan="quarterly">Elegir Trimestral ($4,99)</button>
         </article>
 
-        <article class="card panel plan-card">
+        <article class="card panel plan-card" data-plan-card="semiannual">
           <div class="plan-head">
             <h3>Pro 6 Meses</h3>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -671,10 +673,11 @@
             <li>✓ Reportes Excel/PDF, revalorización masiva, lote e importación</li>
             <li>✓ Alertas automáticas, histórico 30 días y soporte prioritario</li>
           </ul>
+          <div class="plan-upgrade-note" id="planUpgradeNote-semiannual" hidden></div>
           <button type="button" class="secondary" style="width:100%" data-choose-plan="semiannual">Elegir 6 Meses ($7,99)</button>
         </article>
 
-        <article class="card panel plan-card recommended">
+        <article class="card panel plan-card recommended" data-plan-card="annual">
           <div class="plan-head">
             <h3>Pro Anual</h3>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -692,11 +695,14 @@
             <li>✓ Revalorización masiva, alertas BCV, catálogo PNG/PDF y lote</li>
             <li>✓ Histórico 30 días, tasa de reposición y soporte prioritario todo el año</li>
           </ul>
+          <div class="plan-upgrade-note" id="planUpgradeNote-annual" hidden></div>
           <button type="button" class="primary" style="width:100%" data-choose-plan="annual">Elegir Plan Anual ($14,99)</button>
         </article>
       </section>
 
       <section class="card panel pay-box" id="paymentBox" aria-label="Pago automático Pabilo y envío de referencia">
+        <div class="pay-status-banner ok" id="payMaxPlanNotice" hidden aria-live="polite"></div>
+        <div id="payFlowArea">
         <div class="pay-box-head">
           <div>
             <h2>Pagar y activar suscripción Pro</h2>
@@ -736,6 +742,7 @@
         </div>
         <div class="pay-status-banner" id="payStatusBanner" hidden aria-live="polite"></div>
         <p class="hint" style="margin-top:10px">Nota: la cuenta gratuita siempre incluye calculadora completa sin límites, tasas y brecha en vivo, hasta 10 productos guardados e historial de últimos 30 días o 50 cálculos.</p>
+        </div>
       </section>
 
       <section class="card panel" id="proSupportCard" aria-label="Soporte prioritario"></section>

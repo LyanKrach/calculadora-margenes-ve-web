@@ -21,11 +21,12 @@
   var FREE_LIMITS = Object.freeze({ products: 10, historyDays: 30, historyItems: 50 });
   var PRO_HISTORY_READ_CAP = 1000; // tope técnico de lectura del historial Pro
   var PLANS = Object.freeze({
-    monthly: Object.freeze({ id: 'monthly', name: 'Mensual', label: 'Pro Mensual', usd: 1.99, months: 1, days: 30, savePct: 0 }),
-    quarterly: Object.freeze({ id: 'quarterly', name: 'Trimestral', label: 'Pro Trimestral', usd: 4.99, months: 3, days: 90, savePct: 16 }),
-    semiannual: Object.freeze({ id: 'semiannual', name: '6 meses', label: 'Pro 6 Meses', usd: 7.99, months: 6, days: 180, savePct: 33 }),
-    annual: Object.freeze({ id: 'annual', name: 'Anual', label: 'Pro Anual', usd: 14.99, months: 12, days: 365, savePct: 37 })
+    monthly: Object.freeze({ id: 'monthly', name: 'Mensual', label: 'Pro Mensual', usd: 1.99, months: 1, days: 30, savePct: 0, tier: 1 }),
+    quarterly: Object.freeze({ id: 'quarterly', name: 'Trimestral', label: 'Pro Trimestral', usd: 4.99, months: 3, days: 90, savePct: 16, tier: 2 }),
+    semiannual: Object.freeze({ id: 'semiannual', name: '6 meses', label: 'Pro 6 Meses', usd: 7.99, months: 6, days: 180, savePct: 33, tier: 3 }),
+    annual: Object.freeze({ id: 'annual', name: 'Anual', label: 'Pro Anual', usd: 14.99, months: 12, days: 365, savePct: 37, tier: 4 })
   });
+  var PLAN_ORDER = Object.freeze({ monthly: 1, quarterly: 2, semiannual: 3, annual: 4 });
 
   /* ===== Utilidades ===== */
   function toNum(v, d) {
@@ -123,6 +124,45 @@
   function computeEndDate(startIso, planId) {
     var p = PLANS[planId];
     return p ? addMonthsIso(startIso, p.months) : '';
+  }
+  function planUpgradeInfo(subState, targetPlanId, now) {
+    var target = PLANS[targetPlanId];
+    var addedDays = target ? target.days : 0;
+    var activePlan = (subState && subState.isPro && subState.plan && PLANS[subState.plan]) ? subState.plan : null;
+    var endMs = activePlan ? parseEnd(subState.endDate) : NaN;
+    var nowMs = toDate(now).getTime();
+    if (!activePlan || !isFinite(endMs) || endMs <= nowMs) {
+      return {
+        isActive: false,
+        activePlan: null,
+        isCurrentPlan: false,
+        isLowerPlan: false,
+        isUpgrade: false,
+        canPurchase: true,
+        remainingDays: 0,
+        addedDays: addedDays,
+        totalDaysAfter: addedDays,
+        projectedEndDate: ''
+      };
+    }
+    var curTier = PLAN_ORDER[activePlan] || 0;
+    var tgtTier = PLAN_ORDER[targetPlanId] || 0;
+    var remainingDays = Math.max(1, Math.ceil((endMs - nowMs) / MS_DAY));
+    var isCurrentPlan = targetPlanId === activePlan;
+    var isLowerPlan = curTier > 0 && tgtTier > 0 && tgtTier < curTier;
+    var isUpgrade = curTier > 0 && tgtTier > curTier;
+    return {
+      isActive: true,
+      activePlan: activePlan,
+      isCurrentPlan: isCurrentPlan,
+      isLowerPlan: isLowerPlan,
+      isUpgrade: isUpgrade,
+      canPurchase: isUpgrade,
+      remainingDays: remainingDays,
+      addedDays: addedDays,
+      totalDaysAfter: remainingDays + addedDays,
+      projectedEndDate: new Date(endMs + addedDays * MS_DAY).toISOString()
+    };
   }
   function planSavingsPct(planId) {
     var p = PLANS[planId];
@@ -656,10 +696,10 @@
 
   var api = {
     ADMIN_EMAILS: ADMIN_EMAILS, isAdminEmail: isAdminEmail,
-    FREE_LIMITS: FREE_LIMITS, PRO_HISTORY_READ_CAP: PRO_HISTORY_READ_CAP, PLANS: PLANS, TZ: TZ,
+    FREE_LIMITS: FREE_LIMITS, PRO_HISTORY_READ_CAP: PRO_HISTORY_READ_CAP, PLANS: PLANS, PLAN_ORDER: PLAN_ORDER, TZ: TZ,
     fmt0: fmt0, fmt1: fmt1, fmt2: fmt2, round2: round2, toNum: toNum,
     dayKey: dayKey, todayKey: todayKey, dayNumber: dayNumber, shortDate: shortDate, vigenciaText: vigenciaText,
-    subscriptionState: subscriptionState, msUntilExpiry: msUntilExpiry, computeEndDate: computeEndDate,
+    subscriptionState: subscriptionState, msUntilExpiry: msUntilExpiry, computeEndDate: computeEndDate, planUpgradeInfo: planUpgradeInfo,
     planSavingsPct: planSavingsPct, annualSavingsPct: annualSavingsPct, planPrice: planPrice,
     canAddProduct: canAddProduct, historyCutoffIso: historyCutoffIso, applyHistoryPolicy: applyHistoryPolicy,
     buildBreakdown: buildBreakdown, marginTableRows: marginTableRows,
