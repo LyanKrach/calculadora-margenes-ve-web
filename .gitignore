@@ -5,3 +5,8 @@
 .env.local
 .firebase/
 
+# Local Antigravity skills & rules
+.agent/
+.agents/
+.antigravityrules
+AGENTS.md
