@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#0F6B43" />
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png" />
+<link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png" />
+<link rel="icon" href="favicon.ico" sizes="any" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="manifest" href="site.webmanifest" />
+<title>Solicitud de Eliminación de Cuenta y Datos · MargenCalcu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .del-form {
+    margin-top: 14px;
+    padding: 18px;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: var(--card2);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .del-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 5px;
+  }
+  .del-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13.5px;
+    line-height: 1.45;
+    cursor: pointer;
+  }
+  .del-check input {
+    margin-top: 3px;
+    width: 17px;
+    height: 17px;
+    accent-color: var(--green2);
+    flex-shrink: 0;
+  }
+  .del-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .del-actions > button {
+    flex: 1 1 200px;
+  }
+  .del-form .alert {
+    margin: 0;
+  }
+  .del-preview {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--card);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="authbar">
+    <span class="authbar-brand"><img src="favicon-48x48.png" alt="Logo" class="brand-logo" width="26" height="26" /> Calculadora de Márgenes <b>VE</b></span>
+    <div class="authbar-actions">
+      <a class="secondary auth-btn" href="index.html">← Volver a la Calculadora</a>
+      <a class="pro-nav-btn" href="index.html#pro">💎 Ver Planes Pro</a>
+    </div>
+  </div>
+
+  <main class="card legal-card">
+    <h1>Solicitud de Eliminación de Cuenta y Datos</h1>
+    <p class="hint">Última actualización: noviembre de 2026 · Aplicación: <strong>MargenCalcu</strong> (Calculadora de Márgenes VE) · Sitio: <code>margencalcu.online</code></p>
+
+    <p>Esta página permite a cualquier usuario de la app Android <strong>MargenCalcu</strong> y del sitio web <code>margencalcu.online</code> solicitar la eliminación completa de su cuenta o la eliminación parcial de datos almacenados en la nube, incluso sin haber iniciado sesión o tras haber desinstalado la aplicación.</p>
+
+    <h2>1. Pasos para solicitar la eliminación</h2>
+    <ol>
+      <li><strong>Eliminación inmediata de productos o historial desde la app/web:</strong> si tienes acceso a tu sesión, entra a <em>Mis Productos</em> o <em>Historial</em> para eliminar registros individuales o borrar tu historial completo al instante.</li>
+      <li><strong>Eliminación completa de cuenta o solicitud web:</strong> completa el formulario de abajo con el correo registrado en tu cuenta y elige el alcance (cuenta completa o solo datos específicos). Al enviarlo por WhatsApp o correo oficial (<code>soporterefillstore@gmail.com</code>), validaremos la titularidad del correo y procesaremos la eliminación.</li>
+      <li><strong>Plazo de atención:</strong> confirmaremos tu solicitud y ejecutaremos el borrado en un plazo máximo de <strong>7 días hábiles</strong> (habitualmente entre 24 y 72 horas).</li>
+    </ol>
+
+    <h2>2. Formulario web de solicitud</h2>
+    <form class="del-form" id="delForm" novalidate>
+      <div>
+        <label class="del-label" for="delEmail">Correo electrónico registrado en MargenCalcu *</label>
+        <div class="field"><input type="email" id="delEmail" autocomplete="email" placeholder="tu@correo.com" required /></div>
+      </div>
+
+      <div>
+        <label class="del-label" for="delScope">Qué deseas eliminar *</label>
+        <div class="field">
+          <select id="delScope">
+            <option value="cuenta_completa">Eliminar mi cuenta completa y todos mis datos asociados</option>
+            <option value="datos_parciales">Eliminar solo mis productos e historial (mantener mi cuenta)</option>
+            <option value="preferencias">Eliminar solo preferencias, nombre de negocio y alertas</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="del-label" for="delNotes">Nombre del negocio o detalles adicionales (opcional)</label>
+        <textarea class="share-textarea" id="delNotes" rows="3" placeholder="Ej. Nombre del negocio o aclaratoria sobre tu solicitud"></textarea>
+      </div>
+
+      <label class="del-check">
+        <input type="checkbox" id="delConfirm" />
+        <span>Confirmo que soy el titular de esta cuenta y comprendo que la eliminación de la cuenta completa y los datos asociados es permanente e irreversible.</span>
+      </label>
+
+      <div class="alert" id="delError" role="alert"></div>
+
+      <div class="del-actions">
+        <button type="button" class="primary" id="btnSendMail">Enviar solicitud por Correo</button>
+        <button type="button" class="secondary" id="btnSendWa">Enviar solicitud por WhatsApp</button>
+        <button type="button" class="secondary" id="btnCopyReq">Copiar texto de solicitud</button>
+      </div>
+
+      <div class="pay-status-banner ok" id="delStatus" hidden>
+        <strong id="delStatusTitle">Solicitud lista</strong>
+        <p id="delStatusText" style="margin:6px 0 0"></p>
+        <pre class="del-preview" id="delPreview"></pre>
+      </div>
+    </form>
+
+    <p class="hint" style="margin-top:12px">Contacto directo alternativo: <a href="mailto:soporterefillstore@gmail.com">soporterefillstore@gmail.com</a> · WhatsApp: <a href="https://wa.me/584161740312" target="_blank" rel="noopener">+58 416-1740312</a>.</p>
+
+    <h2>3. Datos que se eliminan y datos que pueden conservarse</h2>
+    <ul>
+      <li><strong>Datos eliminados de forma permanente al borrar la cuenta:</strong>
+        <ul>
+          <li>Credenciales e identificador de acceso en Firebase Authentication (correo electrónico, UID, nombre mostrado y vínculo con Google).</li>
+          <li>Perfil de usuario en Cloud Firestore (incluyendo el nombre del negocio).</li>
+          <li>Catálogo completo de productos guardados (<code>products</code>).</li>
+          <li>Historial completo de cálculos (<code>history</code>) y configuración/umbrales de alertas (<code>settings</code>).</li>
+        </ul>
+      </li>
+      <li><strong>Datos locales en tu dispositivo o navegador:</strong> la caché temporal en <code>localStorage</code> o almacenamiento local de la app se borra cerrando sesión, limpiando datos de la app/navegador o desinstalando la aplicación.</li>
+      <li><strong>Datos que pueden conservarse temporalmente y motivo:</strong> si adquiriste una suscripción Pro, podemos conservar los registros mínimos de verificación de pago (número de referencia o hash de pago, plan adquirido, monto y fecha) durante un máximo de <strong>24 meses</strong> exclusivamente para prevenir fraudes o reutilización indebida de referencias bancarias y cumplir obligaciones administrativas/contables, sin acceso de inicio de sesión ni uso comercial.</li>
+    </ul>
+  </main>
+
+  <footer>
+    <span class="footer-links"><a href="index.html">Calculadora</a> · <a href="index.html#pro">Planes Pro</a> · <a href="terminos.html">Términos de Uso</a> · <a href="privacidad.html">Política de Privacidad</a></span>
+  </footer>
+</div>
+
+<script src="pro-config.js"></script>
+<script>
+(function () {
+  var cfg = (window.PRO_PAYMENT_CONFIG && window.PRO_PAYMENT_CONFIG.soporte) || {};
+  var supportEmail = String(cfg.email || 'soporterefillstore@gmail.com').trim();
+  var supportWa = String(cfg.whatsapp || '+584161740312').replace(/\D/g, '');
+
+  var elEmail = document.getElementById('delEmail');
+  var elScope = document.getElementById('delScope');
+  var elNotes = document.getElementById('delNotes');
+  var elConfirm = document.getElementById('delConfirm');
+  var elErr = document.getElementById('delError');
+  var elStatus = document.getElementById('delStatus');
+  var elStatusTitle = document.getElementById('delStatusTitle');
+  var elStatusText = document.getElementById('delStatusText');
+  var elPreview = document.getElementById('delPreview');
+
+  function scopeLabel(val) {
+    if (val === 'datos_parciales') return 'Eliminación parcial (solo catálogo de productos e historial, mantener cuenta)';
+    if (val === 'preferencias') return 'Eliminación parcial (preferencias, nombre de negocio y alertas)';
+    return 'Eliminación completa de cuenta y todos los datos asociados';
+  }
+
+  function showError(msg) {
+    elErr.textContent = msg;
+    elErr.classList.add('show');
+    elStatus.hidden = true;
+  }
+
+  function clearError() {
+    elErr.textContent = '';
+    elErr.classList.remove('show');
+  }
+
+  function buildPayload() {
+    var email = (elEmail.value || '').trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError('Ingresa un correo electrónico válido para identificar tu cuenta.');
+      elEmail.focus();
+      return null;
+    }
+    if (!elConfirm.checked) {
+      showError('Marca la casilla de confirmación antes de generar la solicitud.');
+      elConfirm.focus();
+      return null;
+    }
+    clearError();
+
+    var scopeText = scopeLabel(elScope.value);
+    var notes = (elNotes.value || '').trim();
+    var lines = [
+      'SOLICITUD DE ELIMINACIÓN DE DATOS - MargenCalcu',
+      'Correo de la cuenta: ' + email,
+      'Alcance solicitado: ' + scopeText,
+      'Origen: margencalcu.online / App MargenCalcu'
+    ];
+    if (notes) lines.push('Detalles adicionales: ' + notes);
+    lines.push('Confirmo que soy titular de la cuenta y solicito procesar esta eliminación.');
+
+    var body = lines.join('\n');
+    return {
+      email: email,
+      subject: 'Solicitud de eliminación de datos - MargenCalcu (' + email + ')',
+      body: body
+    };
+  }
+
+  function showResult(title, detail, body) {
+    elStatusTitle.textContent = title;
+    elStatusText.textContent = detail;
+    elPreview.textContent = body;
+    elStatus.hidden = false;
+  }
+
+  document.getElementById('btnSendMail').addEventListener('click', function () {
+    var p = buildPayload();
+    if (!p) return;
+    showResult(
+      'Abriendo tu cliente de correo…',
+      'Si no se abre automáticamente, copia el texto de abajo y envíalo a ' + supportEmail + '.',
+      p.body
+    );
+    window.location.href = 'mailto:' + encodeURIComponent(supportEmail) +
+      '?subject=' + encodeURIComponent(p.subject) +
+      '&body=' + encodeURIComponent(p.body);
+  });
+
+  document.getElementById('btnSendWa').addEventListener('click', function () {
+    var p = buildPayload();
+    if (!p) return;
+    showResult(
+      'Abriendo WhatsApp de soporte…',
+      'Envía el mensaje prellenado en WhatsApp para que procesemos tu solicitud.',
+      p.body
+    );
+    window.open('https://wa.me/' + supportWa + '?text=' + encodeURIComponent(p.body), '_blank', 'noopener');
+  });
+
+  document.getElementById('btnCopyReq').addEventListener('click', function () {
+    var p = buildPayload();
+    if (!p) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(p.body).then(function () {
+        showResult(
+          'Texto copiado al portapapeles',
+          'Pégalo y envíalo a ' + supportEmail + ' o por WhatsApp +' + supportWa + '.',
+          p.body
+        );
+      }).catch(function () {
+        showResult(
+          'Copia este texto manualmente',
+          'Envíalo a ' + supportEmail + ' o por WhatsApp +' + supportWa + '.',
+          p.body
+        );
+      });
+    } else {
+      showResult(
+        'Copia este texto manualmente',
+        'Envíalo a ' + supportEmail + ' o por WhatsApp +' + supportWa + '.',
+        p.body
+      );
+    }
+  });
+})();
+</script>
+</body>
+</html>
+
