@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://margencalcu.online/sitemap.xml
