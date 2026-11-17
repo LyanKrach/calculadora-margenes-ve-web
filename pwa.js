@@ -72,6 +72,9 @@
     panel.setAttribute('aria-hidden', 'false');
     if (backdrop) backdrop.classList.add('open');
     document.body.classList.add('install-panel-open');
+    try {
+      window.dispatchEvent(new CustomEvent('mc:panel-open', { detail: 'install' }));
+    } catch (e) {}
     if (deferredPrompt) hideHelp();
     else showHelp();
     setTimeout(function () {
@@ -142,6 +145,10 @@
   if (backdrop) backdrop.addEventListener('click', closePanel);
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && panel && panel.classList.contains('open')) closePanel();
+  });
+
+  window.addEventListener('mc:panel-open', function (event) {
+    if (!event || event.detail !== 'install') closePanel();
   });
 
   syncInstallTriggers();

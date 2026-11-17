@@ -34,6 +34,10 @@
   <div class="authbar">
     <span class="authbar-brand"><img src="favicon-48x48.png" alt="Logo" class="brand-logo" width="26" height="26" /> Calculadora de Márgenes <b>VE</b></span>
     <div class="authbar-actions">
+      <button type="button" class="tools-top-btn" id="btnToolsPanel" aria-haspopup="dialog" aria-controls="toolsPanel" aria-expanded="false">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.8"/></svg>
+        <span class="tools-top-label">Herramientas</span>
+      </button>
       <button type="button" class="install-top-btn" id="btnInstallAppTop" aria-haspopup="dialog" aria-controls="installPanel">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
         <span class="install-top-label">Instalar app</span>
@@ -64,18 +68,7 @@
     </aside>
   </header>
 
-  <!-- DASHBOARD NAVIGATION -->
-  <nav class="dash-nav" aria-label="Navegación del Dashboard">
-    <button type="button" class="dash-tab active" data-tab="calc">🧮 Calculadora</button>
-    <button type="button" class="dash-tab" data-tab="prod">📦 Mis Productos <span class="tab-badge" id="badgeProd" hidden>0</span></button>
-    <button type="button" class="dash-tab" data-tab="hist">📜 Historial <span class="tab-badge" id="badgeHist" hidden>0</span></button>
-    <button type="button" class="dash-tab" data-tab="tasas">📈 Tasas y Brecha</button>
-    <button type="button" class="dash-tab" data-tab="conv">💱 Convertidor</button>
-    <button type="button" class="dash-tab" data-tab="lote">⚡ Lote <span class="pro-mini-pill">PRO</span></button>
-    <button type="button" class="dash-tab" data-tab="guia">💡 Guía y Margen Real</button>
-    <button type="button" class="dash-tab" data-tab="pro">💎 Planes Pro</button>
-  </nav>
-
+  <!-- DASHBOARD NAVIGATION (panel lateral) -->
   <!-- TAB VIEW 1: CALCULADORA -->
   <div class="dash-view active" id="tabView-calc">
     <main class="layout">
@@ -995,6 +988,32 @@
   </div>
 </div>
 
+<div class="tools-backdrop" id="toolsBackdrop"></div>
+<aside class="tools-panel" id="toolsPanel" role="dialog" aria-modal="true" aria-labelledby="toolsPanelTitle" aria-hidden="true">
+  <div class="tools-panel-head">
+    <div class="tools-panel-brand">
+      <span>MargenCalcu · Menú</span>
+      <h2 id="toolsPanelTitle">Herramientas</h2>
+    </div>
+    <button type="button" class="rate-refresh" id="btnCloseToolsPanel" aria-label="Cerrar herramientas">✕</button>
+  </div>
+  <p class="tools-panel-sub">Calcula, organiza y revisa tus precios sin salir de aquí.</p>
+  <nav class="dash-nav" id="toolsNav" aria-label="Navegación del Dashboard">
+    <button type="button" class="dash-tab active" data-tab="calc">🧮 Calculadora</button>
+    <button type="button" class="dash-tab" data-tab="prod">📦 Mis Productos <span class="tab-badge" id="badgeProd" hidden>0</span></button>
+    <button type="button" class="dash-tab" data-tab="hist">📜 Historial <span class="tab-badge" id="badgeHist" hidden>0</span></button>
+    <button type="button" class="dash-tab" data-tab="tasas">📈 Tasas y Brecha</button>
+    <button type="button" class="dash-tab" data-tab="conv">💱 Convertidor</button>
+    <button type="button" class="dash-tab" data-tab="lote">⚡ Lote <span class="pro-mini-pill">PRO</span></button>
+    <button type="button" class="dash-tab" data-tab="guia">💡 Guía y Margen Real</button>
+    <button type="button" class="dash-tab" data-tab="pro">💎 Planes Pro</button>
+  </nav>
+  <div class="tools-panel-foot">
+    <span class="tools-live-dot" aria-hidden="true"></span>
+    Tasas BCV y Binance en vivo
+  </div>
+</aside>
+
 <div class="install-panel-backdrop" id="installPanelBackdrop"></div>
 <aside class="install-panel" id="installPanel" role="dialog" aria-modal="true" aria-labelledby="installPanelTitle" aria-hidden="true">
   <div class="install-panel-head">
@@ -1028,6 +1047,7 @@
 <script src="pro-files.js"></script>
 <script src="app.js"></script>
 <script src="pwa.js"></script>
+<script src="tools-panel.js"></script>
 <script src="pro-ui.js"></script>
 <script type="module" src="auth.js"></script>
 </body>
