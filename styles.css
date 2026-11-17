@@ -3027,3 +3027,283 @@ body.tools-panel-open {
     display: none;
   }
 }
+
+/* ===== MÓVIL COMPACTO ===== */
+@media (max-width: 960px) {
+  .layout,
+  .layout-result-col,
+  .desktop-guide-slot,
+  .guide-content-wrap {
+    gap: 12px;
+  }
+
+  .panel {
+    padding: 14px;
+  }
+
+  .panel h2 {
+    font-size: 17px;
+  }
+
+  .panel .sub {
+    font-size: 12.5px;
+    margin-bottom: 12px;
+  }
+
+  label {
+    margin: 10px 0 5px;
+    font-size: 11.5px;
+  }
+
+  input[type="number"],
+  input[type="text"],
+  select {
+    padding: 9px 10px;
+    font-size: 16px;
+  }
+
+  .field {
+    border-radius: 11px;
+  }
+
+  .divider {
+    margin: 14px 0 3px;
+  }
+
+  .margin-mode-wrap {
+    margin: 8px 0 12px;
+  }
+
+  .mode-btn {
+    padding: 8px 9px;
+    font-size: 12px;
+  }
+
+  .rates {
+    gap: 7px;
+  }
+
+  .rate-card {
+    padding: 9px 10px 8px;
+    border-radius: 11px;
+  }
+
+  .rate-card .rc-val {
+    font-size: 16px;
+  }
+
+  .rate-card .rc-src {
+    font-size: 10px;
+  }
+
+  .result-top {
+    padding: 14px;
+  }
+
+  .price {
+    font-size: 32px;
+    margin: 5px 0 2px;
+  }
+
+  .price small {
+    font-size: 14px;
+  }
+
+  .price-usd {
+    font-size: 13px;
+  }
+
+  .rounded-note {
+    margin-top: 8px;
+    padding: 6px 9px;
+    font-size: 11.5px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .stat {
+    padding: 9px 8px;
+    border-right: 1px solid var(--line);
+    border-bottom: 0;
+  }
+
+  .stat:last-child {
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  .stat span {
+    font-size: 9.5px;
+    line-height: 1.2;
+  }
+
+  .stat span[style] {
+    font-size: 10px !important;
+    line-height: 1.25 !important;
+  }
+
+  .stat strong {
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  .bar-wrap {
+    padding: 10px 12px 4px;
+  }
+
+  .bar {
+    height: 14px;
+  }
+
+  .legend {
+    gap: 8px;
+    padding: 6px 2px 8px;
+    font-size: 11px;
+  }
+
+  .actions {
+    padding: 0 12px 12px;
+    gap: 6px;
+  }
+
+  button.primary,
+  button.secondary {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .section {
+    margin-top: 12px;
+  }
+
+  .section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin: 14px 0 8px;
+  }
+
+  .section-head h2 {
+    font-size: 20px;
+    line-height: 1.15;
+  }
+
+  .section-head p {
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+
+  .steps {
+    gap: 7px;
+  }
+
+  .step {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .step .num {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+
+  .step b {
+    font-size: 12px;
+  }
+
+  .step code {
+    padding: 6px;
+    margin: 6px 0;
+    font-size: 10.5px;
+    border-radius: 6px;
+  }
+
+  .step strong {
+    font-size: 12.5px;
+  }
+
+  .tip {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .tip h3 {
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+
+  .gap-card {
+    padding: 12px;
+    margin-top: 10px;
+    gap: 10px;
+  }
+
+  .tasas-live-grid {
+    gap: 8px;
+    margin: 10px 0 12px;
+  }
+
+  .tasas-live-card {
+    padding: 9px 10px;
+  }
+
+  .rep-rate-card {
+    padding: 10px 12px;
+    margin-top: 8px;
+  }
+
+  .conv-result {
+    padding: 12px;
+    margin-top: 10px;
+  }
+
+  .pay-instructions,
+  .pay-order-box {
+    padding: 10px;
+  }
+
+  .item-row {
+    padding: 8px 2px;
+    gap: 8px;
+  }
+
+  .prod-card {
+    padding: 9px 2px;
+    gap: 8px;
+  }
+
+  .prod-cat-group {
+    margin-bottom: 10px;
+    gap: 6px;
+  }
+
+  .plans-grid {
+    gap: 14px;
+  }
+
+  .plan-head h3 {
+    font-size: 17px;
+  }
+
+  .plan-price strong {
+    font-size: 26px;
+  }
+
+  .plan-features {
+    gap: 4px;
+    font-size: 12px;
+  }
+
+  footer {
+    padding: 16px 0 4px;
+    font-size: 11.5px;
+  }
+
+  .footer-links {
+    font-size: 12px;
+    gap: 6px;
+  }
+}
