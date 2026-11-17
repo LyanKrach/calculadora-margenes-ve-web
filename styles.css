@@ -2648,16 +2648,29 @@ body.install-panel-open {
   }
 }
 
-/* ===== HERRAMIENTAS · PANEL LATERAL ===== */
+
+/* ===== HERRAMIENTAS · BARRA LATERAL / MENÚ MÓVIL ===== */
+.authbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brand-text {
+  white-space: nowrap;
+}
+
 .tools-top-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
   border: 1px solid var(--line);
   background: var(--card);
   color: var(--ink);
   border-radius: 999px;
-  padding: 8px 14px;
+  padding: 8px 13px;
   font-family: inherit;
   font-size: 12.5px;
   font-weight: 800;
@@ -2696,22 +2709,26 @@ body.install-panel-open {
   visibility: visible;
 }
 
+.tools-backdrop[hidden] {
+  display: none !important;
+}
+
 .tools-panel {
   position: fixed;
   top: 0;
-  right: 0;
   bottom: 0;
+  left: 0;
   z-index: 110;
-  width: min(380px, 92vw);
+  width: min(310px, 88vw);
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 22px 20px calc(22px + env(safe-area-inset-bottom));
+  padding: 18px 14px calc(18px + env(safe-area-inset-bottom));
+  overflow-x: hidden;
   overflow-y: auto;
   background: var(--card);
-  border-left: 1.5px solid var(--line);
-  box-shadow: -24px 0 60px rgba(10, 20, 14, 0.35);
-  transform: translateX(104%);
+  border-right: 1.5px solid var(--line);
+  box-shadow: 24px 0 60px rgba(10, 20, 14, 0.35);
+  transform: translateX(-104%);
   visibility: hidden;
   transition: transform 0.28s cubic-bezier(0.22, 0.8, 0.3, 1), visibility 0.28s;
 }
@@ -2727,20 +2744,68 @@ body.tools-panel-open {
 
 .tools-panel-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  padding: 2px 2px 0;
 }
 
 .tools-panel-brand {
   display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tools-brand-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  flex: none;
+}
+
+.tools-brand-text {
+  display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
   line-height: 1.15;
 }
 
-.tools-panel-brand span {
+.tools-brand-text b {
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.tools-brand-text span {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.tools-brand-text em {
+  color: var(--green2);
+  font-style: normal;
+}
+
+.tools-panel-close {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  margin-left: 0;
+}
+
+.tools-panel-close[hidden] {
+  display: none !important;
+}
+
+.tools-panel-title {
+  margin: 20px 12px 8px;
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 0.09em;
@@ -2748,54 +2813,70 @@ body.tools-panel-open {
   color: var(--muted);
 }
 
-.tools-panel-brand h2 {
-  margin: 0;
-  font-size: 25px;
-  letter-spacing: -0.02em;
-}
-
-.tools-panel-sub {
-  margin: -4px 0 2px;
-  font-size: 13.5px;
-  line-height: 1.45;
-  color: var(--muted);
-}
-
 .tools-panel .dash-nav {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 6px;
+  gap: 4px;
   overflow: visible;
-  padding: 6px 0 0;
+  padding: 0;
   margin: 0;
   border: 0;
+}
+
+.tools-panel .dash-nav [data-tab="guia"] {
+  display: inline-flex !important;
 }
 
 .tools-panel .dash-tab {
   width: 100%;
   justify-content: flex-start;
   text-align: left;
-  padding: 12px 14px;
-  border-radius: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
   border: 1.5px solid transparent;
   background: transparent;
-  color: var(--ink);
-  font-size: 14.5px;
-  gap: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  gap: 11px;
+  white-space: normal;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .tools-panel .dash-tab:hover {
-  background: var(--green-soft);
+  background: var(--bg2);
   border-color: transparent;
   color: var(--ink);
 }
 
 .tools-panel .dash-tab.active {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--bg);
+  background: var(--green-soft);
+  border-color: transparent;
+  color: var(--ink);
+}
+
+.tools-nav-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  flex: none;
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+
+.tools-panel .dash-tab:hover .tools-nav-ico {
+  color: var(--ink);
+}
+
+.tools-panel .dash-tab.active .tools-nav-ico {
+  color: var(--green2);
+}
+
+.tools-nav-label {
+  min-width: 0;
+  text-align: left;
 }
 
 .tools-panel .dash-tab .tab-badge {
@@ -2813,12 +2894,46 @@ body.tools-panel-open {
 
 .tools-panel-foot {
   margin-top: auto;
-  padding-top: 16px;
+  padding: 18px 4px 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   border-top: 1px solid var(--line);
+}
+
+.tools-install-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  border: 1.5px solid var(--line);
+  background: var(--bg2);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.tools-install-btn:hover {
+  border-color: var(--green2);
+  color: var(--green2);
+}
+
+.tools-install-btn[hidden] {
+  display: none !important;
+}
+
+.tools-live {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  padding: 0 4px;
+  font-size: 11.5px;
   font-weight: 700;
   color: var(--muted);
 }
@@ -2833,11 +2948,56 @@ body.tools-panel-open {
 }
 
 @media (max-width: 760px) {
+  #btnInstallAppTop,
+  #btnHeaderPro {
+    display: none !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .brand-text {
+    display: none;
+  }
+
   .tools-top-label {
     display: none;
   }
 
   .tools-top-btn {
     padding: 9px 11px;
+  }
+}
+
+@media (min-width: 1280px) {
+  body {
+    padding-left: 252px;
+  }
+
+  .tools-panel {
+    width: 252px;
+    z-index: 90;
+    padding: 20px 14px 18px;
+    box-shadow: none;
+    transform: none;
+    visibility: visible;
+    transition: none;
+  }
+
+  .tools-top-btn,
+  .tools-panel-close,
+  .tools-backdrop {
+    display: none !important;
+  }
+
+  #btnInstallAppTop {
+    display: none !important;
+  }
+
+  .authbar {
+    justify-content: flex-end;
+  }
+
+  .authbar-brand {
+    display: none;
   }
 }

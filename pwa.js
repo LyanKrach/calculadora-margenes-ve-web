@@ -4,6 +4,7 @@
    - No bloquea nada si el navegador no soporta instalación. */
 (function () {
   var topBtn = document.getElementById('btnInstallAppTop');
+  var sidebarInstall = document.getElementById('btnInstallSidebar');
   var footerLink = document.getElementById('linkInstallApp');
   var panel = document.getElementById('installPanel');
   var backdrop = document.getElementById('installPanelBackdrop');
@@ -117,6 +118,7 @@
   function syncInstallTriggers() {
     var installed = isStandalone();
     if (topBtn) topBtn.hidden = installed;
+    if (sidebarInstall) sidebarInstall.hidden = installed;
     if (footerLink) footerLink.hidden = installed;
     if (installed && panel && panel.classList.contains('open')) closePanel();
   }
