@@ -1137,6 +1137,10 @@ footer {
     grid-template-columns: 1fr
   }
 
+  .hero-card {
+    display: none !important
+  }
+
   .layout {
     grid-template-columns: 1fr
   }
