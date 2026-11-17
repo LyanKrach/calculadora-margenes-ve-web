@@ -62,6 +62,7 @@
     <button type="button" class="dash-tab" data-tab="prod">📦 Mis Productos <span class="tab-badge" id="badgeProd" hidden>0</span></button>
     <button type="button" class="dash-tab" data-tab="hist">📜 Historial <span class="tab-badge" id="badgeHist" hidden>0</span></button>
     <button type="button" class="dash-tab" data-tab="tasas">📈 Tasas y Brecha</button>
+    <button type="button" class="dash-tab" data-tab="conv">💱 Convertidor</button>
     <button type="button" class="dash-tab" data-tab="lote">⚡ Lote <span class="pro-mini-pill">PRO</span></button>
     <button type="button" class="dash-tab" data-tab="guia">💡 Guía y Margen Real</button>
     <button type="button" class="dash-tab" data-tab="pro">💎 Planes Pro</button>
@@ -518,6 +519,42 @@
     </div>
   </div>
 
+  <!-- TAB VIEW: CONVERTIDOR (GRATIS) -->
+  <div class="dash-view" id="tabView-conv">
+    <section class="card panel" aria-label="Convertidor de divisas" style="max-width:880px;margin:0 auto">
+      <h2>💱 Convertidor Bs ↔ $ / €</h2>
+      <p class="sub">Convierte montos al instante con la tasa oficial del BCV que ya usa la calculadora. Gratis, sin registro y sin tasa Binance ni personalizada.</p>
+
+      <label for="convPair">Conversión</label>
+      <div class="field">
+        <select id="convPair">
+          <option value="bsToUsd">Bs → $</option>
+          <option value="usdToBs" selected>$ → Bs</option>
+          <option value="bsToEur">Bs → €</option>
+          <option value="eurToBs">€ → Bs</option>
+        </select>
+      </div>
+
+      <label for="convAmount" id="convAmountLabel">Monto en dólares</label>
+      <div class="field">
+        <span class="prefix" id="convPrefix">$</span>
+        <input type="number" id="convAmount" min="0" step="0.01" inputmode="decimal" placeholder="Ej. 10" value="10">
+      </div>
+      <p class="hint">El resultado se actualiza mientras escribes. Solo se usan las tasas oficiales BCV ($ y €).</p>
+
+      <div class="conv-actions">
+        <button type="button" class="secondary" id="convSwap">⇄ Invertir</button>
+      </div>
+
+      <div class="conv-result" role="status" aria-live="polite">
+        <div class="conv-result-label">Resultado</div>
+        <div class="conv-result-main" id="convResultValue">Cargando tasas…</div>
+        <div class="conv-breakdown" id="convBreakdown"></div>
+      </div>
+      <p class="conv-rate-meta" id="convRateMeta">Cargando tasas…</p>
+    </section>
+  </div>
+
   <!-- TAB VIEW: LOTE (PRO) -->
   <div class="dash-view" id="tabView-lote">
     <section class="card panel" aria-label="Calculadora por lote" style="max-width:880px;margin:0 auto">
@@ -823,7 +860,7 @@
     <div class="divider"></div>
     <div id="authFormBox">
       <label for="authNombre" id="lblNombre" hidden>Nombre o negocio <span>opcional</span></label>
-      <div class="field" id="wrapNombre" hidden><input type="text" id="authNombre" autocomplete="organization" placeholder="Ej. Mi Tienda / Layan"></div>
+      <div class="field" id="wrapNombre" hidden><input type="text" id="authNombre" autocomplete="organization" placeholder="Ej. Mi Tienda"></div>
       <label for="authEmail">Correo</label>
       <div class="field"><input type="email" id="authEmail" autocomplete="email" placeholder="tu@correo.com"></div>
       <label for="authPass">Contraseña</label>

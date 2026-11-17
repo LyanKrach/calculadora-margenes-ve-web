@@ -144,6 +144,7 @@
     var lbl = $('tasaFuenteLabel');
     if (lbl) lbl.textContent = rateSource === 'custom' ? 'Personalizada · escrita a mano' : RATES[rateSource].label + (RATES[rateSource].fecha ? ' · ' + RATES[rateSource].fecha : '');
     updateGapDisplay();
+    renderConverter();
   }
   function updateGapDisplay(){
     var bcv = RATES.bcv.value;
@@ -157,6 +158,107 @@
     elPct.textContent = sign + pct.toFixed(2).replace('.', ',') + '%';
     elDiff.textContent = 'Diferencia: ' + sign + 'Bs ' + fmtBs.format(diff) + ' por USD';
   }
+  /* ===== CONVERTIDOR Bs ↔ $ / € (solo tasas BCV ya cargadas) ===== */
+  var convPairs = {
+    bsToUsd: { from:'Bs', to:'$',  key:'bcv',  unit:'Bs/$', op:'div' },
+    usdToBs: { from:'$',  to:'Bs', key:'bcv',  unit:'Bs/$', op:'mul' },
+    bsToEur: { from:'Bs', to:'€',  key:'euro', unit:'Bs/€', op:'div' },
+    eurToBs: { from:'€',  to:'Bs', key:'euro', unit:'Bs/€', op:'mul' }
+  };
+  var convPair = 'usdToBs';
+  var ratesLoading = true;
+  var fmtConvIn = new Intl.NumberFormat('es-VE',{minimumFractionDigits:0, maximumFractionDigits:2});
+  var CONV_MONTHS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  function convDateText(iso){
+    var parts = String(iso || '').split('T')[0].split('-');
+    if (parts.length !== 3) return '';
+    var y = parseInt(parts[0], 10), m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+    if (!y || !m || !d || m < 1 || m > 12) return '';
+    return d + ' ' + CONV_MONTHS[m-1] + ' ' + y;
+  }
+  function convRate(key){
+    var r = RATES[key];
+    if (!r) return 0;
+    if (r.rawValue > 0) return r.rawValue;
+    return r.value > 0 ? r.value : 0;
+  }
+  function convMoney(sym, v){
+    return sym === 'Bs' ? 'Bs ' + fmtBs.format(v) : sym + fmtConvIn.format(v);
+  }
+  function convMoneyOut(sym, v){
+    return sym === 'Bs' ? 'Bs ' + fmtBs.format(v) : sym + fmtBs.format(v);
+  }
+  function renderConverter(){
+    var sel = $('convPair');
+    var input = $('convAmount');
+    var out = $('convResultValue');
+    var brk = $('convBreakdown');
+    var meta = $('convRateMeta');
+    var swap = $('convSwap');
+    var prefix = $('convPrefix');
+    var lbl = $('convAmountLabel');
+    if (!sel || !input || !out || !brk || !meta) return;
+
+    var pair = convPairs[convPair] || convPairs.usdToBs;
+    if (prefix) prefix.textContent = pair.from;
+    if (lbl) lbl.textContent = pair.from === 'Bs' ? 'Monto en bolívares' : (pair.from === '€' ? 'Monto en euros' : 'Monto en dólares');
+
+    if (ratesLoading){
+      out.textContent = 'Cargando tasas…';
+      brk.textContent = 'Esperando la tasa oficial del BCV.';
+      meta.textContent = 'Cargando tasas…';
+      input.disabled = true;
+      if (swap) swap.disabled = true;
+      return;
+    }
+    input.disabled = false;
+    if (swap) swap.disabled = false;
+
+    var rate = convRate(pair.key);
+    var r = RATES[pair.key];
+    var fecha = convDateText(r.date);
+    meta.textContent = 'Tasa BCV ' + (pair.key === 'bcv' ? '$' : '€') + ': ' + fmtBs.format(r.value) + ' ' + pair.unit +
+      ' · ' + (fecha ? 'actualizada ' + fecha : (r.fecha || 'vigencia sin confirmar'));
+
+    if (!(rate > 0)){
+      out.textContent = 'Tasa no disponible';
+      brk.textContent = '';
+      return;
+    }
+
+    var monto = parseFloat(String(input.value || '').replace(',', '.'));
+    if (isNaN(monto) || monto < 0){
+      out.textContent = '—';
+      brk.textContent = 'Escribe un monto para convertir.';
+      return;
+    }
+
+    var res = pair.op === 'mul' ? monto * rate : monto / rate;
+    out.textContent = convMoneyOut(pair.to, res);
+    brk.textContent = convMoney(pair.from, monto) + ' ' + (pair.op === 'mul' ? '×' : '÷') + ' ' +
+      fmtBs.format(r.value) + ' ' + pair.unit + ' = ' + convMoneyOut(pair.to, res);
+  }
+  function convInit(){
+    var sel = $('convPair');
+    if (!sel) return;
+    sel.value = convPair;
+    sel.addEventListener('change', function(){
+      if (convPairs[sel.value]) convPair = sel.value;
+      renderConverter();
+    });
+    var input = $('convAmount');
+    if (input) input.addEventListener('input', renderConverter);
+    var swap = $('convSwap');
+    if (swap) swap.addEventListener('click', function(){
+      var flip = { bsToUsd:'usdToBs', usdToBs:'bsToUsd', bsToEur:'eurToBs', eurToBs:'bsToEur' };
+      convPair = flip[convPair] || convPair;
+      sel.value = convPair;
+      renderConverter();
+    });
+    renderConverter();
+  }
+
   function setStatus(state, msg){
     var d = $('rateDot');
     if (d) d.className = 'dot' + (state === 'ok' ? ' ok' : state === 'err' ? ' err' : '');
@@ -187,6 +289,8 @@
   function refreshRates(){
     var btn = $('btnRefreshRates');
     if (btn) { btn.disabled = true; btn.textContent = 'Actualizando…'; }
+    ratesLoading = true;
+    renderConverter();
     setStatus('', 'Buscando tasas en vivo…');
     var got = { bcv:false, euro:false, binance:false };
     var jobs = [];
@@ -194,6 +298,7 @@
     function applyRate(key, value, effIso, textOverride){
       if (!value || !(value > 0)) return;
       RATES[key].value = Math.round(value * 100) / 100;
+      RATES[key].rawValue = value;
       if (effIso) { RATES[key].date = effDateKey(effIso); RATES[key].fecha = textOverride || formatEffDate(effIso); }
       got[key] = true;
       if (rateSource === key) {
@@ -272,6 +377,7 @@
 
     Promise.all(jobs).then(function(){
       if (btn) { btn.disabled = false; btn.textContent = '↻ Actualizar tasas'; }
+      ratesLoading = false;
       renderRates();
       try { calc(); } catch(e){ console.error('calc error:', e); }
       var n = (got.bcv?1:0) + (got.euro?1:0) + (got.binance?1:0);
@@ -281,6 +387,8 @@
       notifyRatesUpdated();
     }).catch(function(err){
       if (btn) { btn.disabled = false; btn.textContent = '↻ Actualizar tasas'; }
+      ratesLoading = false;
+      renderConverter();
       setStatus('err', 'Sin conexión: se usan las tasas guardadas.');
     });
   }
@@ -709,6 +817,7 @@
       v.classList.toggle('active', v.id === 'tabView-' + tabId);
     });
     if (tabId === 'tasas') updateGapDisplay();
+    if (tabId === 'conv') renderConverter();
     if (typeof window.__margenesOnTabChange === 'function') {
       try { window.__margenesOnTabChange(tabId); } catch (e) {}
     }
@@ -725,6 +834,7 @@
   // Inicialización
   syncGuideSlot();
   setMarginMode(marginMode);
+  convInit();
   renderRates();
   refreshRates();
   try {

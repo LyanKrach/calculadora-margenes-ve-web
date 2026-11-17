@@ -2393,3 +2393,51 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+/* CONVERTIDOR */
+.conv-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.conv-result {
+  margin-top: 16px;
+  background: var(--card2);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.conv-result-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.conv-result-main {
+  font-family: "JetBrains Mono", monospace;
+  font-size: clamp(28px, 5vw, 40px);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+  color: var(--ink);
+  margin: 6px 0 4px;
+  word-break: break-word;
+}
+
+.conv-breakdown {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  color: var(--muted);
+  word-break: break-word;
+}
+
+.conv-rate-meta {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
