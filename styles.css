@@ -1081,8 +1081,8 @@ footer {
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 18px;
-  transform: translate(-50%, 80px);
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, calc(100% + 24px));
   background: var(--ink);
   color: var(--bg);
   padding: 11px 16px;
@@ -1093,11 +1093,33 @@ footer {
   transition: transform .25s ease;
   z-index: 20;
   max-width: 92vw;
-  text-align: center
+  text-align: center;
+  pointer-events: none;
+  user-select: none
 }
 
 .toast.show {
   transform: translate(-50%, 0)
+}
+
+@media (max-width: 760px) {
+  .toast {
+    left: calc(12px + env(safe-area-inset-left, 0px));
+    right: calc(12px + env(safe-area-inset-right, 0px));
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    transform: translateY(calc(100% + 88px));
+    max-width: none;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border-left: 4px solid var(--green2);
+    font-size: 13px;
+    line-height: 1.35;
+    text-align: left
+  }
+
+  .toast.show {
+    transform: translateY(0)
+  }
 }
 
 @media (min-width:961px) {
