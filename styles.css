@@ -2442,76 +2442,194 @@ footer {
   color: var(--muted);
 }
 
-/* ===== INSTALAR APP WEB (PWA) ===== */
-.install-app {
-  display: flex;
+/* ===== INSTALAR APP WEB (PWA) · panel lateral ===== */
+.install-top-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
-  margin: 0 0 18px;
-  padding: 14px 16px;
+  gap: 7px;
+  border: 1px solid var(--green2);
   background: var(--green-soft);
-  border: 1.5px solid var(--green2);
-  border-radius: 18px;
-  box-shadow: 0 8px 24px rgba(14, 74, 52, 0.10);
+  color: var(--green2);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.install-app[hidden] {
+.install-top-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(14, 74, 52, 0.16);
+}
+
+.install-top-btn[hidden] {
   display: none !important;
 }
 
-.install-app-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+.install-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 105;
+  background: rgba(10, 20, 14, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+
+.install-panel-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.install-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 110;
+  width: min(380px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 20px calc(22px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  background: var(--card);
+  border-left: 1.5px solid var(--line);
+  box-shadow: -24px 0 60px rgba(10, 20, 14, 0.35);
+  transform: translateX(104%);
+  visibility: hidden;
+  transition: transform 0.28s cubic-bezier(0.22, 0.8, 0.3, 1), visibility 0.28s;
+}
+
+.install-panel.open {
+  transform: none;
+  visibility: visible;
+}
+
+body.install-panel-open {
+  overflow: hidden;
+}
+
+.install-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.install-panel-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
   flex: 0 0 auto;
 }
 
-.install-app-copy {
+.install-panel-brand {
   flex: 1;
-  min-width: 180px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  line-height: 1.2;
+}
+
+.install-panel-brand span {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.install-panel-brand b {
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.install-panel h2 {
+  margin: 4px 0 0;
+  font-size: 23px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.install-panel-sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.install-benefits {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13.5px;
+}
+
+.install-benefits li {
+  position: relative;
+  padding-left: 26px;
   line-height: 1.35;
 }
 
-.install-app-copy b {
-  font-size: 14.5px;
+.install-benefits li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--green-soft);
+  color: var(--green2);
+  font-size: 11px;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
 }
 
-.install-app-copy span {
+.install-panel-cta {
+  width: 100%;
+  margin-top: 4px;
+  padding: 13px 18px;
+  font-size: 14px;
+}
+
+.install-panel-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.install-help {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  margin-top: 2px;
+}
+
+.install-help[hidden] {
+  display: none !important;
+}
+
+.install-help > b {
   font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--muted);
-}
-
-.install-app .primary {
-  padding: 10px 16px;
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-.install-app-close {
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  padding: 6px 8px;
-  border-radius: 999px;
-}
-
-.install-app-close:hover {
-  background: var(--card);
 }
 
 .install-steps {
-  margin: 0 0 12px;
-  padding-left: 22px;
+  margin: 10px 0 0;
+  padding-left: 20px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--ink);
 }
 
@@ -2520,21 +2638,12 @@ footer {
   font-weight: 800;
 }
 
-@media (max-width: 600px) {
-  .install-app {
-    flex-wrap: wrap;
+@media (max-width: 520px) {
+  .install-top-label {
+    display: none;
   }
 
-  .install-app-copy {
-    min-width: 0;
-  }
-
-  .install-app .primary {
-    width: 100%;
-    order: 3;
-  }
-
-  .install-app-close {
-    order: 2;
+  .install-top-btn {
+    padding: 9px 11px;
   }
 }

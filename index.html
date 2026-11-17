@@ -34,6 +34,10 @@
   <div class="authbar">
     <span class="authbar-brand"><img src="favicon-48x48.png" alt="Logo" class="brand-logo" width="26" height="26" /> Calculadora de Márgenes <b>VE</b></span>
     <div class="authbar-actions">
+      <button type="button" class="install-top-btn" id="btnInstallAppTop" aria-haspopup="dialog" aria-controls="installPanel">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+        <span class="install-top-label">Instalar app</span>
+      </button>
       <button type="button" class="pro-nav-btn" id="btnHeaderPro" data-go-pro="annual">💎 Pro</button>
       <span id="authArea">
         <button type="button" class="secondary auth-btn" id="btnEntrar">Entrar / Crear cuenta</button>
@@ -59,17 +63,6 @@
       <p id="heroFormulaSub">El margen se calcula como <strong>porcentaje directo del costo</strong> (Markup).</p>
     </aside>
   </header>
-
-  <!-- INSTALAR APP WEB (PWA) -->
-  <section class="install-app" id="installApp" aria-label="Instalar aplicación web" hidden>
-    <img src="icon-192x192.png" alt="" class="install-app-icon" width="44" height="44" />
-    <div class="install-app-copy">
-      <b>Instala MargenCalcu en tu teléfono</b>
-      <span id="installAppHint">Acceso rápido, pantalla completa y sin depender de la Play Store.</span>
-    </div>
-    <button type="button" class="primary" id="btnInstallApp">⬇ Instalar app</button>
-    <button type="button" class="install-app-close" id="btnDismissInstall" aria-label="Ocultar aviso de instalación">✕</button>
-  </section>
 
   <!-- DASHBOARD NAVIGATION -->
   <nav class="dash-nav" aria-label="Navegación del Dashboard">
@@ -1002,24 +995,30 @@
   </div>
 </div>
 
-<div class="modal-backdrop" id="installHelpModal" hidden>
-  <div class="modal card" role="dialog" aria-modal="true" aria-label="Cómo instalar MargenCalcu">
-    <div class="modal-head">
-      <h2>Cómo instalar MargenCalcu</h2>
-      <button type="button" class="rate-refresh" id="btnCloseInstallHelp" aria-label="Cerrar">✕</button>
+<div class="install-panel-backdrop" id="installPanelBackdrop"></div>
+<aside class="install-panel" id="installPanel" role="dialog" aria-modal="true" aria-labelledby="installPanelTitle" aria-hidden="true">
+  <div class="install-panel-head">
+    <img src="icon-192x192.png" alt="" class="install-panel-icon" width="46" height="46" />
+    <div class="install-panel-brand">
+      <span>App web · Gratis</span>
+      <b>MargenCalcu</b>
     </div>
-    <p class="sub" style="margin:6px 0 12px">Se abre como una app aparte, sin pasar por la Play Store.</p>
-    <ol class="install-steps" id="installHelpSteps">
-      <li>Abre el menú del navegador (⋮ o similar).</li>
-      <li>Busca <b>“Instalar aplicación”</b> o <b>“Añadir a pantalla de inicio”</b>.</li>
-      <li>Confirma la instalación.</li>
-    </ol>
-    <p class="hint">En iPhone o iPad debes usar Safari: Compartir → Añadir a pantalla de inicio.</p>
-    <div class="actions" style="padding:14px 0 0">
-      <button type="button" class="primary" id="btnInstallHelpOk">Entendido</button>
-    </div>
+    <button type="button" class="rate-refresh" id="btnCloseInstallPanel" aria-label="Cerrar panel de instalación">✕</button>
   </div>
-</div>
+  <h2 id="installPanelTitle">Instala MargenCalcu en tu teléfono</h2>
+  <p class="install-panel-sub">Úsala como app independiente, a pantalla completa y sin pasar por la Play Store.</p>
+  <ul class="install-benefits">
+    <li>Acceso directo desde tu pantalla de inicio.</li>
+    <li>Se abre sin la barra del navegador.</li>
+    <li>Tu historial y tus productos siguen sincronizados.</li>
+  </ul>
+  <button type="button" class="primary install-panel-cta" id="btnInstallAppPanel">⬇ Instalar app</button>
+  <p class="install-panel-note" id="installPanelHint">Si tu navegador no muestra el instalador, aquí tienes los pasos manuales.</p>
+  <div class="install-help" id="installHelpBox" hidden>
+    <b>Cómo instalarla manualmente</b>
+    <ol class="install-steps" id="installHelpSteps"></ol>
+  </div>
+</aside>
 
 <div class="toast" id="toast" role="status">Copiado</div>
 
