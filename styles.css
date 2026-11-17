@@ -2441,3 +2441,100 @@ footer {
   font-size: 12.5px;
   color: var(--muted);
 }
+
+/* ===== INSTALAR APP WEB (PWA) ===== */
+.install-app {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  background: var(--green-soft);
+  border: 1.5px solid var(--green2);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(14, 74, 52, 0.10);
+}
+
+.install-app[hidden] {
+  display: none !important;
+}
+
+.install-app-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex: 0 0 auto;
+}
+
+.install-app-copy {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.35;
+}
+
+.install-app-copy b {
+  font-size: 14.5px;
+}
+
+.install-app-copy span {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.install-app .primary {
+  padding: 10px 16px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.install-app-close {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 999px;
+}
+
+.install-app-close:hover {
+  background: var(--card);
+}
+
+.install-steps {
+  margin: 0 0 12px;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.install-steps li::marker {
+  color: var(--green2);
+  font-weight: 800;
+}
+
+@media (max-width: 600px) {
+  .install-app {
+    flex-wrap: wrap;
+  }
+
+  .install-app-copy {
+    min-width: 0;
+  }
+
+  .install-app .primary {
+    width: 100%;
+    order: 3;
+  }
+
+  .install-app-close {
+    order: 2;
+  }
+}

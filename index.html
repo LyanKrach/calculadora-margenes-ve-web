@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="color-scheme" content="light dark" />
 <meta name="theme-color" content="#0F6B43" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="MargenCalcu" />
+<meta name="mobile-web-app-capable" content="yes" />
 <meta name="description" content="Calcula precios de venta en bolívares con tasa BCV o Binance USDT en vivo, protege tu margen real frente a comisiones y comparte listas por WhatsApp." />
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png" />
 <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png" />
@@ -55,6 +59,17 @@
       <p id="heroFormulaSub">El margen se calcula como <strong>porcentaje directo del costo</strong> (Markup).</p>
     </aside>
   </header>
+
+  <!-- INSTALAR APP WEB (PWA) -->
+  <section class="install-app" id="installApp" aria-label="Instalar aplicación web" hidden>
+    <img src="icon-192x192.png" alt="" class="install-app-icon" width="44" height="44" />
+    <div class="install-app-copy">
+      <b>Instala MargenCalcu en tu teléfono</b>
+      <span id="installAppHint">Acceso rápido, pantalla completa y sin depender de la Play Store.</span>
+    </div>
+    <button type="button" class="primary" id="btnInstallApp">⬇ Instalar app</button>
+    <button type="button" class="install-app-close" id="btnDismissInstall" aria-label="Ocultar aviso de instalación">✕</button>
+  </section>
 
   <!-- DASHBOARD NAVIGATION -->
   <nav class="dash-nav" aria-label="Navegación del Dashboard">
@@ -845,7 +860,7 @@
 
   <footer>
     <span>Hecha para vender en Venezuela sin perder por tasa, comisiones ni redondeo. Los valores de arranque son un ejemplo editable — pon siempre tu tasa y tus comisiones reales del día.</span>
-    <span class="footer-links"><a href="#planes" data-go-pro="annual">Planes Pro</a> · <a href="terminos.html">Términos de Uso</a> · <a href="privacidad.html">Política de Privacidad</a> · <a href="eliminar-datos.html">Eliminación de Datos</a></span>
+    <span class="footer-links"><a href="#planes" data-go-pro="annual">Planes Pro</a> · <a href="terminos.html">Términos de Uso</a> · <a href="privacidad.html">Política de Privacidad</a> · <a href="eliminar-datos.html">Eliminación de Datos</a> · <a href="#" id="linkInstallApp">Instalar app</a></span>
   </footer>
 </div>
 
@@ -987,6 +1002,25 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="installHelpModal" hidden>
+  <div class="modal card" role="dialog" aria-modal="true" aria-label="Cómo instalar MargenCalcu">
+    <div class="modal-head">
+      <h2>Cómo instalar MargenCalcu</h2>
+      <button type="button" class="rate-refresh" id="btnCloseInstallHelp" aria-label="Cerrar">✕</button>
+    </div>
+    <p class="sub" style="margin:6px 0 12px">Se abre como una app aparte, sin pasar por la Play Store.</p>
+    <ol class="install-steps" id="installHelpSteps">
+      <li>Abre el menú del navegador (⋮ o similar).</li>
+      <li>Busca <b>“Instalar aplicación”</b> o <b>“Añadir a pantalla de inicio”</b>.</li>
+      <li>Confirma la instalación.</li>
+    </ol>
+    <p class="hint">En iPhone o iPad debes usar Safari: Compartir → Añadir a pantalla de inicio.</p>
+    <div class="actions" style="padding:14px 0 0">
+      <button type="button" class="primary" id="btnInstallHelpOk">Entendido</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status">Copiado</div>
 
 <script src="firebase-config.js"></script>
@@ -994,6 +1028,7 @@
 <script src="pro-core.js"></script>
 <script src="pro-files.js"></script>
 <script src="app.js"></script>
+<script src="pwa.js"></script>
 <script src="pro-ui.js"></script>
 <script type="module" src="auth.js"></script>
 </body>
