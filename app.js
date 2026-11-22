@@ -658,7 +658,7 @@
     setTxt('mobBarPrecioBs', 'Bs ' + fmtBs0.format(precioFinal));
     setTxt('mobBarPrecioUsd', '$' + fmtBs.format(precioUsd));
     var mobPctShown = marginMode === 'onCost' ? margenRealCost : margenRealSale;
-    setTxt('mobBarGanancia', 'Ganancia: $' + fmtBs.format(gananciaUsd) + ' · ' + fmtPct.format(mobPctShown) + '%');
+    setTxt('mobBarGanancia', '+$' + fmtBs.format(gananciaUsd) + ' (' + fmtPct.format(mobPctShown) + '%)');
 
     if (marginMode === 'onCost') {
       setTxt('gananciaUsd', '$' + fmtBs.format(gananciaUsd) + ' por venta · margen s/costo ' + fmtPct.format(margenRealCost) + '% (s/venta: ' + fmtPct.format(margenRealSale) + '%)');
