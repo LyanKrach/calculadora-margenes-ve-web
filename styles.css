@@ -3326,8 +3326,37 @@ body.tools-panel-open {
 }
 
 @media (max-width: 767px) {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
+  }
+
   .wrap {
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
     padding: 8px 12px calc(114px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .dash-view,
+  .layout,
+  .layout > *,
+  .panel,
+  .card,
+  .margin-mode-wrap,
+  .mode-toggle,
+  .rate-status,
+  .tasa-label-row,
+  .mob-accordion,
+  .mob-accordion-body {
+    min-width: 0;
+    max-width: 100%;
   }
 
   /* 1. Compactar el encabezado (Hero) */
@@ -3355,6 +3384,7 @@ body.tools-panel-open {
   /* Compactar cabecera de tarjeta de formulario manteniendo alturas táctiles >= 40px */
   .panel {
     padding: 12px;
+    width: 100%;
   }
 
   .panel > h2 {
@@ -3370,8 +3400,36 @@ body.tools-panel-open {
     margin: 4px 0 8px;
   }
 
+  .mode-toggle {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .mode-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 6px !important;
+    font-size: 12px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    gap: 4px;
+  }
+
+  .mode-btn svg {
+    flex-shrink: 0;
+  }
+
   .mode-formula-hint {
     display: none;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: 100%;
   }
 
   /* Garantizar altura mínima táctil >= 40px en todos los inputs y botones */
@@ -3413,7 +3471,10 @@ body.tools-panel-open {
 
   .rates {
     display: flex;
+    flex-wrap: nowrap;
     overflow-x: auto;
+    width: 100%;
+    max-width: 100%;
     gap: 8px;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
@@ -3427,8 +3488,9 @@ body.tools-panel-open {
 
   .rate-card {
     flex: 0 0 auto;
-    flex-shrink: 0;
-    min-width: 115px;
+    width: 130px;
+    min-width: 130px;
+    max-width: 130px;
     min-height: 48px;
     padding: 8px 12px;
     border-radius: 11px;
@@ -3480,11 +3542,13 @@ body.tools-panel-open {
     align-items: center;
     flex-wrap: nowrap;
     gap: 6px;
+    width: 100%;
   }
 
   .rate-status-text {
     flex: 1;
     min-width: 0;
+    font-size: 11px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3497,11 +3561,12 @@ body.tools-panel-open {
   }
 
   #btnRefreshRates {
+    flex-shrink: 0;
+    white-space: nowrap;
     min-width: 40px;
     width: 40px;
     min-height: 40px;
     padding: 0;
-    flex: none;
     border-radius: 10px;
   }
 
@@ -3519,12 +3584,28 @@ body.tools-panel-open {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    margin: 6px 0 4px;
+    margin: 8px 0 4px;
+    width: 100%;
   }
 
   .tasa-label-row label {
     margin: 0;
     flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .tasa-label-row label #tasaFuenteLabel {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0;
+    line-height: 1.25;
   }
 
   .mob-hint-toggle {
@@ -3650,6 +3731,9 @@ body.tools-panel-open {
     left: 0;
     right: 0;
     bottom: 0;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
     z-index: 85;
     padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
     background: var(--card);
