@@ -293,7 +293,11 @@
 
   function refreshRates(){
     var btn = $('btnRefreshRates');
-    if (btn) { btn.disabled = true; btn.textContent = 'Actualizando…'; }
+    if (btn) {
+      btn.disabled = true;
+      var btnTxt = btn.querySelector('.rate-refresh-txt');
+      if (btnTxt) btnTxt.textContent = ' Actualizando…';
+    }
     ratesLoading = true;
     renderConverter();
     setStatus('', 'Buscando tasas en vivo…');
@@ -381,7 +385,11 @@
     );
 
     Promise.all(jobs).then(function(){
-      if (btn) { btn.disabled = false; btn.textContent = '↻ Actualizar tasas'; }
+      if (btn) {
+        btn.disabled = false;
+        var btnTxtOk = btn.querySelector('.rate-refresh-txt');
+        if (btnTxtOk) btnTxtOk.textContent = ' Actualizar tasas';
+      }
       ratesLoading = false;
       renderRates();
       try { calc(); } catch(e){ console.error('calc error:', e); }
@@ -391,7 +399,11 @@
       else setStatus('err', 'Sin conexión: se usan las tasas guardadas.');
       notifyRatesUpdated();
     }).catch(function(err){
-      if (btn) { btn.disabled = false; btn.textContent = '↻ Actualizar tasas'; }
+      if (btn) {
+        btn.disabled = false;
+        var btnTxtErr = btn.querySelector('.rate-refresh-txt');
+        if (btnTxtErr) btnTxtErr.textContent = ' Actualizar tasas';
+      }
       ratesLoading = false;
       renderConverter();
       setStatus('err', 'Sin conexión: se usan las tasas guardadas.');

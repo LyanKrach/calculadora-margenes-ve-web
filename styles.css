@@ -3542,7 +3542,7 @@ body.tools-panel-open {
     align-items: center;
     justify-content: space-between;
     flex-wrap: nowrap;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
     overflow: hidden;
   }
@@ -3557,25 +3557,31 @@ body.tools-panel-open {
   }
 
   .rate-status-vigencia {
-    display: inline;
-    color: var(--ink);
-    font-weight: 600;
+    display: none !important;
   }
 
   #btnRefreshRates {
+    position: static;
+    margin-left: 0;
     flex-shrink: 0;
     white-space: nowrap;
-    min-width: 28px;
-    width: 28px;
-    min-height: 28px;
-    height: 28px;
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 0;
     border-radius: 8px;
     border: 1px solid var(--line);
+    background: var(--card2);
+    color: var(--green2);
+    overflow: hidden;
   }
 
   #btnRefreshRates .rate-refresh-txt {
-    display: none;
+    display: none !important;
   }
 
   #btnRefreshRates .rate-refresh-icon {
