@@ -1,6 +1,6 @@
 /* MargenCalcu · Service worker mínimo para instalación PWA y uso sin conexión.
    Estrategia: red primero; si falla, caché. Nunca cachea peticiones que no sean GET del mismo origen. */
-const CACHE = 'margencalcu-v8';
+const CACHE = 'margencalcu-v10';
 const SHELL = [
   './',
   './styles.css',

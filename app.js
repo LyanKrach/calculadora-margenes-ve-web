@@ -143,6 +143,11 @@
     });
     var lbl = $('tasaFuenteLabel');
     if (lbl) lbl.textContent = rateSource === 'custom' ? 'Personalizada · escrita a mano' : RATES[rateSource].label + (RATES[rateSource].fecha ? ' · ' + RATES[rateSource].fecha : '');
+    var vigEl = $('rateStatusVigencia');
+    if (vigEl) {
+      var activeFecha = (rateSource !== 'custom' && RATES[rateSource] && RATES[rateSource].fecha) ? RATES[rateSource].fecha : (RATES.bcv && RATES.bcv.fecha ? RATES.bcv.fecha : '');
+      vigEl.textContent = activeFecha ? ' · ' + activeFecha : '';
+    }
     updateGapDisplay();
     renderConverter();
   }
@@ -511,17 +516,71 @@
     var content = $('guideContent');
     var desktopSlot = $('desktopGuideSlot');
     var mobileSlot = $('mobileGuideSlot');
-    if (!content || !desktopSlot || !mobileSlot) return;
-    if (window.innerWidth > 960) {
-      if (content.parentNode !== desktopSlot) {
-        desktopSlot.appendChild(content);
+    if (content && desktopSlot && mobileSlot) {
+      if (window.innerWidth > 960) {
+        if (content.parentNode !== desktopSlot) {
+          desktopSlot.appendChild(content);
+        }
+      } else {
+        if (content.parentNode !== mobileSlot) {
+          mobileSlot.appendChild(content);
+        }
       }
-    } else {
-      if (content.parentNode !== mobileSlot) {
-        mobileSlot.appendChild(content);
+    }
+    syncMobileCalcLayout();
+  }
+
+  function syncMobileCalcLayout(){
+    var isMob = window.innerWidth < 768;
+    var prodWrap = $('productoFieldWrap');
+    var prodDesk = $('productoDesktopSlot');
+    var prodMob = $('productoMobileSlot');
+    if (prodWrap && prodDesk && prodMob) {
+      var targetProd = isMob ? prodMob : prodDesk;
+      if (prodWrap.parentNode !== targetProd) targetProd.appendChild(prodWrap);
+    }
+
+    var resCard = $('mainResultCard');
+    var resDesk = $('desktopResultSlot');
+    var stepsSec = $('stepsSection');
+    var stepsDesk = $('desktopStepsSlot');
+    var sheetBody = $('mobileResultSheetBody');
+    if (resCard && resDesk && stepsSec && stepsDesk && sheetBody) {
+      if (isMob) {
+        if (resCard.parentNode !== sheetBody) sheetBody.appendChild(resCard);
+        if (stepsSec.parentNode !== sheetBody) sheetBody.appendChild(stepsSec);
+      } else {
+        if (resCard.parentNode !== resDesk) resDesk.appendChild(resCard);
+        if (stepsSec.parentNode !== stepsDesk) stepsDesk.appendChild(stepsSec);
+        closeMobileResultSheet();
       }
     }
   }
+
+  function openMobileResultSheet(){
+    var sheet = $('mobileResultSheet');
+    var backdrop = $('mobileResultBackdrop');
+    var btnMore = $('btnMobVerMas');
+    if (!sheet || !backdrop) return;
+    backdrop.hidden = false;
+    sheet.classList.add('open');
+    sheet.setAttribute('aria-hidden', 'false');
+    if (btnMore) btnMore.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('mob-sheet-open');
+  }
+
+  function closeMobileResultSheet(){
+    var sheet = $('mobileResultSheet');
+    var backdrop = $('mobileResultBackdrop');
+    var btnMore = $('btnMobVerMas');
+    if (!sheet || !backdrop) return;
+    sheet.classList.remove('open');
+    sheet.setAttribute('aria-hidden', 'true');
+    backdrop.hidden = true;
+    if (btnMore) btnMore.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('mob-sheet-open');
+  }
+
   window.addEventListener('resize', syncGuideSlot);
 
   /* ===== CÁLCULO PRINCIPAL ===== */
@@ -544,6 +603,11 @@
     setTxt('comTotalLabel', fmtPct.format(comTotal) + '%');
     setTxt('resProducto', producto);
 
+    // Resumen activo del acordeón móvil "Comisiones y redondeo"
+    var roundSummary = step <= 1 ? 'Exacto' : ('↑ Bs ' + fmtBs0.format(step));
+    var comSummaryTxt = fmtPct.format(comTotal) + '%' + (gasto > 0 ? ' · +Bs ' + fmtBs0.format(gasto) : '') + ' · ' + roundSummary;
+    setTxt('accComSummary', comSummaryTxt);
+
     var comFraction = comTotal / 100;
     var alertBox = $('alertBox');
     var metrics = computeSaleMetrics({
@@ -565,6 +629,9 @@
             ? '⚠ Con ese margen y esas comisiones no hay precio que funcione: comisiones + margen suman 100% o más. Baja el margen o revisa las comisiones.'
             : '⚠ Escribe un costo y una tasa mayores a 0 para calcular.';
       }
+      setTxt('mobBarPrecioBs', 'Bs —');
+      setTxt('mobBarPrecioUsd', '$—');
+      setTxt('mobBarGanancia', '⚠ Revisa margen o comisiones');
       last = null;
       window.__margenesLast = null;
       return;
@@ -586,6 +653,12 @@
     setTxt('precioUsd', '$' + fmtBs.format(precioUsd));
     setTxt('roundedNote', step <= 1 ? 'Precio exacto, sin redondeo aplicado' : '↑ Precio exacto Bs ' + fmtBs.format(precioExacto) + ' → redondeado hacia arriba a Bs ' + fmtBs0.format(precioFinal));
     setTxt('gananciaBs', 'Bs ' + fmtBs.format(gananciaBs));
+
+    // Actualiza Barra Fija Inferior (Móvil)
+    setTxt('mobBarPrecioBs', 'Bs ' + fmtBs0.format(precioFinal));
+    setTxt('mobBarPrecioUsd', '$' + fmtBs.format(precioUsd));
+    var mobPctShown = marginMode === 'onCost' ? margenRealCost : margenRealSale;
+    setTxt('mobBarGanancia', 'Ganancia: $' + fmtBs.format(gananciaUsd) + ' · ' + fmtPct.format(mobPctShown) + '%');
 
     if (marginMode === 'onCost') {
       setTxt('gananciaUsd', '$' + fmtBs.format(gananciaUsd) + ' por venta · margen s/costo ' + fmtPct.format(margenRealCost) + '% (s/venta: ' + fmtPct.format(margenRealSale) + '%)');
@@ -772,11 +845,49 @@
   if (btnRef) btnRef.addEventListener('click', refreshRates);
 
   // Botones de acción y portapapeles
-  var bcp = $('btnCopiarPrecio');
-  if (bcp) bcp.addEventListener('click', function(){
+  function copyCurrentPrice(){
     if(!last) return;
     copiar('Bs ' + fmtBs0.format(last.precioFinal) + ' ($' + fmtBs.format(last.precioUsd) + ')', 'Precio copiado: Bs ' + fmtBs0.format(last.precioFinal));
     if (window.__margenesOnCopyPrice) window.__margenesOnCopyPrice(); // guardado automático en el historial
+  }
+
+  var bcp = $('btnCopiarPrecio');
+  if (bcp) bcp.addEventListener('click', copyCurrentPrice);
+
+  var bcpMob = $('btnMobCopiarPrecio');
+  if (bcpMob) bcpMob.addEventListener('click', copyCurrentPrice);
+
+  // Acordeones móviles y Bottom Sheet de resultados
+  function bindMobileAccordion(btnId, wrapId){
+    var btn = $(btnId), wrap = $(wrapId);
+    if (!btn || !wrap) return;
+    btn.addEventListener('click', function(){
+      var isOpen = wrap.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  }
+  bindMobileAccordion('btnAccComisiones', 'accComisiones');
+  bindMobileAccordion('btnAccSteps', 'stepsSection');
+
+  var btnTasaHint = $('btnTasaHintToggle');
+  var tasaHintEl = $('tasaHintText');
+  if (btnTasaHint && tasaHintEl) {
+    btnTasaHint.addEventListener('click', function(){
+      var shown = tasaHintEl.classList.toggle('mob-hint-visible');
+      btnTasaHint.setAttribute('aria-expanded', shown ? 'true' : 'false');
+    });
+  }
+
+  var btnMobMore = $('btnMobVerMas');
+  if (btnMobMore) btnMobMore.addEventListener('click', openMobileResultSheet);
+  var btnMobInfo = $('mobBarInfoBtn');
+  if (btnMobInfo) btnMobInfo.addEventListener('click', openMobileResultSheet);
+  var btnCloseSheet = $('btnCloseResultSheet');
+  if (btnCloseSheet) btnCloseSheet.addEventListener('click', closeMobileResultSheet);
+  var sheetBackdrop = $('mobileResultBackdrop');
+  if (sheetBackdrop) sheetBackdrop.addEventListener('click', closeMobileResultSheet);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeMobileResultSheet();
   });
 
   var bcm = $('btnCopiarMensaje');

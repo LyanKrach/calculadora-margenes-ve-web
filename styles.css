@@ -3307,3 +3307,508 @@ body.tools-panel-open {
     gap: 6px;
   }
 }
+
+/* ===== OPTIMIZACIÓN UX/UI EXCLUSIVA PARA MÓVIL (< 768px) ===== */
+.mob-accordion-btn,
+.mob-hint-toggle,
+.mob-sticky-bar,
+.mob-sheet,
+.mob-sheet-backdrop,
+.rc-label-short,
+.rate-status-vigencia {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .mob-accordion-body {
+    display: block !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .wrap {
+    padding: 8px 12px calc(114px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* 1. Compactar el encabezado (Hero) */
+  .hero {
+    padding: 4px 0 8px !important;
+    gap: 4px;
+  }
+
+  .hero .kicker {
+    font-size: 10px;
+    padding: 4px 9px;
+    gap: 6px;
+  }
+
+  .hero h1 {
+    font-size: 20px !important;
+    margin: 4px 0 0 !important;
+    line-height: 1.15;
+  }
+
+  .hero .hero-sub {
+    display: none !important;
+  }
+
+  /* Compactar cabecera de tarjeta de formulario manteniendo alturas táctiles >= 40px */
+  .panel {
+    padding: 12px;
+  }
+
+  .panel > h2 {
+    font-size: 15.5px;
+    margin-bottom: 2px;
+  }
+
+  .panel > .sub {
+    display: none;
+  }
+
+  .margin-mode-wrap {
+    margin: 4px 0 8px;
+  }
+
+  .mode-formula-hint {
+    display: none;
+  }
+
+  /* Garantizar altura mínima táctil >= 40px en todos los inputs y botones */
+  .panel .field,
+  .panel input[type="number"],
+  .panel input[type="text"],
+  .panel select {
+    min-height: 42px;
+  }
+
+  .mode-btn,
+  .chips .chip,
+  .rate-refresh,
+  button.primary,
+  button.secondary {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 3. Compactar la sección de Tasas (Carrusel horizontal en móvil + estado en 1 línea) */
+  .rates-head-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .rates-head-row h2 {
+    font-size: 14.5px !important;
+    margin: 0;
+  }
+
+  .rates-head-row .sub {
+    display: none;
+  }
+
+  .rates {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .rates::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rate-card {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    min-width: 115px;
+    min-height: 48px;
+    padding: 8px 12px;
+    border-radius: 11px;
+    scroll-snap-align: start;
+    gap: 2px;
+  }
+
+  .rate-card .rc-label-full {
+    display: none;
+  }
+
+  .rate-card .rc-label-short {
+    display: inline;
+  }
+
+  .rate-card .rc-name {
+    font-size: 11px;
+    gap: 4px;
+    padding-right: 16px;
+    white-space: nowrap;
+  }
+
+  .rate-card .rc-val {
+    font-size: 14.5px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+
+  .rate-card .rc-val small,
+  .rate-card .rc-src {
+    display: none !important;
+  }
+
+  .rate-card .rc-check {
+    top: 7px;
+    right: 8px;
+    width: 15px;
+    height: 15px;
+    font-size: 9.5px;
+  }
+
+  .rate-status {
+    margin: 6px 0 4px;
+    padding: 4px 6px 4px 9px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .rate-status-text {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .rate-status-vigencia {
+    display: inline;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  #btnRefreshRates {
+    min-width: 40px;
+    width: 40px;
+    min-height: 40px;
+    padding: 0;
+    flex: none;
+    border-radius: 10px;
+  }
+
+  #btnRefreshRates .rate-refresh-txt {
+    display: none;
+  }
+
+  #btnRefreshRates .rate-refresh-icon {
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .tasa-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 6px 0 4px;
+  }
+
+  .tasa-label-row label {
+    margin: 0;
+    flex: 1;
+  }
+
+  .mob-hint-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--card2);
+    color: var(--green2);
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+    flex: none;
+  }
+
+  .mob-hint-toggle[aria-expanded="true"] {
+    background: var(--green-soft);
+    border-color: var(--green2);
+  }
+
+  .tasa-hint-text {
+    display: none;
+    margin-top: 6px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--card2);
+    border: 1px solid var(--line);
+    font-size: 11.5px;
+  }
+
+  .tasa-hint-text.mob-hint-visible {
+    display: block;
+  }
+
+  /* 2. Producto debajo del margen y Acordeones colapsables */
+  .producto-field-wrap {
+    margin-top: 10px;
+  }
+
+  .mob-accordion {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--card2);
+    overflow: hidden;
+    margin-top: 6px;
+  }
+
+  .mob-accordion-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 13px;
+    background: transparent;
+    border: 0;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    gap: 8px;
+  }
+
+  .mob-acc-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mob-acc-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+  }
+
+  .mob-acc-summary {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--green2);
+    background: var(--green-soft);
+    padding: 4px 9px;
+    border-radius: 999px;
+  }
+
+  .mob-acc-chevron {
+    font-size: 14px;
+    color: var(--muted);
+    transition: transform .2s ease;
+  }
+
+  .mob-accordion.open .mob-acc-chevron {
+    transform: rotate(180deg);
+  }
+
+  .mob-accordion-body {
+    display: none;
+    padding: 10px 13px 13px;
+    border-top: 1px solid var(--line);
+    background: var(--card);
+  }
+
+  .mob-accordion.open .mob-accordion-body {
+    display: block;
+  }
+
+  .layout-result-col {
+    display: none;
+  }
+
+  /* 4. Barra fija inferior (Sticky Bottom Bar) + Bottom Sheet */
+  #tabView-calc.active .mob-sticky-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 85;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: var(--card);
+    border-top: 1px solid var(--green2);
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, .42);
+  }
+
+  .mob-sticky-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 44px;
+    padding: 2px 4px;
+    background: transparent;
+    border: 0;
+    color: var(--ink);
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mob-sticky-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  .mob-sticky-bs {
+    font-size: 20px;
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .mob-sticky-usd {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green2);
+  }
+
+  .mob-sticky-profit {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .mob-sticky-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+  }
+
+  .mob-sticky-copy,
+  .mob-sticky-more {
+    min-height: 42px;
+    padding: 8px 11px !important;
+    font-size: 12.5px !important;
+    border-radius: 11px !important;
+    white-space: nowrap;
+  }
+
+  .mob-sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    background: rgba(5, 10, 8, .68);
+    backdrop-filter: blur(3px);
+  }
+
+  .mob-sheet {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 96;
+    max-height: 86vh;
+    background: var(--bg2);
+    border-top: 1px solid var(--line);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -16px 40px rgba(0, 0, 0, .55);
+    transform: translateY(105%);
+    transition: transform .26s cubic-bezier(.22, 1, .36, 1);
+    visibility: hidden;
+  }
+
+  .mob-sheet.open {
+    transform: translateY(0);
+    visibility: visible;
+  }
+
+  body.mob-sheet-open {
+    overflow: hidden;
+  }
+
+  .mob-sheet-header {
+    padding: 8px 14px 10px;
+    border-bottom: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 20px 20px 0 0;
+    flex: none;
+  }
+
+  .mob-sheet-handle {
+    width: 38px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--line);
+    margin: 0 auto 8px;
+  }
+
+  .mob-sheet-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .mob-sheet-title-row strong {
+    font-size: 15px;
+  }
+
+  .mob-sheet-close {
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mob-sheet-body {
+    padding: 12px 12px calc(20px + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mob-sheet-body #stepsSection {
+    margin-top: 0;
+  }
+
+  .mob-sheet-body #stepsSection .section-head {
+    display: none;
+  }
+
+  .toast {
+    bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  }
+}
